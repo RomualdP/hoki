@@ -13,6 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ===== AUTHENTICATION MODELS =====
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -40,23 +41,669 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-}
-
 model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ===== USER MODELS =====
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  firstName     String
+  lastName      String
+  avatar        String?
+  password      String?
+  role          UserRole    @default(USER)
+  isActive      Boolean     @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Auth relations
+  accounts      Account[]
+  sessions      Session[]
+
+  // Profile data
+  profile       UserProfile?
+  skills        UserSkill[]
+  statistics    UserStatistics?
+  achievements  Achievement[]
+
+  // Activity relations
+  activities    Activity[]
+  notifications Notification[]
+  settings      UserSettings?
+
+  // Team relations
+  teamMemberships TeamMember[]
+
+  // Match relations
+  matchParticipations MatchParticipant[]
+  playerStats         PlayerMatchStats[]
+  matchEvents         MatchEvent[]
+  matchComments       MatchComment[]
+
+  // News relations
+  newsArticles  News[]
+  newsComments  NewsComment[]
+  newsInteractions NewsInteraction[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model UserProfile {
+  id            String          @id @default(cuid())
+  userId        String          @unique
+  biography     String?
+  birthDate     DateTime?
+  position      PlayerPosition?
+  height        Int?            // en cm
+  weight        Int?            // en kg
+  phoneNumber   String?
+  city          String?
+  country       String?
+  preferredHand PreferredHand   @default(RIGHT)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+enum PlayerPosition {
+  SETTER
+  OUTSIDE_HITTER
+  MIDDLE_BLOCKER
+  OPPOSITE
+  LIBERO
+  DEFENSIVE_SPECIALIST
+}
+
+enum PreferredHand {
+  LEFT
+  RIGHT
+  AMBIDEXTROUS
+}
+
+model UserStatistics {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  totalMatches    Int      @default(0)
+  totalWins       Int      @default(0)
+  totalLosses     Int      @default(0)
+  winRate         Float    @default(0)
+  averageScore    Float    @default(0)
+  bestPerformance Float    @default(0)
+  lastUpdated     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_statistics")
+}
+
+model Achievement {
+  id          String          @id @default(cuid())
+  userId      String
+  type        AchievementType
+  title       String
+  description String
+  icon        String
+  earnedAt    DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("achievements")
+}
+
+enum AchievementType {
+  MATCHES_PLAYED
+  MATCHES_WON
+  SKILL_MASTERY
+  TOURNAMENT_WIN
+  PARTICIPATION
+}
+
+// ===== SKILLS MODELS =====
+model Skill {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  description String?
+  category    SkillCategory
+  level       SkillLevel
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  userSkills UserSkill[]
+
+  @@map("skills")
+}
+
+enum SkillCategory {
+  ATTACK
+  DEFENSE
+  SERVING
+  RECEPTION
+  SETTING
+  BLOCKING
+  TEAMWORK
+  LEADERSHIP
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+model UserSkill {
+  id              String     @id @default(cuid())
+  userId          String
+  skillId         String
+  level           SkillLevel
+  experienceYears Int?
+  notes           String?
+  assessedBy      String?
+  assessedAt      DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@map("user_skills")
+}
+
+// ===== TEAMS MODELS =====
+model Team {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  logo        String?
+  description String?
+  foundedYear Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     TeamMember[]
+  homeMatches Match[]      @relation("HomeTeam")
+  awayMatches Match[]      @relation("AwayTeam")
+  tournaments TournamentTeam[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  userId   String
+  teamId   String
+  role     TeamRole
+  joinedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+  @@map("team_members")
+}
+
+enum TeamRole {
+  CAPTAIN
+  COACH
+  PLAYER
+  SUBSTITUTE
+}
+
+// ===== MATCHES MODELS =====
+model Match {
+  id              String       @id @default(cuid())
+  homeTeamId      String
+  awayTeamId      String
+  scheduledAt     DateTime
+  location        String?
+  status          MatchStatus  @default(SCHEDULED)
+  homeScore       Int?
+  awayScore       Int?
+  maxParticipants Int?
+  referee         String?
+  duration        Int?         // en minutes
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  homeTeam     Team               @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam     Team               @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  sets         Set[]
+  participants MatchParticipant[]
+  court        Court?             @relation(fields: [courtId], references: [id])
+  courtId      String?
+  weather      WeatherCondition?
+  statistics   MatchStatistics?
+  events       MatchEvent[]
+  comments     MatchComment[]
+  playerStats  PlayerMatchStats[] @relation("PlayerStats")
+
+  @@map("matches")
+}
+
+enum MatchStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Set {
+  id          String  @id @default(cuid())
+  matchId     String
+  setNumber   Int
+  homeScore   Int
+  awayScore   Int
+  isCompleted Boolean @default(false)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, setNumber])
+  @@map("sets")
+}
+
+model MatchParticipant {
+  id       String   @id @default(cuid())
+  matchId  String
+  userId   String
+  teamId   String?
+  joinedAt DateTime @default(now())
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId])
+  @@map("match_participants")
+}
+
+model Court {
+  id         String    @id @default(cuid())
+  name       String
+  address    String
+  city       String
+  type       CourtType
+  capacity   Int?
+  facilities String[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  matches Match[]
+
+  @@map("courts")
+}
+
+enum CourtType {
+  INDOOR
+  OUTDOOR
+  BEACH
+}
+
+model WeatherCondition {
+  id          String          @id @default(cuid())
+  matchId     String          @unique
+  temperature Int?
+  humidity    Int?
+  condition   WeatherType
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@map("weather_conditions")
+}
+
+enum WeatherType {
+  SUNNY
+  CLOUDY
+  RAINY
+  WINDY
+  INDOOR
+}
+
+model MatchStatistics {
+  id           String @id @default(cuid())
+  matchId      String @unique
+  totalPoints  Int    @default(0)
+  longestRally Int    @default(0)
+  aces         Int    @default(0)
+  blocks       Int    @default(0)
+  errors       Int    @default(0)
+
+  match       Match                @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  playerStats PlayerMatchStats[]   @relation("PlayerStatistics")
+
+  @@map("match_statistics")
+}
+
+model PlayerMatchStats {
+  id           String          @id @default(cuid())
+  matchId      String
+  userId       String
+  position     PlayerPosition?
+  pointsScored Int             @default(0)
+  aces         Int             @default(0)
+  blocks       Int             @default(0)
+  digs         Int             @default(0)
+  assists      Int             @default(0)
+  errors       Int             @default(0)
+  timeOnCourt  Int             @default(0) // en minutes
+  statisticsId String
+
+  match      Match           @relation("PlayerStats", fields: [matchId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  statistics MatchStatistics @relation("PlayerStatistics", fields: [statisticsId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId])
+  @@map("player_match_stats")
+}
+
+model MatchEvent {
+  id          String         @id @default(cuid())
+  matchId     String
+  type        MatchEventType
+  description String
+  userId      String?
+  timestamp   DateTime       @default(now())
+  setNumber   Int?
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id])
+
+  @@map("match_events")
+}
+
+enum MatchEventType {
+  POINT_SCORED
+  ACE
+  BLOCK
+  ERROR
+  SUBSTITUTION
+  TIMEOUT
+  SET_WON
+}
+
+model MatchComment {
+  id        String   @id @default(cuid())
+  matchId   String
+  userId    String
+  content   String
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("match_comments")
+}
+
+// ===== NEWS MODELS =====
+model News {
+  id           String    @id @default(cuid())
+  title        String
+  content      String    @db.Text
+  excerpt      String?
+  authorId     String
+  category     NewsCategory @default(GENERAL)
+  tags         String[]
+  featuredImage String?
+  readingTime  Int       @default(0) // en minutes
+  viewsCount   Int       @default(0)
+  likesCount   Int       @default(0)
+  commentsCount Int      @default(0)
+  isPublished  Boolean   @default(false)
+  publishedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  author       User              @relation(fields: [authorId], references: [id])
+  gallery      NewsMedia[]
+  comments     NewsComment[]
+  interactions NewsInteraction[]
+
+  @@map("news")
+}
+
+enum NewsCategory {
+  MATCH_RESULTS
+  TOURNAMENT
+  TEAM_NEWS
+  PLAYER_SPOTLIGHT
+  GENERAL
+  ANNOUNCEMENT
+}
+
+model NewsMedia {
+  id      String    @id @default(cuid())
+  newsId  String
+  type    MediaType
+  url     String
+  caption String?
+  altText String?
+  order   Int       @default(0)
+
+  news News @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@map("news_media")
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model NewsComment {
+  id         String   @id @default(cuid())
+  newsId     String
+  userId     String
+  content    String
+  parentId   String?
+  likesCount Int      @default(0)
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  news    News          @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  NewsComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies NewsComment[] @relation("CommentReplies")
+
+  @@map("news_comments")
+}
+
+model NewsInteraction {
+  id        String            @id @default(cuid())
+  newsId    String
+  userId    String
+  type      InteractionType
+  createdAt DateTime          @default(now())
+
+  news News @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([newsId, userId, type])
+  @@map("news_interactions")
+}
+
+enum InteractionType {
+  LIKE
+  VIEW
+  SHARE
+}
+
+// ===== TOURNAMENTS MODELS =====
+model Tournament {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  status      TournamentStatus @default(REGISTRATION)
+  maxTeams    Int
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  teams   TournamentTeam[]
+
+  @@map("tournaments")
+}
+
+enum TournamentStatus {
+  REGISTRATION
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model TournamentTeam {
+  id           String   @id @default(cuid())
+  tournamentId String
+  teamId       String
+  joinedAt     DateTime @default(now())
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team       Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, teamId])
+  @@map("tournament_teams")
+}
+
+// ===== ACTIVITIES MODELS =====
+model Activity {
+  id         String             @id @default(cuid())
+  type       ActivityType
+  actorId    String
+  targetType ActivityTargetType
+  targetId   String
+  action     ActivityAction
+  metadata   Json               @default("{}")
+  isPublic   Boolean            @default(true)
+  createdAt  DateTime           @default(now())
+
+  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
+
+enum ActivityType {
+  USER_ACTION
+  MATCH_EVENT
+  TEAM_EVENT
+  NEWS_EVENT
+  SYSTEM_EVENT
+}
+
+enum ActivityTargetType {
+  USER
+  TEAM
+  MATCH
+  NEWS
+  SKILL
+  TOURNAMENT
+}
+
+enum ActivityAction {
+  CREATED
+  UPDATED
+  DELETED
+  JOINED
+  LEFT
+  COMPLETED
+  LIKED
+  COMMENTED
+  ACHIEVED
+}
+
+// ===== NOTIFICATIONS MODELS =====
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  actionUrl String?
+  metadata  Json             @default("{}")
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  MATCH_REMINDER
+  TEAM_INVITATION
+  NEWS_PUBLISHED
+  ACHIEVEMENT_UNLOCKED
+  COMMENT_REPLY
+}
+
+// ===== USER SETTINGS MODELS =====
+model UserSettings {
+  id           String              @id @default(cuid())
+  userId       String              @unique
+  language     String              @default("fr")
+  timezone     String              @default("Europe/Paris")
+  theme        Theme               @default(LIGHT)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notificationSettings NotificationSettings?
+  privacySettings      PrivacySettings?
+
+  @@map("user_settings")
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  AUTO
+}
+
+model NotificationSettings {
+  id               String @id @default(cuid())
+  userSettingsId   String @unique
+  email            Boolean @default(true)
+  push             Boolean @default(true)
+  matchReminders   Boolean @default(true)
+  teamInvitations  Boolean @default(true)
+  newsUpdates      Boolean @default(true)
+
+  userSettings UserSettings @relation(fields: [userSettingsId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
+}
+
+model PrivacySettings {
+  id                String           @id @default(cuid())
+  userSettingsId    String           @unique
+  profileVisibility ProfileVisibility @default(PUBLIC)
+  showEmail         Boolean          @default(false)
+  showPhone         Boolean          @default(false)
+  showStatistics    Boolean          @default(true)
+
+  userSettings UserSettings @relation(fields: [userSettingsId], references: [id], onDelete: Cascade)
+
+  @@map("privacy_settings")
+}
+
+enum ProfileVisibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
 }

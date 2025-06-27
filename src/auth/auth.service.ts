@@ -33,7 +33,7 @@ export class AuthService {
   }
 
   async login(user: UserWithoutPassword): Promise<{ access_token: string }> {
-    const payload: UserPayload = { email: user.email!, sub: user.id };
+    const payload: UserPayload = { email: user.email, sub: user.id };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
@@ -45,14 +45,17 @@ export class AuthService {
     return this.prisma.user.upsert({
       where: { email },
       update: {
-        name,
-        image: picture,
+        firstName: name?.split(' ')[0] || '',
+        lastName: name?.split(' ').slice(1).join(' ') || '',
+        avatar: picture,
+        lastLoginAt: new Date(),
       },
       create: {
         email,
-        name,
-        image: picture,
-        emailVerified: new Date(),
+        firstName: name?.split(' ')[0] || '',
+        lastName: name?.split(' ').slice(1).join(' ') || '',
+        avatar: picture,
+        lastLoginAt: new Date(),
       },
     });
   }
@@ -60,7 +63,8 @@ export class AuthService {
   async register(
     email: string,
     password: string,
-    name: string,
+    firstName: string,
+    lastName: string = '',
   ): Promise<UserWithoutPassword> {
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -76,7 +80,8 @@ export class AuthService {
       data: {
         email,
         password: hashedPassword,
-        name,
+        firstName,
+        lastName,
       },
     });
 
