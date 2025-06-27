@@ -27,17 +27,33 @@ export class UsersController {
 
   @Get()
   async findAll(@Query() query: QueryUsersDto) {
-    return this.usersService.findAll(query);
+    const result = await this.usersService.findAll(query);
+    return {
+      success: true,
+      data: result.data,
+      meta: result.meta,
+      message: 'Utilisateurs récupérés avec succès',
+    };
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+    const user = await this.usersService.findOne(id);
+    return {
+      success: true,
+      data: user,
+      message: 'Utilisateur récupéré avec succès',
+    };
   }
 
   @Get(':id/profile')
   async getProfile(@Param('id') id: string) {
-    return this.usersService.getProfile(id);
+    const profile = await this.usersService.getProfile(id);
+    return {
+      success: true,
+      data: profile,
+      message: 'Profil récupéré avec succès',
+    };
   }
 
   @Put(':id/profile')
@@ -45,27 +61,52 @@ export class UsersController {
     @Param('id') id: string,
     @Body() updateProfileDto: UpdateProfileDto,
   ) {
-    return this.usersService.updateProfile(id, updateProfileDto);
+    const profile = await this.usersService.updateProfile(id, updateProfileDto);
+    return {
+      success: true,
+      data: profile,
+      message: 'Profil mis à jour avec succès',
+    };
   }
 
   @Get(':id/statistics')
   async getStatistics(@Param('id') id: string) {
-    return this.usersService.getStatistics(id);
+    const statistics = await this.usersService.getStatistics(id);
+    return {
+      success: true,
+      data: statistics,
+      message: 'Statistiques récupérées avec succès',
+    };
   }
 
   @Get(':id/achievements')
   async getAchievements(@Param('id') id: string) {
-    return this.usersService.getAchievements(id);
+    const achievements = await this.usersService.getAchievements(id);
+    return {
+      success: true,
+      data: achievements,
+      message: 'Achievements récupérés avec succès',
+    };
   }
 
   @Get(':id/skills')
   async getUserSkills(@Param('id') id: string) {
-    return this.usersService.getUserSkills(id);
+    const skills = await this.usersService.getUserSkills(id);
+    return {
+      success: true,
+      data: skills,
+      message: 'Compétences récupérées avec succès',
+    };
   }
 
   @Post(':id/skills')
   async addSkill(@Param('id') id: string, @Body() skillData: AddSkillDto) {
-    return this.usersService.addSkill(id, skillData);
+    const skill = await this.usersService.addSkill(id, skillData);
+    return {
+      success: true,
+      data: skill,
+      message: 'Compétence ajoutée avec succès',
+    };
   }
 
   @Put(':id/skills/:skillId')
@@ -74,7 +115,12 @@ export class UsersController {
     @Param('skillId') skillId: string,
     @Body() skillData: UpdateSkillDto,
   ) {
-    return this.usersService.updateSkill(id, skillId, skillData);
+    const skill = await this.usersService.updateSkill(id, skillId, skillData);
+    return {
+      success: true,
+      data: skill,
+      message: 'Compétence mise à jour avec succès',
+    };
   }
 
   @Delete(':id/skills/:skillId')
@@ -82,21 +128,39 @@ export class UsersController {
     @Param('id') id: string,
     @Param('skillId') skillId: string,
   ) {
-    return this.usersService.removeSkill(id, skillId);
+    await this.usersService.removeSkill(id, skillId);
+    return {
+      success: true,
+      message: 'Compétence supprimée avec succès',
+    };
   }
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    const user = await this.usersService.create(createUserDto);
+    return {
+      success: true,
+      data: user,
+      message: 'Utilisateur créé avec succès',
+    };
   }
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+    const user = await this.usersService.update(id, updateUserDto);
+    return {
+      success: true,
+      data: user,
+      message: 'Utilisateur mis à jour avec succès',
+    };
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+    await this.usersService.remove(id);
+    return {
+      success: true,
+      message: 'Utilisateur supprimé avec succès',
+    };
   }
 }
