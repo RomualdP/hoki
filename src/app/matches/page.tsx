@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Layout } from '../../components/layout';
 import { Card, CardContent, Button } from '../../components/ui';
 import { Input, Select } from '../../components/forms';
-import { useMatchesStore, useAuthStore } from '../../store';
+import { useMatchesApi } from '../../features/matches/hooks/useMatchesApi';
+import { useAuthStore } from '../../store';
 import { formatDate } from '../../utils';
 import type { Match, MatchStatus } from '../../types';
 
@@ -17,80 +18,20 @@ const MATCH_STATUS_OPTIONS = [
   { value: 'CANCELLED', label: 'Annulé' },
 ];
 
-// Mock data for matches
-const MOCK_MATCHES: Match[] = [
-  {
-    id: '1',
-    homeTeamId: '1',
-    awayTeamId: '2',
-    homeTeam: {
-      id: '1',
-      name: 'Sharks Volleyball',
-      description: 'Équipe compétitive de niveau intermédiaire',
-      members: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    awayTeam: {
-      id: '2',
-      name: 'Eagles United',
-      description: 'Équipe amateur passionnée',
-      members: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    scheduledAt: new Date('2024-03-20T18:00:00'),
-    location: 'Gymnase Municipal',
-    status: 'SCHEDULED',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '2',
-    homeTeamId: '3',
-    awayTeamId: '1',
-    homeTeam: {
-      id: '3',
-      name: 'Thunder Bolts',
-      description: 'Équipe de niveau avancé',
-      members: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    awayTeam: {
-      id: '1',
-      name: 'Sharks Volleyball',
-      description: 'Équipe compétitive de niveau intermédiaire',
-      members: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    scheduledAt: new Date('2024-03-18T20:00:00'),
-    location: 'Centre Sportif',
-    status: 'COMPLETED',
-    homeScore: 3,
-    awayScore: 1,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
+
 
 export default function MatchesPage() {
-  const { matches, filters, setMatches, setFilters } = useMatchesStore();
+  const { matches, fetchMatches, isLoading } = useMatchesApi();
   const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('');
 
   const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
-    // Load mock data
-    setMatches(MOCK_MATCHES);
-  }, [setMatches]);
-
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters({ [key]: value || undefined });
-  };
+    fetchMatches();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredMatches = matches.filter((match) => {
     const matchesSearch = searchQuery === '' || 
@@ -98,9 +39,9 @@ export default function MatchesPage() {
       match.awayTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (match.location && match.location.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesStatus = !filters.status || match.status === filters.status;
+    const matchesStatusFilter = !statusFilter || match.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatusFilter;
   });
 
   return (
@@ -157,8 +98,8 @@ export default function MatchesPage() {
                 id="status"
                 name="status"
                 label="Statut"
-                value={filters.status || ''}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
                 options={MATCH_STATUS_OPTIONS}
               />
 
@@ -167,7 +108,7 @@ export default function MatchesPage() {
                   variant="outline"
                   onClick={() => {
                     setSearchQuery('');
-                    setFilters({});
+                    setStatusFilter('');
                   }}
                   className="w-full"
                 >
@@ -180,7 +121,13 @@ export default function MatchesPage() {
 
         {/* Matches List */}
         <div className="grid gap-4">
-          {filteredMatches.length === 0 ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <p className="text-gray-500">Chargement des matchs...</p>
+              </CardContent>
+            </Card>
+          ) : filteredMatches.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
                 <p className="text-gray-500">Aucun match trouvé avec ces critères.</p>

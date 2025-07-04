@@ -4,68 +4,19 @@ import { useState, useEffect } from 'react';
 import { Layout } from '../../../components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../components/ui';
 import { Input } from '../../../components/forms';
-import { useUsersStore } from '../../../store';
+import { useUsersApi } from '../../../features/users/hooks/useUsersApi';
 import { formatDate } from '../../../utils';
 import Link from 'next/link';
 import type { User } from '../../../types';
 
-// Mock users data
-const MOCK_USERS: User[] = [
-  {
-    id: '1',
-    email: 'jean.dupont@email.com',
-    firstName: 'Jean',
-    lastName: 'Dupont',
-    role: 'USER',
-    isActive: true,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-03-10'),
-    lastLoginAt: new Date('2024-03-14'),
-  },
-  {
-    id: '2',
-    email: 'marie.martin@email.com',
-    firstName: 'Marie',
-    lastName: 'Martin',
-    role: 'ADMIN',
-    isActive: true,
-    createdAt: new Date('2024-02-01'),
-    updatedAt: new Date('2024-03-12'),
-    lastLoginAt: new Date('2024-03-15'),
-  },
-  {
-    id: '3',
-    email: 'pierre.durand@email.com',
-    firstName: 'Pierre',
-    lastName: 'Durand',
-    role: 'USER',
-    isActive: false,
-    createdAt: new Date('2024-02-20'),
-    updatedAt: new Date('2024-03-01'),
-    lastLoginAt: new Date('2024-02-28'),
-  },
-  {
-    id: '4',
-    email: 'sophie.bernard@email.com',
-    firstName: 'Sophie',
-    lastName: 'Bernard',
-    role: 'USER',
-    isActive: true,
-    createdAt: new Date('2024-03-01'),
-    updatedAt: new Date('2024-03-13'),
-    lastLoginAt: new Date('2024-03-13'),
-  },
-];
-
 export default function AdminUsersPage() {
-  const { users, setUsers } = useUsersStore();
+  const { users, fetchUsers, updateUser, isLoading } = useUsersApi();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    // Load mock data
-    setUsers(MOCK_USERS);
-  }, [setUsers]);
+    fetchUsers();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Filter users based on search term
@@ -87,13 +38,11 @@ export default function AdminUsersPage() {
     setSearchTerm(event.target.value);
   };
 
-  const toggleUserStatus = (userId: string) => {
-    const updatedUsers = users.map(user =>
-      user.id === userId 
-        ? { ...user, isActive: !user.isActive, updatedAt: new Date() }
-        : user
-    );
-    setUsers(updatedUsers);
+  const toggleUserStatus = async (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (user) {
+      await updateUser(userId, { isActive: !user.isActive });
+    }
   };
 
   return (
@@ -159,7 +108,11 @@ export default function AdminUsersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {filteredUsers.length === 0 ? (
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Chargement des utilisateurs...</p>
+                  </div>
+                ) : filteredUsers.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-gray-500">
                       {searchTerm ? 'Aucun utilisateur trouvé' : 'Aucun utilisateur'}

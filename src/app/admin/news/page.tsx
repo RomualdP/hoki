@@ -4,50 +4,20 @@ import { useState, useEffect } from 'react';
 import { Layout } from '../../../components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../components/ui';
 import { Input } from '../../../components/forms';
-import { useNewsStore } from '../../../store';
+import { useNewsApi } from '../../../features/news/hooks/useNewsApi';
 import { formatDate } from '../../../utils';
 import Link from 'next/link';
-import type { News, NewsCreateData } from '../../../types';
+import type { News } from '../../../types';
 
-// Mock initial news data (same as homepage)
-const MOCK_INITIAL_NEWS: News[] = [
-  {
-    id: '1',
-    title: 'Nouveau tournoi d\'été 2024',
-    content: 'Nous sommes ravis d\'annoncer l\'ouverture des inscriptions pour le grand tournoi d\'été 2024. Les équipes peuvent s\'inscrire dès maintenant.',
-    excerpt: 'Inscriptions ouvertes pour le tournoi d\'été 2024',
-    author: 'Admin VolleyApp',
-    isPublished: true,
-    publishedAt: new Date('2024-03-15T10:00:00'),
-    createdAt: new Date('2024-03-15T09:00:00'),
-    updatedAt: new Date('2024-03-15T10:00:00'),
-  },
-  {
-    id: '2',
-    title: 'Mise à jour des règles de jeu',
-    content: 'Quelques ajustements ont été apportés aux règles officielles. Consultez le règlement complet sur notre site.',
-    excerpt: 'Nouvelles règles en vigueur',
-    author: 'Commission Technique',
-    isPublished: true,
-    publishedAt: new Date('2024-03-10T14:30:00'),
-    createdAt: new Date('2024-03-10T14:00:00'),
-    updatedAt: new Date('2024-03-10T14:30:00'),
-  },
-  {
-    id: '3',
-    title: 'Résultats du championnat régional',
-    content: 'Félicitations à toutes les équipes participantes ! Retrouvez tous les résultats et le classement final.',
-    excerpt: 'Résultats du championnat régional disponibles',
-    author: 'Organisation',
-    isPublished: true,
-    publishedAt: new Date('2024-03-05T18:00:00'),
-    createdAt: new Date('2024-03-05T17:30:00'),
-    updatedAt: new Date('2024-03-05T18:00:00'),
-  },
-];
+interface NewsCreateData {
+  readonly title: string;
+  readonly content: string;
+  readonly excerpt?: string;
+  readonly isPublished: boolean;
+}
 
 export default function AdminNewsPage() {
-  const { news, setNews, addNews, updateNews, deleteNews } = useNewsStore();
+  const { news, fetchNews, createNews, updateNews, deleteNews } = useNewsApi();
   const [isCreating, setIsCreating] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
   const [formData, setFormData] = useState<NewsCreateData>({
@@ -58,11 +28,8 @@ export default function AdminNewsPage() {
   });
 
   useEffect(() => {
-    // Load mock data if empty
-    if (news.length === 0) {
-      setNews(MOCK_INITIAL_NEWS);
-    }
-  }, [news.length, setNews]);
+    fetchNews();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetForm = () => {
     setFormData({
@@ -82,39 +49,35 @@ export default function AdminNewsPage() {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.title.trim() || !formData.content.trim()) {
       return;
     }
 
-    const now = new Date();
-
     if (editingNews) {
       // Update existing news
-      const updatedNews: News = {
-        ...editingNews,
-        ...formData,
-        updatedAt: now,
-        publishedAt: formData.isPublished ? (editingNews.publishedAt || now) : undefined,
-      };
-      updateNews(editingNews.id, updatedNews);
+      const success = await updateNews(editingNews.id, {
+        title: formData.title,
+        content: formData.content,
+        excerpt: formData.excerpt,
+        isPublished: formData.isPublished,
+      });
+      if (success) {
+        resetForm();
+      }
     } else {
       // Create new news
-      const newNews: News = {
-        id: `news-${Date.now()}`,
+      const success = await createNews({
         title: formData.title,
         content: formData.content,
         excerpt: formData.excerpt,
         author: 'Admin VolleyApp',
-        isPublished: formData.isPublished || false,
-        createdAt: now,
-        updatedAt: now,
-        publishedAt: formData.isPublished ? now : undefined,
-      };
-      addNews(newNews);
+        isPublished: formData.isPublished,
+      });
+      if (success) {
+        resetForm();
+      }
     }
-
-    resetForm();
   };
 
   const handleEdit = (newsItem: News) => {
@@ -128,20 +91,16 @@ export default function AdminNewsPage() {
     setIsCreating(true);
   };
 
-  const handleDelete = (newsId: string) => {
+  const handleDelete = async (newsId: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette actualité ?')) {
-      deleteNews(newsId);
+      await deleteNews(newsId);
     }
   };
 
-  const togglePublishStatus = (newsItem: News) => {
-    const updatedNews = {
-      ...newsItem,
+  const togglePublishStatus = async (newsItem: News) => {
+    await updateNews(newsItem.id, {
       isPublished: !newsItem.isPublished,
-      updatedAt: new Date(),
-      publishedAt: !newsItem.isPublished ? new Date() : undefined,
-    };
-    updateNews(newsItem.id, updatedNews);
+    });
   };
 
   return (

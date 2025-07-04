@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Layout } from '../../components/layout';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui';
 import { Input, Button } from '../../components';
-import { useAuthStore } from '../../store';
+import { useAuthApi } from '../../features/auth/hooks/useAuthApi';
 import { ROUTES } from '../../constants';
 
 interface LoginFormData {
@@ -22,7 +22,7 @@ interface LoginFormErrors {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { loginUser, setLoading, isLoading, error } = useAuthStore();
+  const { login, isLoading, error, clearError } = useAuthApi();
   
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -58,6 +58,11 @@ export default function LoginPage() {
     if (errors[name as keyof LoginFormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
+    
+    // Clear API error when user starts typing
+    if (error) {
+      clearError();
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -65,25 +70,19 @@ export default function LoginPage() {
     
     if (!validateForm()) return;
 
-    setLoading(true);
-    
-    // Simulate API call for login
-    setTimeout(() => {
-      // Mock successful login with user data
-      const mockUser = {
-        id: '1',
+    try {
+      const response = await login({
         email: formData.email,
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'USER' as const,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      
-      loginUser(mockUser);
-      router.push(ROUTES.MATCHES);
-    }, 1000);
+        password: formData.password,
+      });
+
+      if (response) {
+        router.push(ROUTES.MATCHES);
+      }
+    } catch (error) {
+      // Error is handled by the useAuthApi hook
+      console.error('Login failed:', error);
+    }
   };
 
   return (

@@ -3,60 +3,23 @@
 import { useEffect } from 'react';
 import { Layout } from '../components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../components/ui';
-import { useNewsStore, useMatchesStore } from '../store';
+import { useNewsApi } from '../features/news/hooks/useNewsApi';
+import { useMatchesApi } from '../features/matches/hooks/useMatchesApi';
 import { formatDate } from '../utils';
 import { ROUTES } from '../constants';
 import Link from 'next/link';
 import type { News, Match } from '../types';
 
-// Mock data for news
-const MOCK_NEWS: News[] = [
-  {
-    id: '1',
-    title: 'Nouveau tournoi d\'été 2024',
-    content: 'Nous sommes ravis d\'annoncer l\'ouverture des inscriptions pour le grand tournoi d\'été 2024. Les équipes peuvent s\'inscrire dès maintenant.',
-    excerpt: 'Inscriptions ouvertes pour le tournoi d\'été 2024',
-    author: 'Admin VolleyApp',
-    isPublished: true,
-    publishedAt: new Date('2024-03-15T10:00:00'),
-    createdAt: new Date('2024-03-15T09:00:00'),
-    updatedAt: new Date('2024-03-15T10:00:00'),
-  },
-  {
-    id: '2',
-    title: 'Mise à jour des règles de jeu',
-    content: 'Quelques ajustements ont été apportés aux règles officielles. Consultez le règlement complet sur notre site.',
-    excerpt: 'Nouvelles règles en vigueur',
-    author: 'Commission Technique',
-    isPublished: true,
-    publishedAt: new Date('2024-03-10T14:30:00'),
-    createdAt: new Date('2024-03-10T14:00:00'),
-    updatedAt: new Date('2024-03-10T14:30:00'),
-  },
-  {
-    id: '3',
-    title: 'Résultats du championnat régional',
-    content: 'Félicitations à toutes les équipes participantes ! Retrouvez tous les résultats et le classement final.',
-    excerpt: 'Résultats du championnat régional disponibles',
-    author: 'Organisation',
-    isPublished: true,
-    publishedAt: new Date('2024-03-05T18:00:00'),
-    createdAt: new Date('2024-03-05T17:30:00'),
-    updatedAt: new Date('2024-03-05T18:00:00'),
-  },
-];
-
 export default function HomePage() {
-  const { getLatestNews, setNews } = useNewsStore();
-  const { matches } = useMatchesStore();
+  const { news, fetchNews, isLoading: newsLoading } = useNewsApi();
+  const { matches, fetchMatches, isLoading: matchesLoading } = useMatchesApi();
 
   useEffect(() => {
-    // Load mock data
-    setNews(MOCK_NEWS);
-    // Matches are already loaded from the matches page
-  }, [setNews]);
+    fetchNews();
+    fetchMatches();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const latestNews = getLatestNews(3);
+  const latestNews = getLatestNews(news, 3);
   const nextMatch = getNextMatch(matches);
 
   return (
@@ -93,7 +56,13 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-6">
-                  {latestNews.length === 0 ? (
+                  {newsLoading ? (
+                    <Card>
+                      <CardContent className="text-center py-12">
+                        <p className="text-gray-500">Chargement des actualités...</p>
+                      </CardContent>
+                    </Card>
+                  ) : latestNews.length === 0 ? (
                     <Card>
                       <CardContent className="text-center py-12">
                         <p className="text-gray-500">Aucune actualité disponible</p>
@@ -115,7 +84,11 @@ export default function HomePage() {
                     <CardTitle>Prochain match</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {nextMatch ? (
+                    {matchesLoading ? (
+                      <p className="text-gray-500 text-center">
+                        Chargement...
+                      </p>
+                    ) : nextMatch ? (
                       <div className="space-y-3">
                         <div className="text-center">
                           <div className="flex items-center justify-center gap-2 text-sm font-medium">
@@ -208,6 +181,13 @@ function NewsCard({ news }: NewsCardProps) {
       </CardContent>
     </Card>
   );
+}
+
+function getLatestNews(allNews: News[], limit: number): News[] {
+  return allNews
+    .filter(news => news.isPublished)
+    .sort((a, b) => new Date(b.publishedAt!).getTime() - new Date(a.publishedAt!).getTime())
+    .slice(0, limit);
 }
 
 function getNextMatch(matches: Match[]): Match | null {

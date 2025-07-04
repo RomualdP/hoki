@@ -6,9 +6,8 @@ import Link from 'next/link';
 import { Layout } from '../../components/layout';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui';
 import { Input, Button } from '../../components';
-import { useAuthStore } from '../../store';
+import { useAuthApi } from '../../features/auth/hooks/useAuthApi';
 import { ROUTES } from '../../constants';
-import type { UserRole } from '../../types';
 
 interface RegisterFormData {
   firstName: string;
@@ -29,7 +28,7 @@ interface RegisterFormErrors {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { loginUser, setLoading, isLoading, error } = useAuthStore();
+  const { register, isLoading, error, clearError } = useAuthApi();
   
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: '',
@@ -88,6 +87,11 @@ export default function RegisterPage() {
     if (errors[name as keyof RegisterFormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
+    
+    // Clear API error when user starts typing
+    if (error) {
+      clearError();
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -95,25 +99,21 @@ export default function RegisterPage() {
     
     if (!validateForm()) return;
 
-    setLoading(true);
-    
-    // Simulate API call for registration
-    setTimeout(() => {
-      // Mock successful registration with user data
-      const newUser = {
-        id: `user_${Date.now()}`,
+    try {
+      const response = await register({
         email: formData.email,
+        password: formData.password,
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
-        role: 'USER' as UserRole,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      
-      loginUser(newUser);
-      router.push(ROUTES.MATCHES);
-    }, 1500);
+      });
+
+      if (response) {
+        router.push(ROUTES.MATCHES);
+      }
+    } catch (error) {
+      // Error is handled by the useAuthApi hook
+      console.error('Registration failed:', error);
+    }
   };
 
   return (

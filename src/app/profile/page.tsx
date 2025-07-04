@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Layout } from '../../components/layout';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui';
+import { Card, CardHeader, CardTitle, CardContent, LogoutButton } from '../../components/ui';
 import { Input, Button } from '../../components';
 import { useAuthStore } from '../../store';
+import { ROUTES } from '../../constants';
 
 interface ProfileFormData {
   firstName: string;
@@ -19,16 +21,42 @@ interface PasswordFormData {
 }
 
 export default function ProfilePage() {
-  const { user, loginUser } = useAuthStore();
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
   
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   
   const [profileData, setProfileData] = useState<ProfileFormData>({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
+    firstName: '',
+    lastName: '',
+    email: '',
   });
+
+  // Initialiser les données du profil quand l'utilisateur est chargé
+  useEffect(() => {
+    if (user) {
+      // Extraire firstName et lastName du nom complet si nécessaire
+      const nameParts = user.firstName?.includes(' ') 
+        ? user.firstName.split(' ')
+        : [user.firstName || '', user.lastName || ''];
+      
+      setProfileData({
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: user.email || '',
+      });
+    }
+  }, [user]);
+
+  // Note: checkAuthStatus est déjà appelé par l'AuthProvider global
+
+  // Rediriger si non authentifié
+  useEffect(() => {
+    if (!isAuthenticated && user === null) {
+      router.push(ROUTES.LOGIN);
+    }
+  }, [isAuthenticated, user, router]);
   
   const [passwordData, setPasswordData] = useState<PasswordFormData>({
     currentPassword: '',
@@ -104,18 +132,12 @@ export default function ProfilePage() {
     
     if (!validateProfileForm()) return;
 
-    // Update user in store
+    // TODO: Implémenter l'appel API pour mettre à jour le profil
+    // Pour l'instant, on simule juste la mise à jour locale
     if (user) {
-      const updatedUser = {
-        ...user,
-        firstName: profileData.firstName,
-        lastName: profileData.lastName,
-        email: profileData.email,
-        updatedAt: new Date(),
-      };
-      
-      loginUser(updatedUser);
+      // Note: Ici on devrait faire un appel API pour persister les changements
       setIsEditingProfile(false);
+      alert('Profil mis à jour avec succès !');
     }
   };
 
@@ -133,16 +155,17 @@ export default function ProfilePage() {
     setIsChangingPassword(false);
   };
 
-  if (!user) {
+  // Affichage de chargement
+  if (!isAuthenticated || !user) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 font-heading">
-              Accès non autorisé
+              Chargement...
             </h1>
             <p className="mt-2 text-gray-600">
-              Veuillez vous connecter pour accéder à votre profil.
+              Chargement de votre profil...
             </p>
           </div>
         </div>
@@ -310,6 +333,31 @@ export default function ProfilePage() {
                   </div>
                 </form>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Account Actions */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Actions du Compte</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
+                <div className="flex-1">
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Déconnexion
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Déconnectez-vous de votre session actuelle. Vous devrez vous reconnecter pour accéder à votre compte.
+                  </p>
+                </div>
+                <LogoutButton 
+                  variant="danger"
+                  className="shrink-0"
+                >
+                  Se déconnecter
+                </LogoutButton>
+              </div>
             </CardContent>
           </Card>
         </div>

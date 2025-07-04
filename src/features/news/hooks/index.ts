@@ -1,0 +1,1 @@
+export { useNewsApi } from './useNewsApi'; 

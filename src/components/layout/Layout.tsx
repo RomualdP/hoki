@@ -1,7 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '../../constants';
+import { useAuthStore } from '../../store';
+import { useAuthApi } from '../../features/auth/hooks';
 
 interface LayoutProps {
   readonly children: ReactNode;
@@ -20,6 +25,24 @@ export const Layout = ({ children, showNavigation = true }: LayoutProps) => {
 };
 
 const Navigation = () => {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuthStore();
+  const { logout, isLoading } = useAuthApi();
+
+  const handleLogout = async () => {
+    try {
+      const success = await logout();
+      if (success) {
+        router.push(ROUTES.HOME);
+      } else {
+        router.push(ROUTES.HOME);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      router.push(ROUTES.HOME);
+    }
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-neutral-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,23 +73,44 @@ const Navigation = () => {
               <NavigationLink href={ROUTES.MATCHES}>
                 Matchs
               </NavigationLink>
-              <NavigationLink href={ROUTES.PROFILE}>
-                Profil
-              </NavigationLink>
-              <NavigationLink href={ROUTES.ADMIN.BASE}>
-                Admin
-              </NavigationLink>
+              {isAuthenticated && (
+                <>
+                  <NavigationLink href={ROUTES.PROFILE}>
+                    Profil
+                  </NavigationLink>
+                  <NavigationLink href={ROUTES.ADMIN.BASE}>
+                    Admin
+                  </NavigationLink>
+                </>
+              )}
             </div>
           </div>
 
           <div className="hidden md:block">
             <div className="ml-4 flex items-center md:ml-6">
-              <NavigationLink href={ROUTES.LOGIN}>
-                Connexion
-              </NavigationLink>
-              <NavigationLink href={ROUTES.REGISTER}>
-                Inscription
-              </NavigationLink>
+              {isAuthenticated && user ? (
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-neutral-700">
+                    Bonjour, <span className="font-medium">{user.firstName}</span>
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    disabled={isLoading}
+                    className="text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? 'Déconnexion...' : 'Déconnexion'}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <NavigationLink href={ROUTES.LOGIN}>
+                    Connexion
+                  </NavigationLink>
+                  <NavigationLink href={ROUTES.REGISTER}>
+                    Inscription
+                  </NavigationLink>
+                </>
+              )}
             </div>
           </div>
 

@@ -22,7 +22,7 @@ export const useTeamsApi = () => {
     } finally {
       store.setLoading(false);
     }
-  }, [teamsApi, store]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const createTeam = useCallback(async (teamData: Omit<Team, 'id' | 'createdAt' | 'updatedAt'>) => {
     store.setLoading(true);
@@ -41,7 +41,7 @@ export const useTeamsApi = () => {
     }
     
     return null;
-  }, [teamApi, store]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateTeam = useCallback(async (teamId: string, updates: Partial<Team>) => {
     store.setLoading(true);
@@ -60,7 +60,7 @@ export const useTeamsApi = () => {
     }
     
     return null;
-  }, [teamApi, store]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const deleteTeam = useCallback(async (teamId: string) => {
     store.setLoading(true);
@@ -79,7 +79,7 @@ export const useTeamsApi = () => {
     }
     
     return false;
-  }, [teamApi, store]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     // Store state
