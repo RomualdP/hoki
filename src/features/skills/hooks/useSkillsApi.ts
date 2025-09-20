@@ -17,8 +17,11 @@ export const useSkillsApi = () => {
         store.setSkills(skills);
       }
     } catch (error) {
+      console.error('Error fetching skills:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors du chargement des compétences';
       store.setError(errorMessage);
+      // Continue with empty skills array instead of crashing
+      store.setSkills([]);
     } finally {
       store.setLoading(false);
     }

@@ -3,7 +3,6 @@ export interface Skill {
   readonly name: string;
   readonly description?: string;
   readonly category: SkillCategory;
-  readonly level: SkillLevel;
   readonly isActive: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
@@ -19,14 +18,14 @@ export type SkillCategory =
   | 'TEAMWORK' 
   | 'LEADERSHIP';
 
-export type SkillLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+export type SkillLevel = number; // 1 to 10
 
 export interface UserSkill {
   readonly id: string;
   readonly userId: string;
   readonly skillId: string;
   readonly skill: Skill;
-  readonly level: SkillLevel;
+  readonly level: number;
   readonly experienceYears?: number;
   readonly notes?: string;
   readonly assessedBy?: string;
@@ -39,26 +38,24 @@ export interface SkillCreateData {
   readonly name: string;
   readonly description?: string;
   readonly category: SkillCategory;
-  readonly level: SkillLevel;
 }
 
 export interface SkillUpdateData {
   readonly name?: string;
   readonly description?: string;
   readonly category?: SkillCategory;
-  readonly level?: SkillLevel;
   readonly isActive?: boolean;
 }
 
 export interface UserSkillCreateData {
   readonly skillId: string;
-  readonly level: SkillLevel;
+  readonly level: number;
   readonly experienceYears?: number;
   readonly notes?: string;
 }
 
 export interface UserSkillUpdateData {
-  readonly level?: SkillLevel;
+  readonly level?: number;
   readonly experienceYears?: number;
   readonly notes?: string;
 } 
