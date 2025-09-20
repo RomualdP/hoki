@@ -30,7 +30,7 @@ export const useUserSkillsApi = () => {
 
   const addUserSkill = useCallback(async (userId: string, skillData: UserSkillCreateData) => {
     // Validate required fields
-    if (!skillData.skillId || !skillData.level) {
+    if (!skillData.skillId || skillData.level == null) {
       throw new Error('skillId and level are required');
     }
 
