@@ -311,7 +311,7 @@ export default function UserDetailPage() {
                         {skills.map((skill) => (
                           <SkillLevelCard
                             key={skill.id}
-                            skill={skill as Skill}
+                            skill={skill}
                             currentLevel={getUserSkillLevel(skill.id)}
                             isEditing={editingSkillId === skill.id}
                             onEdit={() => setEditingSkillId(skill.id)}
