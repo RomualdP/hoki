@@ -40,7 +40,7 @@ export function SkillLevelCard({
             <div className="flex items-center gap-2">
               <select
                 value={currentLevel.toString()}
-                onChange={(e) => onLevelChange(parseInt(e.target.value))}
+                onChange={(e) => onLevelChange(parseInt(e.target.value, 10))}
                 className="text-xs px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               >
                 {levelOptions.map((option) => (
