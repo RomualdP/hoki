@@ -12,7 +12,7 @@ import { useSkillsApi } from '../../../../features/skills/hooks/useSkillsApi';
 import { useUsersApi } from '../../../../features/users/hooks/useUsersApi';
 import { formatDate } from '../../../../utils';
 import Link from 'next/link';
-import type { User, Skill, UserSkillCreateData, UserSkillUpdateData } from '../../../../types';
+import type { User, UserSkillCreateData, UserSkillUpdateData } from '../../../../types';
 import { SKILL_RATING_OPTIONS } from '../../../../constants/skills';
 
 
