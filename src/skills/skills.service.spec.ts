@@ -23,7 +23,6 @@ describe('SkillsService', () => {
     name: 'Service ace',
     description: 'Excellent service technique',
     category: 'SERVING',
-    level: 5,
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -87,7 +86,6 @@ describe('SkillsService', () => {
         page: 1,
         limit: 10,
         category: 'SERVING',
-        level: 5,
         isActive: 'true',
       };
 
@@ -99,7 +97,6 @@ describe('SkillsService', () => {
       expect(mockPrismaService.skill.findMany).toHaveBeenCalledWith({
         where: {
           category: 'SERVING',
-          level: 5,
           isActive: true,
         },
         skip: 0,
@@ -178,7 +175,6 @@ describe('SkillsService', () => {
         name: 'New Skill',
         description: 'New skill description',
         category: 'ATTACK',
-        level: 3,
         isActive: true,
       };
 
@@ -203,7 +199,7 @@ describe('SkillsService', () => {
     it('should update an existing skill', async () => {
       const updateSkillDto: UpdateSkillDto = {
         name: 'Updated Skill',
-        level: 4,
+        isActive: false,
       };
 
       mockPrismaService.skill.findUnique.mockResolvedValue(mockSkill);
@@ -216,7 +212,7 @@ describe('SkillsService', () => {
       const result = await service.update('1', updateSkillDto);
 
       expect(result.name).toBe(updateSkillDto.name);
-      expect(result.level).toBe(updateSkillDto.level);
+      expect(result.isActive).toBe(updateSkillDto.isActive);
       expect(mockPrismaService.skill.update).toHaveBeenCalledWith({
         where: { id: '1' },
         data: updateSkillDto,

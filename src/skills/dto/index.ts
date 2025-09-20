@@ -10,7 +10,6 @@ export class CreateSkillDto {
     | 'BLOCKING'
     | 'TEAMWORK'
     | 'LEADERSHIP';
-  readonly level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
   readonly isActive?: boolean;
 }
 
@@ -26,7 +25,6 @@ export class UpdateSkillDto {
     | 'BLOCKING'
     | 'TEAMWORK'
     | 'LEADERSHIP';
-  readonly level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
   readonly isActive?: boolean;
 }
 
@@ -42,6 +40,5 @@ export class QuerySkillsDto {
     | 'BLOCKING'
     | 'TEAMWORK'
     | 'LEADERSHIP';
-  readonly level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
   readonly isActive?: string;
 }

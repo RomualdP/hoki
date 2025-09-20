@@ -5,7 +5,6 @@ import { CreateSkillDto, UpdateSkillDto, QuerySkillsDto } from './dto';
 
 describe('SkillsController', () => {
   let controller: SkillsController;
-  let service: SkillsService;
 
   const mockSkillsService = {
     findAll: jest.fn(),
@@ -20,7 +19,6 @@ describe('SkillsController', () => {
     name: 'Service ace',
     description: 'Excellent service technique',
     category: 'SERVING',
-    level: 5,
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -38,7 +36,6 @@ describe('SkillsController', () => {
     }).compile();
 
     controller = module.get<SkillsController>(SkillsController);
-    service = module.get<SkillsService>(SkillsService);
   });
 
   afterEach(() => {
@@ -71,7 +68,6 @@ describe('SkillsController', () => {
         page: 1,
         limit: 10,
         category: 'SERVING',
-        level: 5,
         isActive: 'true',
       };
 
@@ -101,7 +97,6 @@ describe('SkillsController', () => {
         name: 'New Skill',
         description: 'New skill description',
         category: 'ATTACK',
-        level: 3,
         isActive: true,
       };
 
@@ -126,7 +121,7 @@ describe('SkillsController', () => {
       const skillId = '1';
       const updateSkillDto: UpdateSkillDto = {
         name: 'Updated Skill',
-        level: 4,
+        isActive: false,
       };
 
       const expectedResult = {
@@ -140,7 +135,10 @@ describe('SkillsController', () => {
       const result = await controller.update(skillId, updateSkillDto);
 
       expect(result).toEqual(expectedResult);
-      expect(mockSkillsService.update).toHaveBeenCalledWith(skillId, updateSkillDto);
+      expect(mockSkillsService.update).toHaveBeenCalledWith(
+        skillId,
+        updateSkillDto,
+      );
     });
   });
 

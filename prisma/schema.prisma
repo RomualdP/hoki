@@ -179,7 +179,6 @@ model Skill {
   name        String        @unique
   description String?
   category    SkillCategory
-  level       SkillLevel
   isActive    Boolean       @default(true)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -200,18 +199,11 @@ enum SkillCategory {
   LEADERSHIP
 }
 
-enum SkillLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-  EXPERT
-}
-
 model UserSkill {
   id              String     @id @default(cuid())
   userId          String
   skillId         String
-  level           SkillLevel
+  level           Int        @default(5)
   experienceYears Int?
   notes           String?
   assessedBy      String?

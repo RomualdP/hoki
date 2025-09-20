@@ -182,7 +182,7 @@ export class NewsService {
   async updateComment(commentId: string, commentData: UpdateNewsCommentDto) {
     return this.prisma.newsComment.update({
       where: { id: commentId },
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
       data: commentData,
       include: {
         user: {

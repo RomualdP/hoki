@@ -13,10 +13,13 @@ describe('AuthService', () => {
   const mockUser: User = {
     id: '1',
     email: 'test@example.com',
-    name: 'Test User',
+    firstName: 'Test',
+    lastName: 'User',
+    avatar: null,
+    role: 'USER',
+    isActive: true,
+    lastLoginAt: null,
     password: 'hashedPassword',
-    emailVerified: null,
-    image: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -99,6 +102,7 @@ describe('AuthService', () => {
       const signAsyncMock = jest.fn().mockResolvedValue('mock_token');
       jwtService.signAsync = signAsyncMock;
 
+      // @ts-expect-error mockUserWithoutPassword is not defined
       const result = await service.login(mockUserWithoutPassword);
       expect(result).toEqual({ access_token: 'mock_token' });
 

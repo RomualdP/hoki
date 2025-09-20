@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import {
+  UserNotFoundException,
+  UserProfileNotFoundException,
+} from '../common/exceptions/user.exceptions';
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -73,26 +78,36 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: {
-        profile: true,
-        statistics: true,
-        skills: {
-          include: { skill: true },
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+        include: {
+          profile: true,
+          statistics: true,
+          skills: {
+            include: { skill: true },
+          },
+          achievements: true,
+          teamMemberships: {
+            include: { team: true },
+          },
         },
-        achievements: true,
-        teamMemberships: {
-          include: { team: true },
-        },
-      },
-    });
+      });
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      if (!user) {
+        throw new UserNotFoundException(id);
+      }
+
+      return user;
+    } catch (error) {
+      if (error instanceof UserNotFoundException) {
+        throw error;
+      }
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw error; // Le filtre global gérera les erreurs Prisma
+      }
+      throw error;
     }
-
-    return user;
   }
 
   async getProfile(id: string) {
@@ -114,37 +129,47 @@ export class UsersService {
     });
 
     if (!profile) {
-      throw new NotFoundException(`Profile for user ${id} not found`);
+      throw new UserProfileNotFoundException(id);
     }
 
     return profile;
   }
 
   async updateProfile(id: string, updateProfileDto: UpdateProfileDto) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+    try {
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) {
+        throw new UserNotFoundException(id);
+      }
 
-    return this.prisma.userProfile.upsert({
-      where: { userId: id },
-      update: updateProfileDto,
-      create: {
-        userId: id,
-        ...updateProfileDto,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatar: true,
+      return this.prisma.userProfile.upsert({
+        where: { userId: id },
+        update: updateProfileDto,
+        create: {
+          userId: id,
+          ...updateProfileDto,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      if (error instanceof UserNotFoundException) {
+        throw error;
+      }
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw error; // Le filtre global gérera les erreurs Prisma
+      }
+      throw error;
+    }
   }
 
   async getStatistics(id: string) {
@@ -177,10 +202,25 @@ export class UsersService {
   }
 
   async addSkill(id: string, skillData: AddSkillDto) {
-    return this.prisma.userSkill.create({
-      data: {
+    return this.prisma.userSkill.upsert({
+      where: {
+        userId_skillId: {
+          userId: id,
+          skillId: skillData.skillId,
+        },
+      },
+      update: {
+        level: skillData.level,
+        experienceYears: skillData.experienceYears,
+        notes: skillData.notes,
+        updatedAt: new Date(),
+      },
+      create: {
         userId: id,
-        ...skillData,
+        skillId: skillData.skillId,
+        level: skillData.level,
+        experienceYears: skillData.experienceYears,
+        notes: skillData.notes,
       },
       include: { skill: true },
     });
@@ -225,28 +265,48 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+    try {
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) {
+        throw new UserNotFoundException(id);
+      }
 
-    return this.prisma.user.update({
-      where: { id },
-      data: updateUserDto,
-      include: {
-        profile: true,
-        statistics: true,
-      },
-    });
+      return this.prisma.user.update({
+        where: { id },
+        data: updateUserDto,
+        include: {
+          profile: true,
+          statistics: true,
+        },
+      });
+    } catch (error) {
+      if (error instanceof UserNotFoundException) {
+        throw error;
+      }
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw error; // Le filtre global gérera les erreurs Prisma
+      }
+      throw error;
+    }
   }
 
   async remove(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+    try {
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) {
+        throw new UserNotFoundException(id);
+      }
 
-    return this.prisma.user.delete({ where: { id } });
+      return this.prisma.user.delete({ where: { id } });
+    } catch (error) {
+      if (error instanceof UserNotFoundException) {
+        throw error;
+      }
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw error; // Le filtre global gérera les erreurs Prisma
+      }
+      throw error;
+    }
   }
 
   async findByEmail(email: string) {

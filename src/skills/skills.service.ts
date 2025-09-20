@@ -7,13 +7,12 @@ export class SkillsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(query: QuerySkillsDto) {
-    const { page = 1, limit = 10, category, level, isActive } = query;
+    const { page = 1, limit = 10, category, isActive } = query;
     const skip = (Number(page) - 1) * Number(limit);
 
     const where: Record<string, unknown> = {};
 
     if (category) where.category = category;
-    if (level) where.level = level;
     if (isActive !== undefined) where.isActive = isActive === 'true';
 
     const [skills, total] = await Promise.all([

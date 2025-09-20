@@ -35,13 +35,13 @@ export class UpdateProfileDto {
 
 export class CreateUserSkillDto {
   readonly skillId: string;
-  readonly level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+  readonly level: number;
   readonly experienceYears?: number;
   readonly notes?: string;
 }
 
 export class UpdateUserSkillDto {
-  readonly level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+  readonly level?: number;
   readonly experienceYears?: number;
   readonly notes?: string;
 }
@@ -57,13 +57,13 @@ export class QueryUsersDto {
 
 export class AddSkillDto {
   skillId: string;
-  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+  level: number;
   experienceYears?: number;
   notes?: string;
 }
 
 export class UpdateSkillDto {
-  level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+  level?: number;
   experienceYears?: number;
   notes?: string;
 }
