@@ -118,7 +118,11 @@ export const useUserSkillsApi = () => {
       experienceYears?: number;
     } = {};
 
-    if (updates.level !== undefined && typeof updates.level === 'number' && updates.level >= 0) {
+    if (
+      updates.level !== undefined &&
+      typeof updates.level === 'number' &&
+      (updates.level === 0 || (updates.level >= 1 && updates.level <= 10))
+    ) {
       cleanUpdates.level = updates.level;
     }
 
