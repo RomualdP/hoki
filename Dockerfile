@@ -1,5 +1,7 @@
 FROM node:22-alpine AS builder
 
+RUN apk add --no-cache ca-certificates
+
 WORKDIR /app
 
 COPY package.json .
@@ -11,6 +13,8 @@ RUN npx prisma generate
 RUN yarn build
 
 FROM node:22-alpine AS production
+
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
