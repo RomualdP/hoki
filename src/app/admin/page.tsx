@@ -132,7 +132,7 @@ function AdminCard({ title, description, icon, href, actions }: AdminCardProps) 
         <p className="text-gray-600 text-sm">
           {description}
         </p>
-        <div className="space-y-2">
+        <div className="flex flex-col space-y-2">
           {actions.map((action, index) => (
             <Link key={index} href={href}>
               <Button 
