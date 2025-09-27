@@ -40,7 +40,13 @@ else
 fi
 
 yarn lint
-yarn test
+if ! yarn test; then
+  if [ "${PR_ALLOW_TEST_FAILURE:-}" = "1" ]; then
+    echo "Tests failed but continuing [WARN_TESTS_FAILED]"
+  else
+    exit 1
+  fi
+fi
 yarn build
 
 git push -u origin "$BRANCH_NAME"
