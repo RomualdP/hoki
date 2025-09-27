@@ -7,6 +7,7 @@ BASE_BRANCH=$(git remote show origin 2>/dev/null | awk '/HEAD branch/ {print $NF
 if [ -z "${BASE_BRANCH:-}" ]; then BASE_BRANCH=main; fi
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 TEMPLATE_FILE=".github/pull_request_template.md"
+GENERATOR_SCRIPT="$(cd "$(dirname "$0")/../.." && pwd)/.cursor/COMMANDS/generate-pr-body.sh"
 
 function gh_pr_url() {
   local head_branch="$1"
@@ -19,6 +20,11 @@ function open_pr() {
   local title="${PR_TITLE:-}"
   if [ -z "$title" ]; then title=$(git log -1 --pretty=%s || echo "$head_branch"); fi
   if command -v gh >/dev/null 2>&1; then
+    if [ "${PR_AUTOFILL:-}" = "1" ] && [ -x "$GENERATOR_SCRIPT" ]; then
+      BODY_CONTENT=$("$GENERATOR_SCRIPT" "$(pwd)" | sed 's/\r$//')
+      gh pr create --base "$base_branch" --head "$head_branch" --title "$title" --body "$BODY_CONTENT"
+      return
+    fi
     if [ -f "$TEMPLATE_FILE" ]; then
       echo "Creating PR with template file..."
       gh pr create --base "$base_branch" --head "$head_branch" --title "$title" --body-file "$TEMPLATE_FILE"
@@ -34,6 +40,11 @@ function open_pr() {
       local repo="${BASH_REMATCH[2]}"
       echo "GitHub CLI not found. Open this URL to create PR (template will auto-apply):"
       echo "https://github.com/$owner/$repo/compare/$base_branch...$head_branch?expand=1"
+      if [ "${PR_AUTOFILL:-}" = "1" ] && [ -x "$GENERATOR_SCRIPT" ]; then
+        echo
+        echo "---- Suggested PR body (copy/paste) ----"
+        "$GENERATOR_SCRIPT" "$(pwd)"
+      fi
     else
       echo "GitHub CLI not found and remote not detected. Create PR manually."
     fi
@@ -54,28 +65,19 @@ yarn build
 
 git push -u origin "$BRANCH_NAME"
 
-if command -v gh >/dev/null 2>&1; then
-  STATE=$(gh pr view "$BRANCH_NAME" --state all --json state -q .state 2>/dev/null || echo "")
-  if [ "$STATE" = "OPEN" ]; then
-    gh_pr_url "$BRANCH_NAME" && exit 0
+STATE=$(command -v gh >/dev/null 2>&1 && gh pr view "$BRANCH_NAME" --state all --json state -q .state 2>/dev/null || echo "")
+if [ "$STATE" = "OPEN" ]; then
+  gh_pr_url "$BRANCH_NAME" && exit 0
+fi
+if [ "$STATE" = "CLOSED" ] || [ "$STATE" = "MERGED" ]; then
+  if [ "$STATE" = "CLOSED" ] && [ "${PR_REUSE_BRANCH:-}" = "1" ]; then
+    NUM=$(gh pr view "$BRANCH_NAME" --state all --json number -q .number 2>/dev/null || echo "")
+    if [ -n "$NUM" ]; then gh pr reopen "$NUM" && gh_pr_url "$BRANCH_NAME" && exit 0; fi
   fi
-  if [ "$STATE" = "CLOSED" ] || [ "$STATE" = "MERGED" ]; then
-    if [ "$STATE" = "CLOSED" ] && [ "${PR_REUSE_BRANCH:-}" = "1" ]; then
-      NUM=$(gh pr view "$BRANCH_NAME" --state all --json number -q .number 2>/dev/null || echo "")
-      if [ -n "$NUM" ]; then gh pr reopen "$NUM" && gh_pr_url "$BRANCH_NAME" && exit 0; fi
-    fi
-    NEW_BRANCH="${BRANCH_NAME}-$(date +%Y%m%d-%H%M%S)"
-    git checkout -b "$NEW_BRANCH" "$BRANCH_NAME"
-    git push -u origin "$NEW_BRANCH"
-    BRANCH_NAME="$NEW_BRANCH"
-  fi
-else
-  if [ "${PR_FORCE_NEW_BRANCH:-}" = "1" ]; then
-    NEW_BRANCH="${BRANCH_NAME}-$(date +%Y%m%d-%H%M%S)"
-    git checkout -b "$NEW_BRANCH" "$BRANCH_NAME"
-    git push -u origin "$NEW_BRANCH"
-    BRANCH_NAME="$NEW_BRANCH"
-  fi
+  NEW_BRANCH="${BRANCH_NAME}-$(date +%Y%m%d-%H%M%S)"
+  git checkout -b "$NEW_BRANCH" "$BRANCH_NAME"
+  git push -u origin "$NEW_BRANCH"
+  BRANCH_NAME="$NEW_BRANCH"
 fi
 
 open_pr "$BASE_BRANCH" "$BRANCH_NAME"
