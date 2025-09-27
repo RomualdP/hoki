@@ -8,22 +8,23 @@ if [ -z "${BASE_BRANCH:-}" ]; then BASE_BRANCH=main; fi
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 TEMPLATE_FILE=".github/pull_request_template.md"
 
+function gh_pr_url() {
+  local head_branch="$1"
+  gh pr view "$head_branch" --json url -q .url 2>/dev/null || true
+}
+
 function open_pr() {
   local base_branch="$1"
   local head_branch="$2"
   local title="${PR_TITLE:-}"
   if [ -z "$title" ]; then title=$(git log -1 --pretty=%s || echo "$head_branch"); fi
   if command -v gh >/dev/null 2>&1; then
-    if gh pr view "$head_branch" --json url -q .url >/dev/null 2>&1; then
-      gh pr view "$head_branch" --json url -q .url
+    if [ -f "$TEMPLATE_FILE" ]; then
+      echo "Creating PR with template file..."
+      gh pr create --base "$base_branch" --head "$head_branch" --title "$title" --body-file "$TEMPLATE_FILE"
     else
-      if [ -f "$TEMPLATE_FILE" ]; then
-        echo "Creating PR with template file..."
-        gh pr create --base "$base_branch" --head "$head_branch" --title "$title" --body-file "$TEMPLATE_FILE"
-      else
-        echo "Creating PR without template file..."
-        gh pr create --base "$base_branch" --head "$head_branch" --title "$title" --fill
-      fi
+      echo "Creating PR without template file..."
+      gh pr create --base "$base_branch" --head "$head_branch" --title "$title" --fill
     fi
   else
     local remote
@@ -52,4 +53,29 @@ yarn lint
 yarn build
 
 git push -u origin "$BRANCH_NAME"
+
+if command -v gh >/dev/null 2>&1; then
+  STATE=$(gh pr view "$BRANCH_NAME" --state all --json state -q .state 2>/dev/null || echo "")
+  if [ "$STATE" = "OPEN" ]; then
+    gh_pr_url "$BRANCH_NAME" && exit 0
+  fi
+  if [ "$STATE" = "CLOSED" ] || [ "$STATE" = "MERGED" ]; then
+    if [ "$STATE" = "CLOSED" ] && [ "${PR_REUSE_BRANCH:-}" = "1" ]; then
+      NUM=$(gh pr view "$BRANCH_NAME" --state all --json number -q .number 2>/dev/null || echo "")
+      if [ -n "$NUM" ]; then gh pr reopen "$NUM" && gh_pr_url "$BRANCH_NAME" && exit 0; fi
+    fi
+    NEW_BRANCH="${BRANCH_NAME}-$(date +%Y%m%d-%H%M%S)"
+    git checkout -b "$NEW_BRANCH" "$BRANCH_NAME"
+    git push -u origin "$NEW_BRANCH"
+    BRANCH_NAME="$NEW_BRANCH"
+  fi
+else
+  if [ "${PR_FORCE_NEW_BRANCH:-}" = "1" ]; then
+    NEW_BRANCH="${BRANCH_NAME}-$(date +%Y%m%d-%H%M%S)"
+    git checkout -b "$NEW_BRANCH" "$BRANCH_NAME"
+    git push -u origin "$NEW_BRANCH"
+    BRANCH_NAME="$NEW_BRANCH"
+  fi
+fi
+
 open_pr "$BASE_BRANCH" "$BRANCH_NAME"
