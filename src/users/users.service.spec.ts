@@ -72,7 +72,6 @@ describe('UsersService - Skills methods', () => {
       expect(result).toEqual(mockUserSkills);
       expect(mockPrismaService.userSkill.findMany).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
-        include: { skill: true },
         orderBy: { createdAt: 'desc' },
       });
     });
@@ -81,7 +80,7 @@ describe('UsersService - Skills methods', () => {
   describe('addSkill', () => {
     it('should add or update a skill for user', async () => {
       const addSkillDto: AddSkillDto = {
-        skillId: 'skill-1',
+        skill: 'ATTACK',
         level: 7,
         experienceYears: 3,
         notes: 'Good service',
@@ -94,9 +93,9 @@ describe('UsersService - Skills methods', () => {
       expect(result).toEqual(mockUserSkill);
       expect(mockPrismaService.userSkill.upsert).toHaveBeenCalledWith({
         where: {
-          userId_skillId: {
+          userId_skill: {
             userId: 'user-1',
-            skillId: 'skill-1',
+            skill: 'ATTACK',
           },
         },
         update: {
@@ -107,12 +106,11 @@ describe('UsersService - Skills methods', () => {
         },
         create: {
           userId: 'user-1',
-          skillId: 'skill-1',
+          skill: 'ATTACK',
           level: 7,
           experienceYears: 3,
           notes: 'Good service',
         },
-        include: { skill: true },
       });
     });
   });
@@ -134,20 +132,19 @@ describe('UsersService - Skills methods', () => {
 
       const result = await service.updateSkill(
         'user-1',
-        'skill-1',
+        'ATTACK',
         updateSkillDto,
       );
 
       expect(result).toEqual(updatedUserSkill);
       expect(mockPrismaService.userSkill.update).toHaveBeenCalledWith({
         where: {
-          userId_skillId: {
+          userId_skill: {
             userId: 'user-1',
-            skillId: 'skill-1',
+            skill: 'ATTACK',
           },
         },
         data: updateSkillDto,
-        include: { skill: true },
       });
     });
   });
@@ -156,14 +153,14 @@ describe('UsersService - Skills methods', () => {
     it('should remove a user skill', async () => {
       mockPrismaService.userSkill.delete.mockResolvedValue(mockUserSkill);
 
-      const result = await service.removeSkill('user-1', 'skill-1');
+      const result = await service.removeSkill('user-1', 'ATTACK');
 
       expect(result).toEqual(mockUserSkill);
       expect(mockPrismaService.userSkill.delete).toHaveBeenCalledWith({
         where: {
-          userId_skillId: {
+          userId_skill: {
             userId: 'user-1',
-            skillId: 'skill-1',
+            skill: 'ATTACK',
           },
         },
       });
