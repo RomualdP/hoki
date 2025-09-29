@@ -5,13 +5,14 @@ import { useParams } from 'next/navigation';
 import { Layout } from '../../../../components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../../components/ui';
 import { Input } from '../../../../components/forms';
+import { Select } from '../../../../components/forms/Select';
 import { SkillLevelCard } from '../../../../components/skills';
 import { useUsersStore } from '../../../../store';
 import { useUserSkillsApi } from '../../../../features/users/hooks/useUserSkillsApi';
 import { useUsersApi } from '../../../../features/users/hooks/useUsersApi';
-import { formatDate } from '../../../../utils';
+import { useUserProfileApi } from '../../../../features/users/hooks/useUserProfileApi';
 import Link from 'next/link';
-import type { User, UserSkillCreateData, UserSkillUpdateData, VolleyballSkill } from '../../../../types';
+import type { Gender, User, UserProfile, UserSkillCreateData, UserSkillUpdateData, VolleyballSkill } from '../../../../types';
 import { SKILL_RATING_OPTIONS } from '../../../../constants/skills';
 import { getAllSkillDefinitions } from '../../../../constants/volleyball-skills';
 
@@ -23,6 +24,7 @@ export default function UserDetailPage() {
   const { users } = useUsersStore();
   const skillDefinitions = getAllSkillDefinitions();
   const { fetchUserById } = useUsersApi();
+  const { fetchUserProfile, updateUserProfile } = useUserProfileApi();
   const {
     getUserSkills,
     fetchUserSkills,
@@ -34,7 +36,7 @@ export default function UserDetailPage() {
     clearError,
   } = useUserSkillsApi();
   
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User & { profile: UserProfile } | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editingSkillId, setEditingSkillId] = useState<VolleyballSkill | null>(null);
   
@@ -42,37 +44,47 @@ export default function UserDetailPage() {
     firstName: '',
     lastName: '',
     email: '',
+    gender: '' as '' | Gender,
   });
 
   const userSkills = getUserSkills(userId);
 
 
-  // Load user data when userId or users change
+  // Load user data when userId changes
+   
   useEffect(() => {
     const foundUser = users.find(u => u.id === userId);
     if (foundUser) {
-      setUser(foundUser);
+      setUser(foundUser as User & { profile: UserProfile });
       setProfileForm({
         firstName: foundUser.firstName,
         lastName: foundUser.lastName,
         email: foundUser.email,
+        gender: '' as '' | Gender,
       });
+      fetchUserProfile(foundUser.id).then((profile) => {
+        if (profile) setProfileForm(prev => ({ ...prev, gender: (profile.gender ?? '') as '' | Gender }));
+      }).catch(() => undefined);
     } else if (userId) {
       // If user not found in store, fetch from API
       fetchUserById(userId).then((fetchedUser) => {
         if (fetchedUser) {
-          setUser(fetchedUser);
+          setUser(fetchedUser as User & { profile: UserProfile });
           setProfileForm({
             firstName: fetchedUser.firstName,
             lastName: fetchedUser.lastName,
             email: fetchedUser.email,
+            gender: '' as '' | Gender,
           });
+          fetchUserProfile(fetchedUser.id).then((profile) => {
+            if (profile) setProfileForm(prev => ({ ...prev, gender: (profile.gender ?? '') as '' | Gender }));
+          }).catch(() => undefined);
         }
       }).catch(error => {
         console.error('Failed to fetch user:', error);
       });
     }
-  }, [userId, users, fetchUserById]);
+  }, [userId]);
 
   // Load user skills when userId changes
   useEffect(() => {
@@ -81,9 +93,11 @@ export default function UserDetailPage() {
     });
   }, [userId, fetchUserSkills]);  
 
-  const handleProfileSubmit = () => {
+  const handleProfileSubmit = async () => {
     if (!user) return;
-    
+    await updateUserProfile(user.id, {
+      gender: profileForm.gender || undefined,
+    });
     setIsEditingProfile(false);
   };
 
@@ -252,6 +266,7 @@ export default function UserDetailPage() {
                         {user.firstName} {user.lastName}
                       </h3>
                       <p className="text-sm text-gray-500">{user.email}</p>
+                      <p className="text-sm text-gray-500">{user.profile?.gender}</p>
                     </div>
 
                     {isEditingProfile ? (
@@ -262,7 +277,7 @@ export default function UserDetailPage() {
                         onCancel={() => setIsEditingProfile(false)}
                       />
                     ) : (
-                      <UserInfoDisplay user={user} />
+                      <UserInfoDisplay user={user as User} />
                     )}
                   </CardContent>
                 </Card>
@@ -329,6 +344,7 @@ interface ProfileFormData {
   readonly firstName: string;
   readonly lastName: string;
   readonly email: string;
+  readonly gender: '' | Gender;
 }
 
 interface ProfileEditFormProps {
@@ -371,6 +387,19 @@ function ProfileEditForm({ form, onChange, onSubmit, onCancel }: ProfileEditForm
         required
       />
 
+      <Select
+        id="gender"
+        name="gender"
+        label="Genre"
+        value={form.gender || ''}
+        onChange={(e) => onChange({ ...form, gender: (e.target.value || '') as '' | Gender })}
+        options={[
+          { value: 'MALE', label: 'Homme' },
+          { value: 'FEMALE', label: 'Femme' },
+        ]}
+        placeholder="Sélectionner..."
+      />
+
       <div className="flex gap-2">
         <Button variant="primary" size="sm" onClick={onSubmit}>
           Sauvegarder
@@ -390,35 +419,8 @@ interface UserInfoDisplayProps {
 
 function UserInfoDisplay({ user }: UserInfoDisplayProps) {
   return (
-    <div className="space-y-3">
-      <InfoItem label="Rôle" value={user.role} />
-      <InfoItem 
-        label="Statut" 
-        value={user.isActive ? 'Actif' : 'Inactif'}
-        valueClassName={user.isActive ? 'text-green-600' : 'text-red-600'}
-      />
-      <InfoItem label="Inscrit le" value={formatDate(user.createdAt)} />
-      {user.lastLoginAt && (
-        <InfoItem label="Dernière connexion" value={formatDate(user.lastLoginAt)} />
-      )}
-    </div>
-  );
-}
-
-// Dumb component for info items
-interface InfoItemProps {
-  readonly label: string;
-  readonly value: string;
-  readonly valueClassName?: string;
-}
-
-function InfoItem({ label, value, valueClassName = 'text-gray-900' }: InfoItemProps) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-sm text-gray-600">{label}</span>
-      <span className={`text-sm font-medium ${valueClassName}`}>
-        {value}
-      </span>
+    <div className="space-y-2">
+      <div className="text-sm text-gray-600">{user.email}</div>
     </div>
   );
 }

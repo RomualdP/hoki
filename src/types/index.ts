@@ -120,3 +120,4 @@ export interface PaginatedResponse<T = unknown> {
 export * from './match';
 export * from './skill';
 export * from './news'; 
+export * from './profile';
