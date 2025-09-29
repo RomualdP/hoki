@@ -203,7 +203,7 @@ export class UsersService {
       where: {
         userId_skill: {
           userId: id,
-          skill: skillData.skill,
+          skill: skillData.skill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         },
       },
       update: {
@@ -214,7 +214,7 @@ export class UsersService {
       },
       create: {
         userId: id,
-        skill: skillData.skill,
+        skill: skillData.skill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         level: skillData.level,
         experienceYears: skillData.experienceYears,
         notes: skillData.notes,
@@ -227,7 +227,7 @@ export class UsersService {
       where: {
         userId_skill: {
           userId,
-          skill: skill as VolleyballSkill,
+          skill: skill as VolleyballSkill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         },
       },
       data: skillData,
@@ -239,7 +239,7 @@ export class UsersService {
       where: {
         userId_skill: {
           userId,
-          skill: skill as VolleyballSkill,
+          skill: skill as VolleyballSkill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         },
       },
     });

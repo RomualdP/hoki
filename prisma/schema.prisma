@@ -80,6 +80,7 @@ model UserProfile {
   userId        String          @unique
   biography     String?
   birthDate     DateTime?
+  gender        Gender?
   position      PlayerPosition?
   height        Int?
   weight        Int?
@@ -618,6 +619,11 @@ enum ProfileVisibility {
   PUBLIC
   FRIENDS
   PRIVATE
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 enum VolleyballSkill {

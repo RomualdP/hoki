@@ -5,6 +5,7 @@ import {
   Request,
   Get,
   Body,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -49,7 +50,7 @@ export class AuthController {
   ) {
     const user = await this.authService.validateUser(email, password);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedException('Identifiants invalides');
     }
     const { access_token } = await this.authService.login(user);
     return {

@@ -27,9 +27,12 @@ describe('AuthService', () => {
   const mockUserWithoutPassword = {
     id: '1',
     email: 'test@example.com',
-    name: 'Test User',
-    emailVerified: null,
-    image: null,
+    firstName: 'Test',
+    lastName: 'User',
+    avatar: null,
+    role: 'USER',
+    isActive: true,
+    lastLoginAt: null,
     createdAt: mockUser.createdAt,
     updatedAt: mockUser.updatedAt,
   };
@@ -160,14 +163,17 @@ describe('AuthService', () => {
       expect(upsertMock).toHaveBeenCalledWith({
         where: { email: googleProfile.email },
         update: {
-          name: googleProfile.name,
-          image: googleProfile.picture,
+          firstName: 'Test',
+          lastName: 'User',
+          avatar: googleProfile.picture,
+          lastLoginAt: expect.any(Date) as Date,
         },
         create: {
           email: googleProfile.email,
-          name: googleProfile.name,
-          image: googleProfile.picture,
-          emailVerified: expect.any(Date) as Date,
+          firstName: 'Test',
+          lastName: 'User',
+          avatar: googleProfile.picture,
+          lastLoginAt: expect.any(Date) as Date,
         },
       });
     });

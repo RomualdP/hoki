@@ -20,6 +20,7 @@ export class UpdateUserDto {
 export class UpdateProfileDto {
   readonly biography?: string;
   readonly birthDate?: Date;
+  readonly gender?: 'MALE' | 'FEMALE';
   readonly position?:
     | 'SETTER'
     | 'OUTSIDE_HITTER'
