@@ -79,7 +79,7 @@ export default function UserDetailPage() {
     fetchUserSkills(userId).catch(error => {
       console.error('Failed to fetch user skills:', error);
     });
-  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, fetchUserSkills]);  
 
   const handleProfileSubmit = () => {
     if (!user) return;
@@ -113,7 +113,7 @@ export default function UserDetailPage() {
       }
 
       // Refresh user skills to ensure UI is in sync - force refresh to bypass cache
-      await fetchUserSkills(userId, true);
+      await fetchUserSkills(userId);
     } catch (error) {
       console.error('Error updating skill:', error);
     }
