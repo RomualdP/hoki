@@ -112,8 +112,8 @@ export default function UserDetailPage() {
         await addUserSkill(userId, createData);
       }
 
-      // Refresh user skills to ensure UI is in sync
-      await fetchUserSkills(userId);
+      // Refresh user skills to ensure UI is in sync - force refresh to bypass cache
+      await fetchUserSkills(userId, true);
     } catch (error) {
       console.error('Error updating skill:', error);
     }
@@ -300,15 +300,7 @@ export default function UserDetailPage() {
                         {skillDefinitions.map((skillDef) => (
                           <SkillLevelCard
                             key={skillDef.skill}
-                            skill={{
-                              id: skillDef.skill,
-                              name: skillDef.name,
-                              description: skillDef.description,
-                              category: skillDef.skill,
-                              isActive: true,
-                              createdAt: new Date(),
-                              updatedAt: new Date(),
-                            }}
+                            skill={skillDef.skill}
                             currentLevel={getUserSkillLevel(skillDef.skill)}
                             isEditing={editingSkillId === skillDef.skill}
                             onEdit={() => setEditingSkillId(skillDef.skill)}

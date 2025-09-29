@@ -13,7 +13,9 @@ export const useUserSkillsApi = () => {
     store.setLoading(true);
     
     try {
-      const skills = await skillsApi.get(`/users/${userId}/skills`);
+      const url = `/users/${userId}/skills`;
+
+      const skills = await skillsApi.get(url);
       if (skills) {
         store.setUserSkills(userId, skills);
         return skills;
