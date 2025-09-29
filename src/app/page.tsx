@@ -55,7 +55,7 @@ export default function HomePage() {
                   </Link>
                 </div>
 
-                <div className="space-y-6">
+                <div className="flex flex-col space-y-6">
                   {newsLoading ? (
                     <Card>
                       <CardContent className="text-center py-12">
@@ -124,7 +124,7 @@ export default function HomePage() {
                   <CardHeader>
                     <CardTitle>Actions rapides</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="flex flex-col space-y-3">
                     <Link href={ROUTES.MATCHES}>
                       <Button variant="outline" className="w-full">
                         Voir tous les matchs

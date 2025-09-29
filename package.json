@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "pr": "bash scripts/create-pr.sh",
+    "auto-pr": "PR_AUTOFILL=1 bash scripts/create-pr.sh"
   },
   "dependencies": {
     "next": "15.2.4",
