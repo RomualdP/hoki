@@ -10,7 +10,6 @@ import { UsersModule } from './users/users.module';
 import { TeamsModule } from './teams/teams.module';
 import { MatchesModule } from './matches/matches.module';
 import { NewsModule } from './news/news.module';
-import { SkillsModule } from './skills/skills.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
@@ -23,7 +22,6 @@ import { TournamentsModule } from './tournaments/tournaments.module';
     TeamsModule,
     MatchesModule,
     NewsModule,
-    SkillsModule,
     ActivitiesModule,
     NotificationsModule,
     TournamentsModule,

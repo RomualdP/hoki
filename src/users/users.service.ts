@@ -13,7 +13,7 @@ import {
   AddSkillDto,
   UpdateSkillDto,
 } from './dto';
-import { UserWhereInput } from '../types';
+import { UserWhereInput, VolleyballSkill } from '../types';
 
 @Injectable()
 export class UsersService {
@@ -84,9 +84,7 @@ export class UsersService {
         include: {
           profile: true,
           statistics: true,
-          skills: {
-            include: { skill: true },
-          },
+          skills: true,
           achievements: true,
           teamMemberships: {
             include: { team: true },
@@ -196,7 +194,6 @@ export class UsersService {
   async getUserSkills(id: string) {
     return this.prisma.userSkill.findMany({
       where: { userId: id },
-      include: { skill: true },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -204,9 +201,9 @@ export class UsersService {
   async addSkill(id: string, skillData: AddSkillDto) {
     return this.prisma.userSkill.upsert({
       where: {
-        userId_skillId: {
+        userId_skill: {
           userId: id,
-          skillId: skillData.skillId,
+          skill: skillData.skill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         },
       },
       update: {
@@ -217,38 +214,32 @@ export class UsersService {
       },
       create: {
         userId: id,
-        skillId: skillData.skillId,
+        skill: skillData.skill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         level: skillData.level,
         experienceYears: skillData.experienceYears,
         notes: skillData.notes,
       },
-      include: { skill: true },
     });
   }
 
-  async updateSkill(
-    userId: string,
-    skillId: string,
-    skillData: UpdateSkillDto,
-  ) {
+  async updateSkill(userId: string, skill: string, skillData: UpdateSkillDto) {
     return this.prisma.userSkill.update({
       where: {
-        userId_skillId: {
+        userId_skill: {
           userId,
-          skillId,
+          skill: skill as VolleyballSkill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         },
       },
       data: skillData,
-      include: { skill: true },
     });
   }
 
-  async removeSkill(userId: string, skillId: string) {
+  async removeSkill(userId: string, skill: string) {
     return this.prisma.userSkill.delete({
       where: {
-        userId_skillId: {
+        userId_skill: {
           userId,
-          skillId,
+          skill: skill as VolleyballSkill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         },
       },
     });

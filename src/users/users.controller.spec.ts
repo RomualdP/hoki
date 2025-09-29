@@ -73,7 +73,7 @@ describe('UsersController - Skills endpoints', () => {
   describe('addSkill', () => {
     it('should add skill and return with success format', async () => {
       const addSkillDto: AddSkillDto = {
-        skillId: 'skill-1',
+        skill: 'ATTACK',
         level: 7,
         experienceYears: 3,
         notes: 'Good service',

@@ -1,3 +1,5 @@
+import { VolleyballSkill } from '../../types';
+
 export class CreateUserDto {
   readonly email: string;
   readonly firstName: string;
@@ -18,6 +20,7 @@ export class UpdateUserDto {
 export class UpdateProfileDto {
   readonly biography?: string;
   readonly birthDate?: Date;
+  readonly gender?: 'MALE' | 'FEMALE';
   readonly position?:
     | 'SETTER'
     | 'OUTSIDE_HITTER'
@@ -56,7 +59,7 @@ export class QueryUsersDto {
 }
 
 export class AddSkillDto {
-  skillId: string;
+  skill: VolleyballSkill;
   level: number;
   experienceYears?: number;
   notes?: string;
