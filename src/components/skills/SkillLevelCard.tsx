@@ -1,10 +1,11 @@
 'use client';
 
-import type { Skill } from '../../types';
+import type { VolleyballSkill } from '../../types';
 import { SKILL_LEVEL_OPTIONS } from '../../constants/skills';
+import { VOLLEYBALL_SKILL_DEFINITIONS } from '../../constants/volleyball-skills';
 
 interface SkillLevelCardProps {
-  readonly skill: Skill;
+  readonly skill: VolleyballSkill;
   readonly currentLevel: number;
   readonly isEditing: boolean;
   readonly onEdit: () => void;
@@ -30,9 +31,9 @@ export function SkillLevelCard({
     <div className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow w-full">
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
-          <h4 className="font-medium text-gray-900">{skill.name}</h4>
-          {skill.description && (
-            <p className="text-xs text-gray-500 mt-1">{skill.description}</p>
+          <h4 className="font-medium text-gray-900">{VOLLEYBALL_SKILL_DEFINITIONS[skill].name}</h4>
+          {VOLLEYBALL_SKILL_DEFINITIONS[skill].description && (
+            <p className="text-xs text-gray-500 mt-1">{VOLLEYBALL_SKILL_DEFINITIONS[skill].description}</p>
           )}
         </div>
         <div className="flex items-center gap-2">

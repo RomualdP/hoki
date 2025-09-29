@@ -1,30 +1,24 @@
-export interface Skill {
-  readonly id: string;
-  readonly name: string;
-  readonly description?: string;
-  readonly category: SkillCategory;
-  readonly isActive: boolean;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
-}
-
-export type SkillCategory = 
+export type VolleyballSkill = 
   | 'ATTACK' 
   | 'DEFENSE' 
   | 'SERVING' 
   | 'RECEPTION' 
   | 'SETTING' 
   | 'BLOCKING' 
-  | 'TEAMWORK' 
-  | 'LEADERSHIP';
+  | 'TEAMWORK';
+
+export interface SkillDefinition {
+  readonly skill: VolleyballSkill;
+  readonly name: string;
+  readonly description: string;
+}
 
 export type SkillLevel = number; // 1 to 10
 
 export interface UserSkill {
   readonly id: string;
   readonly userId: string;
-  readonly skillId: string;
-  readonly skill: Skill;
+  readonly skill: VolleyballSkill;
   readonly level: number;
   readonly experienceYears?: number;
   readonly notes?: string;
@@ -34,21 +28,8 @@ export interface UserSkill {
   readonly updatedAt: Date;
 }
 
-export interface SkillCreateData {
-  readonly name: string;
-  readonly description?: string;
-  readonly category: SkillCategory;
-}
-
-export interface SkillUpdateData {
-  readonly name?: string;
-  readonly description?: string;
-  readonly category?: SkillCategory;
-  readonly isActive?: boolean;
-}
-
 export interface UserSkillCreateData {
-  readonly skillId: string;
+  readonly skill: VolleyballSkill;
   readonly level: number;
   readonly experienceYears?: number;
   readonly notes?: string;

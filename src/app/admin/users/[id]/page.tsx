@@ -5,15 +5,16 @@ import { useParams } from 'next/navigation';
 import { Layout } from '../../../../components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../../components/ui';
 import { Input } from '../../../../components/forms';
+import { Select } from '../../../../components/forms/Select';
 import { SkillLevelCard } from '../../../../components/skills';
-import { useUsersStore, useSkillsStore } from '../../../../store';
+import { useUsersStore } from '../../../../store';
 import { useUserSkillsApi } from '../../../../features/users/hooks/useUserSkillsApi';
-import { useSkillsApi } from '../../../../features/skills/hooks/useSkillsApi';
 import { useUsersApi } from '../../../../features/users/hooks/useUsersApi';
-import { formatDate } from '../../../../utils';
+import { useUserProfileApi } from '../../../../features/users/hooks/useUserProfileApi';
 import Link from 'next/link';
-import type { User, UserSkillCreateData, UserSkillUpdateData } from '../../../../types';
+import type { Gender, User, UserProfile, UserSkillCreateData, UserSkillUpdateData, VolleyballSkill } from '../../../../types';
 import { SKILL_RATING_OPTIONS } from '../../../../constants/skills';
+import { getAllSkillDefinitions } from '../../../../constants/volleyball-skills';
 
 
 export default function UserDetailPage() {
@@ -21,9 +22,9 @@ export default function UserDetailPage() {
   const userId = params.id as string;
 
   const { users } = useUsersStore();
-  const { skills } = useSkillsStore();
-  const { fetchSkills, isLoading: isLoadingAllSkills, error: skillsApiError } = useSkillsApi();
+  const skillDefinitions = getAllSkillDefinitions();
   const { fetchUserById } = useUsersApi();
+  const { fetchUserProfile, updateUserProfile } = useUserProfileApi();
   const {
     getUserSkills,
     fetchUserSkills,
@@ -35,71 +36,73 @@ export default function UserDetailPage() {
     clearError,
   } = useUserSkillsApi();
   
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User & { profile: UserProfile } | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
+  const [editingSkillId, setEditingSkillId] = useState<VolleyballSkill | null>(null);
   
   const [profileForm, setProfileForm] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    gender: '' as '' | Gender,
   });
 
   const userSkills = getUserSkills(userId);
 
-  // Load skills once on mount
-  useEffect(() => {
-    if (skills.length === 0) {
-      fetchSkills().catch(error => {
-        console.error('Failed to fetch skills:', error);
-      });
-    }
-  }, [skills.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load user data when userId or users change
+  // Load user data when userId changes
+   
   useEffect(() => {
     const foundUser = users.find(u => u.id === userId);
     if (foundUser) {
-      setUser(foundUser);
+      setUser(foundUser as User & { profile: UserProfile });
       setProfileForm({
         firstName: foundUser.firstName,
         lastName: foundUser.lastName,
         email: foundUser.email,
+        gender: '' as '' | Gender,
       });
+      fetchUserProfile(foundUser.id).then((profile) => {
+        if (profile) setProfileForm(prev => ({ ...prev, gender: (profile.gender ?? '') as '' | Gender }));
+      }).catch(() => undefined);
     } else if (userId) {
       // If user not found in store, fetch from API
       fetchUserById(userId).then((fetchedUser) => {
         if (fetchedUser) {
-          setUser(fetchedUser);
+          setUser(fetchedUser as User & { profile: UserProfile });
           setProfileForm({
             firstName: fetchedUser.firstName,
             lastName: fetchedUser.lastName,
             email: fetchedUser.email,
+            gender: '' as '' | Gender,
           });
+          fetchUserProfile(fetchedUser.id).then((profile) => {
+            if (profile) setProfileForm(prev => ({ ...prev, gender: (profile.gender ?? '') as '' | Gender }));
+          }).catch(() => undefined);
         }
       }).catch(error => {
         console.error('Failed to fetch user:', error);
       });
     }
-  }, [userId, users, fetchUserById]);
+  }, [userId]);
 
   // Load user skills when userId changes
   useEffect(() => {
     fetchUserSkills(userId).catch(error => {
       console.error('Failed to fetch user skills:', error);
     });
-  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, fetchUserSkills]);  
 
-  const handleProfileSubmit = () => {
+  const handleProfileSubmit = async () => {
     if (!user) return;
-    
-    // Here you would update the user in the store
-    console.log('Update user profile:', profileForm);
+    await updateUserProfile(user.id, {
+      gender: profileForm.gender || undefined,
+    });
     setIsEditingProfile(false);
   };
 
-  const handleSkillLevelChange = async (skillId: string, newLevel: number) => {
-    const existingUserSkill = userSkills.find(us => us.skillId === skillId);
+  const handleSkillLevelChange = async (skill: VolleyballSkill, newLevel: number) => {
+    const existingUserSkill = userSkills.find(us => us.skill === skill);
 
     try {
       if (existingUserSkill) {
@@ -117,13 +120,13 @@ export default function UserDetailPage() {
       } else if (newLevel > 0) {
         // Add new skill
         const createData: UserSkillCreateData = {
-          skillId: skillId,
+          skill: skill,
           level: newLevel,
         };
         await addUserSkill(userId, createData);
       }
 
-      // Refresh user skills to ensure UI is in sync
+      // Refresh user skills to ensure UI is in sync - force refresh to bypass cache
       await fetchUserSkills(userId);
     } catch (error) {
       console.error('Error updating skill:', error);
@@ -132,8 +135,8 @@ export default function UserDetailPage() {
     setEditingSkillId(null);
   };
 
-  const getUserSkillLevel = (skillId: string): number => {
-    const userSkill = userSkills.find(us => us.skillId === skillId);
+  const getUserSkillLevel = (skill: VolleyballSkill): number => {
+    const userSkill = userSkills.find(us => us.skill === skill);
     return userSkill ? userSkill.level : 0;
   };
 
@@ -150,9 +153,9 @@ export default function UserDetailPage() {
     return 'bg-gray-100 text-gray-800';
   };
 
-
+  
   // Show loading state
-  if (isLoadingAllSkills) {
+  if (isLoadingSkills) {
     return (
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
@@ -167,7 +170,7 @@ export default function UserDetailPage() {
   }
 
   // Show error state only for critical errors, but continue with empty skills for non-critical ones
-  if (skillsApiError && skillsApiError.includes('UNAUTHORIZED')) {
+  if (skillsError && skillsError.includes('UNAUTHORIZED')) {
     return (
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
@@ -263,6 +266,7 @@ export default function UserDetailPage() {
                         {user.firstName} {user.lastName}
                       </h3>
                       <p className="text-sm text-gray-500">{user.email}</p>
+                      <p className="text-sm text-gray-500">{user.profile?.gender}</p>
                     </div>
 
                     {isEditingProfile ? (
@@ -273,7 +277,7 @@ export default function UserDetailPage() {
                         onCancel={() => setIsEditingProfile(false)}
                       />
                     ) : (
-                      <UserInfoDisplay user={user} />
+                      <UserInfoDisplay user={user as User} />
                     )}
                   </CardContent>
                 </Card>
@@ -308,15 +312,15 @@ export default function UserDetailPage() {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {skills.map((skill) => (
+                        {skillDefinitions.map((skillDef) => (
                           <SkillLevelCard
-                            key={skill.id}
-                            skill={skill}
-                            currentLevel={getUserSkillLevel(skill.id)}
-                            isEditing={editingSkillId === skill.id}
-                            onEdit={() => setEditingSkillId(skill.id)}
+                            key={skillDef.skill}
+                            skill={skillDef.skill}
+                            currentLevel={getUserSkillLevel(skillDef.skill)}
+                            isEditing={editingSkillId === skillDef.skill}
+                            onEdit={() => setEditingSkillId(skillDef.skill)}
                             onCancel={() => setEditingSkillId(null)}
-                            onLevelChange={(level) => handleSkillLevelChange(skill.id, level)}
+                            onLevelChange={(level) => handleSkillLevelChange(skillDef.skill, level)}
                             getRatingLabel={getRatingLabel}
                             getRatingColor={getRatingColor}
                           />
@@ -340,6 +344,7 @@ interface ProfileFormData {
   readonly firstName: string;
   readonly lastName: string;
   readonly email: string;
+  readonly gender: '' | Gender;
 }
 
 interface ProfileEditFormProps {
@@ -382,6 +387,19 @@ function ProfileEditForm({ form, onChange, onSubmit, onCancel }: ProfileEditForm
         required
       />
 
+      <Select
+        id="gender"
+        name="gender"
+        label="Genre"
+        value={form.gender || ''}
+        onChange={(e) => onChange({ ...form, gender: (e.target.value || '') as '' | Gender })}
+        options={[
+          { value: 'MALE', label: 'Homme' },
+          { value: 'FEMALE', label: 'Femme' },
+        ]}
+        placeholder="Sélectionner..."
+      />
+
       <div className="flex gap-2">
         <Button variant="primary" size="sm" onClick={onSubmit}>
           Sauvegarder
@@ -401,35 +419,8 @@ interface UserInfoDisplayProps {
 
 function UserInfoDisplay({ user }: UserInfoDisplayProps) {
   return (
-    <div className="space-y-3">
-      <InfoItem label="Rôle" value={user.role} />
-      <InfoItem 
-        label="Statut" 
-        value={user.isActive ? 'Actif' : 'Inactif'}
-        valueClassName={user.isActive ? 'text-green-600' : 'text-red-600'}
-      />
-      <InfoItem label="Inscrit le" value={formatDate(user.createdAt)} />
-      {user.lastLoginAt && (
-        <InfoItem label="Dernière connexion" value={formatDate(user.lastLoginAt)} />
-      )}
-    </div>
-  );
-}
-
-// Dumb component for info items
-interface InfoItemProps {
-  readonly label: string;
-  readonly value: string;
-  readonly valueClassName?: string;
-}
-
-function InfoItem({ label, value, valueClassName = 'text-gray-900' }: InfoItemProps) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-sm text-gray-600">{label}</span>
-      <span className={`text-sm font-medium ${valueClassName}`}>
-        {value}
-      </span>
+    <div className="space-y-2">
+      <div className="text-sm text-gray-600">{user.email}</div>
     </div>
   );
 }

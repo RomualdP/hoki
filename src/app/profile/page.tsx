@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Layout } from '../../components/layout';
 import { Card, CardHeader, CardTitle, CardContent, LogoutButton } from '../../components/ui';
 import { Input, Button } from '../../components';
+import { Select } from '../../components/forms/Select';
+import type { Gender } from '../../types';
+import { useUserProfileApi } from '../../features/users/hooks/useUserProfileApi';
 import { useAuthStore } from '../../store';
 import { ROUTES } from '../../constants';
 
@@ -12,6 +15,7 @@ interface ProfileFormData {
   firstName: string;
   lastName: string;
   email: string;
+  gender: '' | Gender;
 }
 
 interface PasswordFormData {
@@ -23,6 +27,7 @@ interface PasswordFormData {
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const { fetchUserProfile, updateUserProfile } = useUserProfileApi();
   
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -31,6 +36,7 @@ export default function ProfilePage() {
     firstName: '',
     lastName: '',
     email: '',
+    gender: '',
   });
 
   // Initialiser les données du profil quand l'utilisateur est chargé
@@ -45,7 +51,14 @@ export default function ProfilePage() {
         firstName: nameParts[0] || '',
         lastName: nameParts.slice(1).join(' ') || '',
         email: user.email || '',
+        gender: '',
       });
+
+      fetchUserProfile(user.id).then((profile) => {
+        if (profile) {
+          setProfileData(prev => ({ ...prev, gender: (profile.gender ?? '') as '' | Gender }));
+        }
+      }).catch(() => undefined);
     }
   }, [user]);
 
@@ -73,6 +86,14 @@ export default function ProfilePage() {
     
     if (profileErrors[name as keyof ProfileFormData]) {
       setProfileErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const handleGenderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target;
+    setProfileData(prev => ({ ...prev, gender: (value || '') as '' | Gender }));
+    if (profileErrors.gender) {
+      setProfileErrors(prev => ({ ...prev, gender: undefined }));
     }
   };
 
@@ -127,17 +148,16 @@ export default function ProfilePage() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleProfileSubmit = (event: React.FormEvent) => {
+  const handleProfileSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
     if (!validateProfileForm()) return;
 
-    // TODO: Implémenter l'appel API pour mettre à jour le profil
-    // Pour l'instant, on simule juste la mise à jour locale
     if (user) {
-      // Note: Ici on devrait faire un appel API pour persister les changements
+      await updateUserProfile(user.id, {
+        gender: profileData.gender || undefined,
+      });
       setIsEditingProfile(false);
-      alert('Profil mis à jour avec succès !');
     }
   };
 
@@ -222,6 +242,20 @@ export default function ProfilePage() {
                   error={profileErrors.email}
                 />
 
+                <Select
+                  id="gender"
+                  name="gender"
+                  label="Genre"
+                  value={profileData.gender || ''}
+                  onChange={handleGenderChange}
+                  options={[
+                    { value: 'MALE', label: 'Homme' },
+                    { value: 'FEMALE', label: 'Femme' },
+                  ]}
+                  placeholder="Sélectionner..."
+                  disabled={!isEditingProfile}
+                />
+
                 <div className="flex gap-2">
                   {!isEditingProfile ? (
                     <Button
@@ -245,6 +279,7 @@ export default function ProfilePage() {
                             firstName: user.firstName,
                             lastName: user.lastName,
                             email: user.email,
+                            gender: '',
                           });
                           setProfileErrors({});
                         }}
