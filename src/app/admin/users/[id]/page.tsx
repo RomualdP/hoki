@@ -6,14 +6,14 @@ import { Layout } from '../../../../components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../../components/ui';
 import { Input } from '../../../../components/forms';
 import { SkillLevelCard } from '../../../../components/skills';
-import { useUsersStore, useSkillsStore } from '../../../../store';
+import { useUsersStore } from '../../../../store';
 import { useUserSkillsApi } from '../../../../features/users/hooks/useUserSkillsApi';
-import { useSkillsApi } from '../../../../features/skills/hooks/useSkillsApi';
 import { useUsersApi } from '../../../../features/users/hooks/useUsersApi';
 import { formatDate } from '../../../../utils';
 import Link from 'next/link';
-import type { User, UserSkillCreateData, UserSkillUpdateData } from '../../../../types';
+import type { User, UserSkillCreateData, UserSkillUpdateData, VolleyballSkill } from '../../../../types';
 import { SKILL_RATING_OPTIONS } from '../../../../constants/skills';
+import { getAllSkillDefinitions } from '../../../../constants/volleyball-skills';
 
 
 export default function UserDetailPage() {
@@ -21,8 +21,7 @@ export default function UserDetailPage() {
   const userId = params.id as string;
 
   const { users } = useUsersStore();
-  const { skills } = useSkillsStore();
-  const { fetchSkills, isLoading: isLoadingAllSkills, error: skillsApiError } = useSkillsApi();
+  const skillDefinitions = getAllSkillDefinitions();
   const { fetchUserById } = useUsersApi();
   const {
     getUserSkills,
@@ -37,7 +36,7 @@ export default function UserDetailPage() {
   
   const [user, setUser] = useState<User | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
+  const [editingSkillId, setEditingSkillId] = useState<VolleyballSkill | null>(null);
   
   const [profileForm, setProfileForm] = useState({
     firstName: '',
@@ -47,14 +46,6 @@ export default function UserDetailPage() {
 
   const userSkills = getUserSkills(userId);
 
-  // Load skills once on mount
-  useEffect(() => {
-    if (skills.length === 0) {
-      fetchSkills().catch(error => {
-        console.error('Failed to fetch skills:', error);
-      });
-    }
-  }, [skills.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load user data when userId or users change
   useEffect(() => {
@@ -93,13 +84,11 @@ export default function UserDetailPage() {
   const handleProfileSubmit = () => {
     if (!user) return;
     
-    // Here you would update the user in the store
-    console.log('Update user profile:', profileForm);
     setIsEditingProfile(false);
   };
 
-  const handleSkillLevelChange = async (skillId: string, newLevel: number) => {
-    const existingUserSkill = userSkills.find(us => us.skillId === skillId);
+  const handleSkillLevelChange = async (skill: VolleyballSkill, newLevel: number) => {
+    const existingUserSkill = userSkills.find(us => us.skill === skill);
 
     try {
       if (existingUserSkill) {
@@ -117,7 +106,7 @@ export default function UserDetailPage() {
       } else if (newLevel > 0) {
         // Add new skill
         const createData: UserSkillCreateData = {
-          skillId: skillId,
+          skill: skill,
           level: newLevel,
         };
         await addUserSkill(userId, createData);
@@ -132,8 +121,8 @@ export default function UserDetailPage() {
     setEditingSkillId(null);
   };
 
-  const getUserSkillLevel = (skillId: string): number => {
-    const userSkill = userSkills.find(us => us.skillId === skillId);
+  const getUserSkillLevel = (skill: VolleyballSkill): number => {
+    const userSkill = userSkills.find(us => us.skill === skill);
     return userSkill ? userSkill.level : 0;
   };
 
@@ -150,9 +139,9 @@ export default function UserDetailPage() {
     return 'bg-gray-100 text-gray-800';
   };
 
-
+  
   // Show loading state
-  if (isLoadingAllSkills) {
+  if (isLoadingSkills) {
     return (
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
@@ -167,7 +156,7 @@ export default function UserDetailPage() {
   }
 
   // Show error state only for critical errors, but continue with empty skills for non-critical ones
-  if (skillsApiError && skillsApiError.includes('UNAUTHORIZED')) {
+  if (skillsError && skillsError.includes('UNAUTHORIZED')) {
     return (
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
@@ -308,15 +297,23 @@ export default function UserDetailPage() {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {skills.map((skill) => (
+                        {skillDefinitions.map((skillDef) => (
                           <SkillLevelCard
-                            key={skill.id}
-                            skill={skill}
-                            currentLevel={getUserSkillLevel(skill.id)}
-                            isEditing={editingSkillId === skill.id}
-                            onEdit={() => setEditingSkillId(skill.id)}
+                            key={skillDef.skill}
+                            skill={{
+                              id: skillDef.skill,
+                              name: skillDef.name,
+                              description: skillDef.description,
+                              category: skillDef.skill,
+                              isActive: true,
+                              createdAt: new Date(),
+                              updatedAt: new Date(),
+                            }}
+                            currentLevel={getUserSkillLevel(skillDef.skill)}
+                            isEditing={editingSkillId === skillDef.skill}
+                            onEdit={() => setEditingSkillId(skillDef.skill)}
                             onCancel={() => setEditingSkillId(null)}
-                            onLevelChange={(level) => handleSkillLevelChange(skill.id, level)}
+                            onLevelChange={(level) => handleSkillLevelChange(skillDef.skill, level)}
                             getRatingLabel={getRatingLabel}
                             getRatingColor={getRatingColor}
                           />

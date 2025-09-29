@@ -30,18 +30,18 @@ export const useUserSkillsApi = () => {
 
   const addUserSkill = useCallback(async (userId: string, skillData: UserSkillCreateData) => {
     // Validate required fields
-    if (!skillData.skillId || skillData.level == null) {
-      throw new Error('skillId and level are required');
+    if (!skillData.skill || skillData.level == null) {
+      throw new Error('skill and level are required');
     }
 
     // Clean data before sending - remove empty strings and undefined values
     const cleanData: {
-      skillId: string;
+      skill: string;
       level: number;
       notes?: string;
       experienceYears?: number;
     } = {
-      skillId: skillData.skillId,
+      skill: skillData.skill,
       level: skillData.level,
     };
 
@@ -58,16 +58,7 @@ export const useUserSkillsApi = () => {
     const optimisticSkill: UserSkill = {
       id: tempId,
       userId,
-      skillId: skillData.skillId,
-      skill: {
-        id: skillData.skillId,
-        name: '',
-        category: 'ATTACK',
-        description: '',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+      skill: skillData.skill,
       level: skillData.level,
       notes: skillData.notes,
       experienceYears: skillData.experienceYears,
@@ -149,7 +140,7 @@ export const useUserSkillsApi = () => {
 
     try {
       const updatedSkill = await skillApi.put(
-        `/users/${userId}/skills/${skillToUpdate.skillId}`,
+        `/users/${userId}/skills/${skillToUpdate.skill}`,
         cleanUpdates
       );
       
@@ -185,7 +176,7 @@ export const useUserSkillsApi = () => {
     store.applyOptimisticUpdate(userId, optimisticSkills);
 
     try {
-      await deleteApi.delete(`/users/${userId}/skills/${skillToDelete.skillId}`);
+      await deleteApi.delete(`/users/${userId}/skills/${skillToDelete.skill}`);
       
       // Commit the deletion
       store.commitOptimisticUpdate(userId, optimisticSkills);
