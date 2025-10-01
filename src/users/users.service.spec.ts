@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import { AddSkillDto, UpdateSkillDto } from './dto';
 
 describe('UsersService - Skills methods', () => {
   let service: UsersService;
 
-  const mockPrismaService = {
+  const mockDatabaseService = {
     user: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
@@ -49,8 +49,8 @@ describe('UsersService - Skills methods', () => {
       providers: [
         UsersService,
         {
-          provide: PrismaService,
-          useValue: mockPrismaService,
+          provide: DatabaseService,
+          useValue: mockDatabaseService,
         },
       ],
     }).compile();
@@ -65,12 +65,12 @@ describe('UsersService - Skills methods', () => {
   describe('getUserSkills', () => {
     it('should return user skills', async () => {
       const mockUserSkills = [mockUserSkill];
-      mockPrismaService.userSkill.findMany.mockResolvedValue(mockUserSkills);
+      mockDatabaseService.userSkill.findMany.mockResolvedValue(mockUserSkills);
 
       const result = await service.getUserSkills('user-1');
 
       expect(result).toEqual(mockUserSkills);
-      expect(mockPrismaService.userSkill.findMany).toHaveBeenCalledWith({
+      expect(mockDatabaseService.userSkill.findMany).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
         orderBy: { createdAt: 'desc' },
       });
@@ -86,12 +86,12 @@ describe('UsersService - Skills methods', () => {
         notes: 'Good service',
       };
 
-      mockPrismaService.userSkill.upsert.mockResolvedValue(mockUserSkill);
+      mockDatabaseService.userSkill.upsert.mockResolvedValue(mockUserSkill);
 
       const result = await service.addSkill('user-1', addSkillDto);
 
       expect(result).toEqual(mockUserSkill);
-      expect(mockPrismaService.userSkill.upsert).toHaveBeenCalledWith({
+      expect(mockDatabaseService.userSkill.upsert).toHaveBeenCalledWith({
         where: {
           userId_skill: {
             userId: 'user-1',
@@ -128,7 +128,7 @@ describe('UsersService - Skills methods', () => {
         updatedAt: new Date(),
       };
 
-      mockPrismaService.userSkill.update.mockResolvedValue(updatedUserSkill);
+      mockDatabaseService.userSkill.update.mockResolvedValue(updatedUserSkill);
 
       const result = await service.updateSkill(
         'user-1',
@@ -137,7 +137,7 @@ describe('UsersService - Skills methods', () => {
       );
 
       expect(result).toEqual(updatedUserSkill);
-      expect(mockPrismaService.userSkill.update).toHaveBeenCalledWith({
+      expect(mockDatabaseService.userSkill.update).toHaveBeenCalledWith({
         where: {
           userId_skill: {
             userId: 'user-1',
@@ -151,12 +151,12 @@ describe('UsersService - Skills methods', () => {
 
   describe('removeSkill', () => {
     it('should remove a user skill', async () => {
-      mockPrismaService.userSkill.delete.mockResolvedValue(mockUserSkill);
+      mockDatabaseService.userSkill.delete.mockResolvedValue(mockUserSkill);
 
       const result = await service.removeSkill('user-1', 'ATTACK');
 
       expect(result).toEqual(mockUserSkill);
-      expect(mockPrismaService.userSkill.delete).toHaveBeenCalledWith({
+      expect(mockDatabaseService.userSkill.delete).toHaveBeenCalledWith({
         where: {
           userId_skill: {
             userId: 'user-1',
