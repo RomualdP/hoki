@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import {
   CreateNewsDto,
   UpdateNewsDto,
@@ -11,7 +11,7 @@ import { NewsWhereInput, DateFilter } from '../types';
 
 @Injectable()
 export class NewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly database: DatabaseService) {}
 
   async findAll(query: QueryNewsDto) {
     const {
@@ -43,7 +43,7 @@ export class NewsService {
     }
 
     const [news, total] = await Promise.all([
-      this.prisma.news.findMany({
+      this.database.news.findMany({
         where,
         skip,
         take: Number(limit),
@@ -65,7 +65,7 @@ export class NewsService {
         },
         orderBy: { publishedAt: 'desc' },
       }),
-      this.prisma.news.count({ where }),
+      this.database.news.count({ where }),
     ]);
 
     return {
@@ -80,7 +80,7 @@ export class NewsService {
   }
 
   async findOne(id: string) {
-    const news = await this.prisma.news.findUnique({
+    const news = await this.database.news.findUnique({
       where: { id },
       include: {
         author: {
@@ -130,7 +130,7 @@ export class NewsService {
   }
 
   async getComments(id: string) {
-    return this.prisma.newsComment.findMany({
+    return this.database.newsComment.findMany({
       where: { newsId: id, parentId: null },
       include: {
         user: {
@@ -159,7 +159,7 @@ export class NewsService {
   }
 
   async addComment(newsId: string, commentData: CreateNewsCommentDto) {
-    return this.prisma.newsComment.create({
+    return this.database.newsComment.create({
       data: {
         newsId,
         userId: commentData.authorId,
@@ -180,7 +180,7 @@ export class NewsService {
   }
 
   async updateComment(commentId: string, commentData: UpdateNewsCommentDto) {
-    return this.prisma.newsComment.update({
+    return this.database.newsComment.update({
       where: { id: commentId },
 
       data: commentData,
@@ -198,13 +198,13 @@ export class NewsService {
   }
 
   async removeComment(commentId: string) {
-    return this.prisma.newsComment.delete({
+    return this.database.newsComment.delete({
       where: { id: commentId },
     });
   }
 
   async likeNews(newsId: string, userId: string) {
-    return this.prisma.newsInteraction.upsert({
+    return this.database.newsInteraction.upsert({
       where: {
         newsId_userId_type: {
           newsId,
@@ -222,7 +222,7 @@ export class NewsService {
   }
 
   async unlikeNews(newsId: string, userId: string) {
-    return this.prisma.newsInteraction.delete({
+    return this.database.newsInteraction.delete({
       where: {
         newsId_userId_type: {
           newsId,
@@ -234,7 +234,7 @@ export class NewsService {
   }
 
   async viewNews(newsId: string, userId: string) {
-    return this.prisma.newsInteraction.upsert({
+    return this.database.newsInteraction.upsert({
       where: {
         newsId_userId_type: {
           newsId,
@@ -252,7 +252,7 @@ export class NewsService {
   }
 
   async create(createNewsDto: CreateNewsDto) {
-    return this.prisma.news.create({
+    return this.database.news.create({
       data: createNewsDto,
       include: {
         author: {
@@ -268,12 +268,12 @@ export class NewsService {
   }
 
   async update(id: string, updateNewsDto: UpdateNewsDto) {
-    const news = await this.prisma.news.findUnique({ where: { id } });
+    const news = await this.database.news.findUnique({ where: { id } });
     if (!news) {
       throw new NotFoundException(`News with ID ${id} not found`);
     }
 
-    return this.prisma.news.update({
+    return this.database.news.update({
       where: { id },
       data: updateNewsDto,
       include: {
@@ -290,11 +290,11 @@ export class NewsService {
   }
 
   async remove(id: string) {
-    const news = await this.prisma.news.findUnique({ where: { id } });
+    const news = await this.database.news.findUnique({ where: { id } });
     if (!news) {
       throw new NotFoundException(`News with ID ${id} not found`);
     }
 
-    return this.prisma.news.delete({ where: { id } });
+    return this.database.news.delete({ where: { id } });
   }
 }

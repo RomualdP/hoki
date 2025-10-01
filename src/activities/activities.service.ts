@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import { CreateActivityDto, QueryActivitiesDto } from './dto';
 import { ActivityTargetType } from '@prisma/client';
 import { ActivityAction } from '@prisma/client';
 
 @Injectable()
 export class ActivitiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly database: DatabaseService) {}
 
   async findAll(query: QueryActivitiesDto) {
     const { page = 1, limit = 20, type, targetType, isPublic } = query;
@@ -19,7 +19,7 @@ export class ActivitiesService {
     if (isPublic !== undefined) where.isPublic = isPublic === 'true';
 
     const [activities, total] = await Promise.all([
-      this.prisma.activity.findMany({
+      this.database.activity.findMany({
         where,
         skip,
         take: Number(limit),
@@ -35,7 +35,7 @@ export class ActivitiesService {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.activity.count({ where }),
+      this.database.activity.count({ where }),
     ]);
 
     return {
@@ -61,7 +61,7 @@ export class ActivitiesService {
     if (targetType) where.targetType = targetType;
 
     const [activities, total] = await Promise.all([
-      this.prisma.activity.findMany({
+      this.database.activity.findMany({
         where,
         skip,
         take: Number(limit),
@@ -77,7 +77,7 @@ export class ActivitiesService {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.activity.count({ where }),
+      this.database.activity.count({ where }),
     ]);
 
     return {
@@ -103,7 +103,7 @@ export class ActivitiesService {
     if (type) where.type = type;
 
     const [activities, total] = await Promise.all([
-      this.prisma.activity.findMany({
+      this.database.activity.findMany({
         where,
         skip,
         take: Number(limit),
@@ -119,7 +119,7 @@ export class ActivitiesService {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.activity.count({ where }),
+      this.database.activity.count({ where }),
     ]);
 
     return {
@@ -134,7 +134,7 @@ export class ActivitiesService {
   }
 
   async create(createActivityDto: CreateActivityDto) {
-    return this.prisma.activity.create({
+    return this.database.activity.create({
       data: {
         type: createActivityDto.type,
         actorId: createActivityDto.actorId,
@@ -159,11 +159,11 @@ export class ActivitiesService {
   }
 
   async remove(id: string) {
-    const activity = await this.prisma.activity.findUnique({ where: { id } });
+    const activity = await this.database.activity.findUnique({ where: { id } });
     if (!activity) {
       throw new NotFoundException(`Activity with ID ${id} not found`);
     }
 
-    return this.prisma.activity.delete({ where: { id } });
+    return this.database.activity.delete({ where: { id } });
   }
 }

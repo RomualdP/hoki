@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import {
   CreateMatchDto,
   UpdateMatchDto,
@@ -12,7 +12,7 @@ import { MatchWhereInput, DateFilter } from '../types';
 
 @Injectable()
 export class MatchesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly database: DatabaseService) {}
 
   async findAll(query: QueryMatchesDto) {
     const { page = 1, limit = 10, status, teamId, dateFrom, dateTo } = query;
@@ -37,7 +37,7 @@ export class MatchesService {
     }
 
     const [matches, total] = await Promise.all([
-      this.prisma.match.findMany({
+      this.database.match.findMany({
         where,
         skip,
         take: Number(limit),
@@ -55,7 +55,7 @@ export class MatchesService {
         },
         orderBy: { scheduledAt: 'desc' },
       }),
-      this.prisma.match.count({ where }),
+      this.database.match.count({ where }),
     ]);
 
     return {
@@ -70,7 +70,7 @@ export class MatchesService {
   }
 
   async findOne(id: string) {
-    const match = await this.prisma.match.findUnique({
+    const match = await this.database.match.findUnique({
       where: { id },
       include: {
         homeTeam: true,
@@ -107,7 +107,7 @@ export class MatchesService {
   }
 
   async getStatistics(id: string) {
-    return this.prisma.matchStatistics.findUnique({
+    return this.database.matchStatistics.findUnique({
       where: { matchId: id },
       include: {
         playerStats: {
@@ -118,7 +118,7 @@ export class MatchesService {
   }
 
   async getEvents(id: string) {
-    return this.prisma.matchEvent.findMany({
+    return this.database.matchEvent.findMany({
       where: { matchId: id },
       include: { user: true },
       orderBy: { timestamp: 'desc' },
@@ -126,7 +126,7 @@ export class MatchesService {
   }
 
   async addEvent(matchId: string, eventData: CreateMatchEventDto) {
-    return this.prisma.matchEvent.create({
+    return this.database.matchEvent.create({
       data: {
         matchId,
         ...eventData,
@@ -136,7 +136,7 @@ export class MatchesService {
   }
 
   async getComments(id: string) {
-    return this.prisma.matchComment.findMany({
+    return this.database.matchComment.findMany({
       where: { matchId: id },
       include: { user: true },
       orderBy: { createdAt: 'desc' },
@@ -144,7 +144,7 @@ export class MatchesService {
   }
 
   async addComment(matchId: string, commentData: CreateMatchCommentDto) {
-    return this.prisma.matchComment.create({
+    return this.database.matchComment.create({
       data: {
         matchId,
         userId: commentData.authorId,
@@ -155,7 +155,7 @@ export class MatchesService {
   }
 
   async joinMatch(matchId: string, participantData: CreateMatchParticipantDto) {
-    return this.prisma.matchParticipant.create({
+    return this.database.matchParticipant.create({
       data: {
         matchId,
         ...participantData,
@@ -165,7 +165,7 @@ export class MatchesService {
   }
 
   async leaveMatch(matchId: string, userId: string) {
-    return this.prisma.matchParticipant.delete({
+    return this.database.matchParticipant.delete({
       where: {
         matchId_userId: {
           matchId,
@@ -176,7 +176,7 @@ export class MatchesService {
   }
 
   async startMatch(id: string) {
-    return this.prisma.match.update({
+    return this.database.match.update({
       where: { id },
       data: { status: 'IN_PROGRESS' },
       include: {
@@ -187,7 +187,7 @@ export class MatchesService {
   }
 
   async endMatch(id: string, resultData: Record<string, unknown>) {
-    return this.prisma.match.update({
+    return this.database.match.update({
       where: { id },
       data: {
         status: 'COMPLETED',
@@ -202,7 +202,7 @@ export class MatchesService {
   }
 
   async create(createMatchDto: CreateMatchDto) {
-    return this.prisma.match.create({
+    return this.database.match.create({
       data: createMatchDto,
       include: {
         homeTeam: true,
@@ -213,12 +213,12 @@ export class MatchesService {
   }
 
   async update(id: string, updateMatchDto: UpdateMatchDto) {
-    const match = await this.prisma.match.findUnique({ where: { id } });
+    const match = await this.database.match.findUnique({ where: { id } });
     if (!match) {
       throw new NotFoundException(`Match with ID ${id} not found`);
     }
 
-    return this.prisma.match.update({
+    return this.database.match.update({
       where: { id },
       data: updateMatchDto,
       include: {
@@ -230,11 +230,11 @@ export class MatchesService {
   }
 
   async remove(id: string) {
-    const match = await this.prisma.match.findUnique({ where: { id } });
+    const match = await this.database.match.findUnique({ where: { id } });
     if (!match) {
       throw new NotFoundException(`Match with ID ${id} not found`);
     }
 
-    return this.prisma.match.delete({ where: { id } });
+    return this.database.match.delete({ where: { id } });
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import {
   CreateTournamentDto,
   UpdateTournamentDto,
@@ -7,7 +7,7 @@ import {
 
 @Injectable()
 export class TournamentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly database: DatabaseService) {}
 
   async findAll(query: Record<string, unknown>) {
     const { page = 1, limit = 10, status } = query;
@@ -18,7 +18,7 @@ export class TournamentsService {
     if (status) where.status = status;
 
     const [tournaments, total] = await Promise.all([
-      this.prisma.tournament.findMany({
+      this.database.tournament.findMany({
         where,
         skip,
         take: Number(limit),
@@ -31,7 +31,7 @@ export class TournamentsService {
         },
         orderBy: { startDate: 'desc' },
       }),
-      this.prisma.tournament.count({ where }),
+      this.database.tournament.count({ where }),
     ]);
 
     return {
@@ -46,7 +46,7 @@ export class TournamentsService {
   }
 
   async findOne(id: string) {
-    const tournament = await this.prisma.tournament.findUnique({
+    const tournament = await this.database.tournament.findUnique({
       where: { id },
       include: {
         teams: {
@@ -63,7 +63,7 @@ export class TournamentsService {
   }
 
   async addTeam(tournamentId: string, teamId: string) {
-    return this.prisma.tournamentTeam.create({
+    return this.database.tournamentTeam.create({
       data: {
         tournamentId,
         teamId,
@@ -73,7 +73,7 @@ export class TournamentsService {
   }
 
   async removeTeam(tournamentId: string, teamId: string) {
-    return this.prisma.tournamentTeam.delete({
+    return this.database.tournamentTeam.delete({
       where: {
         tournamentId_teamId: {
           tournamentId,
@@ -84,33 +84,33 @@ export class TournamentsService {
   }
 
   async create(createTournamentDto: CreateTournamentDto) {
-    return this.prisma.tournament.create({
+    return this.database.tournament.create({
       data: createTournamentDto,
     });
   }
 
   async update(id: string, updateTournamentDto: UpdateTournamentDto) {
-    const tournament = await this.prisma.tournament.findUnique({
+    const tournament = await this.database.tournament.findUnique({
       where: { id },
     });
     if (!tournament) {
       throw new NotFoundException(`Tournament with ID ${id} not found`);
     }
 
-    return this.prisma.tournament.update({
+    return this.database.tournament.update({
       where: { id },
       data: updateTournamentDto,
     });
   }
 
   async remove(id: string) {
-    const tournament = await this.prisma.tournament.findUnique({
+    const tournament = await this.database.tournament.findUnique({
       where: { id },
     });
     if (!tournament) {
       throw new NotFoundException(`Tournament with ID ${id} not found`);
     }
 
-    return this.prisma.tournament.delete({ where: { id } });
+    return this.database.tournament.delete({ where: { id } });
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import {
   UserNotFoundException,
@@ -17,7 +17,7 @@ import { UserWhereInput, VolleyballSkill } from '../types';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly database: DatabaseService) {}
 
   async findAll(query: QueryUsersDto) {
     const { page = 1, limit = 10, name, email, city, position } = query;
@@ -46,7 +46,7 @@ export class UsersService {
       };
 
     const [users, total] = await Promise.all([
-      this.prisma.user.findMany({
+      this.database.user.findMany({
         where,
         skip,
         take: Number(limit),
@@ -63,7 +63,7 @@ export class UsersService {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.user.count({ where }),
+      this.database.user.count({ where }),
     ]);
 
     return {
@@ -79,7 +79,7 @@ export class UsersService {
 
   async findOne(id: string) {
     try {
-      const user = await this.prisma.user.findUnique({
+      const user = await this.database.user.findUnique({
         where: { id },
         include: {
           profile: true,
@@ -109,7 +109,7 @@ export class UsersService {
   }
 
   async getProfile(id: string) {
-    const profile = await this.prisma.userProfile.findUnique({
+    const profile = await this.database.userProfile.findUnique({
       where: { userId: id },
       include: {
         user: {
@@ -135,12 +135,12 @@ export class UsersService {
 
   async updateProfile(id: string, updateProfileDto: UpdateProfileDto) {
     try {
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.database.user.findUnique({ where: { id } });
       if (!user) {
         throw new UserNotFoundException(id);
       }
 
-      return this.prisma.userProfile.upsert({
+      return this.database.userProfile.upsert({
         where: { userId: id },
         update: updateProfileDto,
         create: {
@@ -171,12 +171,12 @@ export class UsersService {
   }
 
   async getStatistics(id: string) {
-    const statistics = await this.prisma.userStatistics.findUnique({
+    const statistics = await this.database.userStatistics.findUnique({
       where: { userId: id },
     });
 
     if (!statistics) {
-      return this.prisma.userStatistics.create({
+      return this.database.userStatistics.create({
         data: { userId: id },
       });
     }
@@ -185,25 +185,25 @@ export class UsersService {
   }
 
   async getAchievements(id: string) {
-    return this.prisma.achievement.findMany({
+    return this.database.achievement.findMany({
       where: { userId: id },
       orderBy: { earnedAt: 'desc' },
     });
   }
 
   async getUserSkills(id: string) {
-    return this.prisma.userSkill.findMany({
+    return this.database.userSkill.findMany({
       where: { userId: id },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async addSkill(id: string, skillData: AddSkillDto) {
-    return this.prisma.userSkill.upsert({
+    return this.database.userSkill.upsert({
       where: {
         userId_skill: {
           userId: id,
-          skill: skillData.skill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+          skill: skillData.skill,
         },
       },
       update: {
@@ -214,7 +214,7 @@ export class UsersService {
       },
       create: {
         userId: id,
-        skill: skillData.skill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        skill: skillData.skill,
         level: skillData.level,
         experienceYears: skillData.experienceYears,
         notes: skillData.notes,
@@ -223,11 +223,11 @@ export class UsersService {
   }
 
   async updateSkill(userId: string, skill: string, skillData: UpdateSkillDto) {
-    return this.prisma.userSkill.update({
+    return this.database.userSkill.update({
       where: {
         userId_skill: {
           userId,
-          skill: skill as VolleyballSkill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+          skill: skill as VolleyballSkill,
         },
       },
       data: skillData,
@@ -235,18 +235,18 @@ export class UsersService {
   }
 
   async removeSkill(userId: string, skill: string) {
-    return this.prisma.userSkill.delete({
+    return this.database.userSkill.delete({
       where: {
         userId_skill: {
           userId,
-          skill: skill as VolleyballSkill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+          skill: skill as VolleyballSkill,
         },
       },
     });
   }
 
   async create(createUserDto: CreateUserDto) {
-    return this.prisma.user.create({
+    return this.database.user.create({
       data: createUserDto,
       include: {
         profile: true,
@@ -257,12 +257,12 @@ export class UsersService {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.database.user.findUnique({ where: { id } });
       if (!user) {
         throw new UserNotFoundException(id);
       }
 
-      return this.prisma.user.update({
+      return this.database.user.update({
         where: { id },
         data: updateUserDto,
         include: {
@@ -283,12 +283,12 @@ export class UsersService {
 
   async remove(id: string) {
     try {
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.database.user.findUnique({ where: { id } });
       if (!user) {
         throw new UserNotFoundException(id);
       }
 
-      return this.prisma.user.delete({ where: { id } });
+      return this.database.user.delete({ where: { id } });
     } catch (error) {
       if (error instanceof UserNotFoundException) {
         throw error;
@@ -301,7 +301,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
+    return this.database.user.findUnique({
       where: { email },
       include: {
         profile: true,

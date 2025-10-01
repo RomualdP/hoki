@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import { CreateNotificationDto } from './dto';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly database: DatabaseService) {}
 
   async findByUser(userId: string, query: Record<string, unknown>) {
     const { page = 1, limit = 20, isRead, type } = query;
@@ -18,13 +18,13 @@ export class NotificationsService {
     if (type) where.type = type;
 
     const [notifications, total] = await Promise.all([
-      this.prisma.notification.findMany({
+      this.database.notification.findMany({
         where,
         skip,
         take: Number(limit),
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.notification.count({ where }),
+      this.database.notification.count({ where }),
     ]);
 
     return {
@@ -39,40 +39,40 @@ export class NotificationsService {
   }
 
   async markAsRead(id: string) {
-    const notification = await this.prisma.notification.findUnique({
+    const notification = await this.database.notification.findUnique({
       where: { id },
     });
     if (!notification) {
       throw new NotFoundException(`Notification with ID ${id} not found`);
     }
 
-    return this.prisma.notification.update({
+    return this.database.notification.update({
       where: { id },
       data: { isRead: true },
     });
   }
 
   async markAllAsRead(userId: string) {
-    return this.prisma.notification.updateMany({
+    return this.database.notification.updateMany({
       where: { userId, isRead: false },
       data: { isRead: true },
     });
   }
 
   async create(createNotificationDto: CreateNotificationDto) {
-    return this.prisma.notification.create({
+    return this.database.notification.create({
       data: createNotificationDto,
     });
   }
 
   async remove(id: string) {
-    const notification = await this.prisma.notification.findUnique({
+    const notification = await this.database.notification.findUnique({
       where: { id },
     });
     if (!notification) {
       throw new NotFoundException(`Notification with ID ${id} not found`);
     }
 
-    return this.prisma.notification.delete({ where: { id } });
+    return this.database.notification.delete({ where: { id } });
   }
 }
