@@ -11,9 +11,6 @@ import { UsersModule } from './users/users.module';
 import { TeamsModule } from './teams/teams.module';
 import { MatchesModule } from './matches/matches.module';
 import { NewsModule } from './news/news.module';
-import { ActivitiesModule } from './activities/activities.module';
-import { NotificationsModule } from './notifications/notifications.module';
-import { TournamentsModule } from './tournaments/tournaments.module';
 
 @Module({
   imports: [
@@ -24,9 +21,6 @@ import { TournamentsModule } from './tournaments/tournaments.module';
     TeamsModule,
     MatchesModule,
     NewsModule,
-    ActivitiesModule,
-    NotificationsModule,
-    TournamentsModule,
   ],
   controllers: [AppController],
   providers: [

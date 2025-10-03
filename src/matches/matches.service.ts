@@ -1,13 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import {
-  CreateMatchDto,
-  UpdateMatchDto,
-  QueryMatchesDto,
-  CreateMatchEventDto,
-  CreateMatchCommentDto,
-  CreateMatchParticipantDto,
-} from './dto';
+import { CreateMatchDto, UpdateMatchDto, QueryMatchesDto } from './dto';
 import { MatchWhereInput, DateFilter } from '../types';
 
 @Injectable()
@@ -44,14 +37,6 @@ export class MatchesService {
         include: {
           homeTeam: true,
           awayTeam: true,
-          court: true,
-          _count: {
-            select: {
-              participants: true,
-              events: true,
-              comments: true,
-            },
-          },
         },
         orderBy: { scheduledAt: 'desc' },
       }),
@@ -75,27 +60,6 @@ export class MatchesService {
       include: {
         homeTeam: true,
         awayTeam: true,
-        court: true,
-        sets: true,
-        participants: {
-          include: { user: true },
-        },
-        weather: true,
-        statistics: {
-          include: {
-            playerStats: {
-              include: { user: true },
-            },
-          },
-        },
-        events: {
-          include: { user: true },
-          orderBy: { timestamp: 'desc' },
-        },
-        comments: {
-          include: { user: true },
-          orderBy: { createdAt: 'desc' },
-        },
       },
     });
 
@@ -106,108 +70,12 @@ export class MatchesService {
     return match;
   }
 
-  async getStatistics(id: string) {
-    return this.database.matchStatistics.findUnique({
-      where: { matchId: id },
-      include: {
-        playerStats: {
-          include: { user: true },
-        },
-      },
-    });
-  }
-
-  async getEvents(id: string) {
-    return this.database.matchEvent.findMany({
-      where: { matchId: id },
-      include: { user: true },
-      orderBy: { timestamp: 'desc' },
-    });
-  }
-
-  async addEvent(matchId: string, eventData: CreateMatchEventDto) {
-    return this.database.matchEvent.create({
-      data: {
-        matchId,
-        ...eventData,
-      },
-      include: { user: true },
-    });
-  }
-
-  async getComments(id: string) {
-    return this.database.matchComment.findMany({
-      where: { matchId: id },
-      include: { user: true },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async addComment(matchId: string, commentData: CreateMatchCommentDto) {
-    return this.database.matchComment.create({
-      data: {
-        matchId,
-        userId: commentData.authorId,
-        content: commentData.content,
-      },
-      include: { user: true },
-    });
-  }
-
-  async joinMatch(matchId: string, participantData: CreateMatchParticipantDto) {
-    return this.database.matchParticipant.create({
-      data: {
-        matchId,
-        ...participantData,
-      },
-      include: { user: true },
-    });
-  }
-
-  async leaveMatch(matchId: string, userId: string) {
-    return this.database.matchParticipant.delete({
-      where: {
-        matchId_userId: {
-          matchId,
-          userId,
-        },
-      },
-    });
-  }
-
-  async startMatch(id: string) {
-    return this.database.match.update({
-      where: { id },
-      data: { status: 'IN_PROGRESS' },
-      include: {
-        homeTeam: true,
-        awayTeam: true,
-      },
-    });
-  }
-
-  async endMatch(id: string, resultData: Record<string, unknown>) {
-    return this.database.match.update({
-      where: { id },
-      data: {
-        status: 'COMPLETED',
-        ...resultData,
-      },
-      include: {
-        homeTeam: true,
-        awayTeam: true,
-        statistics: true,
-      },
-    });
-  }
-
   async create(createMatchDto: CreateMatchDto) {
     return this.database.match.create({
       data: createMatchDto,
       include: {
         homeTeam: true,
         awayTeam: true,
-        court: true,
       },
     });
   }
@@ -224,7 +92,6 @@ export class MatchesService {
       include: {
         homeTeam: true,
         awayTeam: true,
-        court: true,
       },
     });
   }

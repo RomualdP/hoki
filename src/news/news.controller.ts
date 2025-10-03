@@ -27,53 +27,6 @@ export class NewsController {
     return await this.newsService.findOne(id);
   }
 
-  @Get(':id/comments')
-  async getComments(@Param('id') id: string) {
-    return await this.newsService.getComments(id);
-  }
-
-  @Post(':id/comments')
-  async addComment(@Param('id') id: string, @Body() commentData: any) {
-    return await this.newsService.addComment(id, commentData);
-  }
-
-  @Put('comments/:commentId')
-  async updateComment(
-    @Param('commentId') commentId: string,
-    @Body() commentData: any,
-  ) {
-    return await this.newsService.updateComment(commentId, commentData);
-  }
-
-  @Delete('comments/:commentId')
-  async removeComment(@Param('commentId') commentId: string) {
-    return await this.newsService.removeComment(commentId);
-  }
-
-  @Post(':id/like')
-  async likeNews(
-    @Param('id') id: string,
-    @Body() userData: { userId: string },
-  ) {
-    return await this.newsService.likeNews(id, userData.userId);
-  }
-
-  @Delete(':id/like')
-  async unlikeNews(
-    @Param('id') id: string,
-    @Body() userData: { userId: string },
-  ) {
-    return await this.newsService.unlikeNews(id, userData.userId);
-  }
-
-  @Post(':id/view')
-  async viewNews(
-    @Param('id') id: string,
-    @Body() userData: { userId: string },
-  ) {
-    return await this.newsService.viewNews(id, userData.userId);
-  }
-
   @Post()
   async create(@Body() createNewsDto: any) {
     return await this.newsService.create(createNewsDto);

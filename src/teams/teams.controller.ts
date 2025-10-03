@@ -28,24 +28,6 @@ export class TeamsController {
     return this.teamsService.findOne(id);
   }
 
-  @Get(':id/members')
-  async getMembers(@Param('id') id: string) {
-    return this.teamsService.getMembers(id);
-  }
-
-  @Post(':id/members')
-  async addMember(
-    @Param('id') id: string,
-    @Body() memberData: AddTeamMemberDto,
-  ) {
-    return this.teamsService.addMember(id, memberData);
-  }
-
-  @Delete(':id/members/:userId')
-  async removeMember(@Param('id') id: string, @Param('userId') userId: string) {
-    return this.teamsService.removeMember(id, userId);
-  }
-
   @Post()
   async create(@Body() createTeamDto: CreateTeamDto) {
     return this.teamsService.create(createTeamDto);

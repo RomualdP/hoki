@@ -52,11 +52,9 @@ export class UsersService {
         take: Number(limit),
         include: {
           profile: true,
-          statistics: true,
           _count: {
             select: {
               skills: true,
-              achievements: true,
               teamMemberships: true,
             },
           },
@@ -83,9 +81,7 @@ export class UsersService {
         where: { id },
         include: {
           profile: true,
-          statistics: true,
           skills: true,
-          achievements: true,
           teamMemberships: {
             include: { team: true },
           },
@@ -170,27 +166,6 @@ export class UsersService {
     }
   }
 
-  async getStatistics(id: string) {
-    const statistics = await this.database.userStatistics.findUnique({
-      where: { userId: id },
-    });
-
-    if (!statistics) {
-      return this.database.userStatistics.create({
-        data: { userId: id },
-      });
-    }
-
-    return statistics;
-  }
-
-  async getAchievements(id: string) {
-    return this.database.achievement.findMany({
-      where: { userId: id },
-      orderBy: { earnedAt: 'desc' },
-    });
-  }
-
   async getUserSkills(id: string) {
     return this.database.userSkill.findMany({
       where: { userId: id },
@@ -250,7 +225,6 @@ export class UsersService {
       data: createUserDto,
       include: {
         profile: true,
-        statistics: true,
       },
     });
   }
@@ -267,7 +241,6 @@ export class UsersService {
         data: updateUserDto,
         include: {
           profile: true,
-          statistics: true,
         },
       });
     } catch (error) {
@@ -305,7 +278,6 @@ export class UsersService {
       where: { email },
       include: {
         profile: true,
-        statistics: true,
       },
     });
   }

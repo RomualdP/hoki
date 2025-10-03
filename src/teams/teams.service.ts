@@ -1,11 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import {
-  CreateTeamDto,
-  UpdateTeamDto,
-  AddTeamMemberDto,
-  QueryTeamsDto,
-} from './dto';
+import { CreateTeamDto, UpdateTeamDto, QueryTeamsDto } from './dto';
 
 @Injectable()
 export class TeamsService {
@@ -82,36 +77,6 @@ export class TeamsService {
     }
 
     return team;
-  }
-
-  async getMembers(id: string) {
-    return this.database.teamMember.findMany({
-      where: { teamId: id },
-      include: { user: true },
-      orderBy: { joinedAt: 'asc' },
-    });
-  }
-
-  async addMember(teamId: string, memberData: AddTeamMemberDto) {
-    return this.database.teamMember.create({
-      data: {
-        teamId,
-        userId: memberData.userId,
-        role: memberData.role,
-      },
-      include: { user: true },
-    });
-  }
-
-  async removeMember(teamId: string, userId: string) {
-    return this.database.teamMember.delete({
-      where: {
-        userId_teamId: {
-          userId,
-          teamId,
-        },
-      },
-    });
   }
 
   async create(createTeamDto: CreateTeamDto) {

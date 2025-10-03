@@ -69,26 +69,6 @@ export class UsersController {
     };
   }
 
-  @Get(':id/statistics')
-  async getStatistics(@Param('id') id: string) {
-    const statistics = await this.usersService.getStatistics(id);
-    return {
-      success: true,
-      data: statistics,
-      message: 'Statistiques récupérées avec succès',
-    };
-  }
-
-  @Get(':id/achievements')
-  async getAchievements(@Param('id') id: string) {
-    const achievements = await this.usersService.getAchievements(id);
-    return {
-      success: true,
-      data: achievements,
-      message: 'Achievements récupérés avec succès',
-    };
-  }
-
   @Get(':id/skills')
   async getUserSkills(@Param('id') id: string) {
     const skills = await this.usersService.getUserSkills(id);
