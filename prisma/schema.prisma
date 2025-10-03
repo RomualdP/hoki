@@ -13,21 +13,22 @@ datasource db {
 // ============================================
 
 model User {
-  id              String       @id @default(cuid())
-  email           String       @unique
-  firstName       String
-  lastName        String
-  avatar          String?
-  password        String?
-  role            UserRole     @default(USER)
-  isActive        Boolean      @default(true)
-  lastLoginAt     DateTime?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  newsArticles    News[]
-  teamMemberships TeamMember[]
-  profile         UserProfile?
-  skills          UserSkill[]
+  id                    String                 @id @default(cuid())
+  email                 String                 @unique
+  firstName             String
+  lastName              String
+  avatar                String?
+  password              String?
+  role                  UserRole               @default(USER)
+  isActive              Boolean                @default(true)
+  lastLoginAt           DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  newsArticles          News[]
+  teamMemberships       TeamMember[]
+  profile               UserProfile?
+  skills                UserSkill[]
+  trainingRegistrations TrainingRegistration[]
 
   @@map("users")
 }
@@ -152,6 +153,40 @@ model News {
 }
 
 // ============================================
+// TRAINING
+// ============================================
+
+model Training {
+  id              String                 @id @default(cuid())
+  title           String
+  description     String?
+  scheduledAt     DateTime
+  duration        Int
+  location        String?
+  maxParticipants Int?
+  status          TrainingStatus         @default(SCHEDULED)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  registrations   TrainingRegistration[]
+
+  @@map("trainings")
+}
+
+model TrainingRegistration {
+  id           String             @id @default(cuid())
+  trainingId   String
+  userId       String
+  status       RegistrationStatus @default(PENDING)
+  registeredAt DateTime           @default(now())
+  cancelledAt  DateTime?
+  training     Training           @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([trainingId, userId])
+  @@map("training_registrations")
+}
+
+// ============================================
 // ENUMS
 // ============================================
 
@@ -211,4 +246,18 @@ enum VolleyballSkill {
   SETTING
   BLOCKING
   TEAMWORK
+}
+
+enum TrainingStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  WAITLIST
 }

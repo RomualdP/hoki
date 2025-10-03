@@ -11,6 +11,7 @@ import { UsersModule } from './users/users.module';
 import { TeamsModule } from './teams/teams.module';
 import { MatchesModule } from './matches/matches.module';
 import { NewsModule } from './news/news.module';
+import { TrainingManagementModule } from './training-management/training-management.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { NewsModule } from './news/news.module';
     TeamsModule,
     MatchesModule,
     NewsModule,
+    TrainingManagementModule,
   ],
   controllers: [AppController],
   providers: [
