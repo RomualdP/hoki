@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { TeamsService } from './teams.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AddTeamMemberDto, CreateTeamDto, UpdateTeamDto } from './dto';
+import { CreateTeamDto, QueryTeamsDto, UpdateTeamDto } from './dto';
 
 @Controller('teams')
 @UseGuards(JwtAuthGuard)
@@ -19,7 +19,7 @@ export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
   @Get()
-  async findAll(@Query() query: any) {
+  async findAll(@Query() query: QueryTeamsDto) {
     return this.teamsService.findAll(query);
   }
 

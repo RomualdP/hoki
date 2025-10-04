@@ -4,10 +4,11 @@ import { DatabaseModule } from '../database/database.module';
 import { TrainingController } from './presentation/training.controller';
 import { TrainingRegistrationController } from './presentation/training-registration.controller';
 
-import { CreateTrainingUseCase } from './application/use-cases/create-training/create-training.use-case';
-import { RegisterToTrainingUseCase } from './application/use-cases/register-to-training/register-to-training.use-case';
-import { CancelRegistrationUseCase } from './application/use-cases/cancel-registration/cancel-registration.use-case';
-import { ListTrainingsUseCase } from './application/use-cases/list-trainings/list-trainings.use-case';
+import { CreateTrainingHandler } from './application/commands/create-training/create-training.handler';
+import { RegisterToTrainingHandler } from './application/commands/register-to-training/register-to-training.handler';
+import { CancelRegistrationHandler } from './application/commands/cancel-registration/cancel-registration.handler';
+import { ListTrainingsHandler } from './application/queries/list-trainings/list-trainings.handler';
+import { GetTrainingHandler } from './application/queries/get-training/get-training.handler';
 
 import { TrainingRepository } from './infrastructure/persistence/repositories/training.repository';
 import { TrainingRegistrationRepository } from './infrastructure/persistence/repositories/training-registration.repository';
@@ -31,19 +32,19 @@ const TRAINING_REGISTRATION_REPOSITORY = 'ITrainingRegistrationRepository';
       useClass: TrainingRegistrationRepository,
     },
     {
-      provide: CreateTrainingUseCase,
+      provide: CreateTrainingHandler,
       useFactory: (trainingRepository: ITrainingRepository) => {
-        return new CreateTrainingUseCase(trainingRepository);
+        return new CreateTrainingHandler(trainingRepository);
       },
       inject: [TRAINING_REPOSITORY],
     },
     {
-      provide: RegisterToTrainingUseCase,
+      provide: RegisterToTrainingHandler,
       useFactory: (
         trainingRepository: ITrainingRepository,
         registrationRepository: ITrainingRegistrationRepository,
       ) => {
-        return new RegisterToTrainingUseCase(
+        return new RegisterToTrainingHandler(
           trainingRepository,
           registrationRepository,
         );
@@ -51,16 +52,23 @@ const TRAINING_REGISTRATION_REPOSITORY = 'ITrainingRegistrationRepository';
       inject: [TRAINING_REPOSITORY, TRAINING_REGISTRATION_REPOSITORY],
     },
     {
-      provide: CancelRegistrationUseCase,
+      provide: CancelRegistrationHandler,
       useFactory: (registrationRepository: ITrainingRegistrationRepository) => {
-        return new CancelRegistrationUseCase(registrationRepository);
+        return new CancelRegistrationHandler(registrationRepository);
       },
       inject: [TRAINING_REGISTRATION_REPOSITORY],
     },
     {
-      provide: ListTrainingsUseCase,
+      provide: ListTrainingsHandler,
       useFactory: (trainingRepository: ITrainingRepository) => {
-        return new ListTrainingsUseCase(trainingRepository);
+        return new ListTrainingsHandler(trainingRepository);
+      },
+      inject: [TRAINING_REPOSITORY],
+    },
+    {
+      provide: GetTrainingHandler,
+      useFactory: (trainingRepository: ITrainingRepository) => {
+        return new GetTrainingHandler(trainingRepository);
       },
       inject: [TRAINING_REPOSITORY],
     },

@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty } from 'class-validator';
 
-export class RegisterToTrainingDto {
+export class CancelRegistrationCommand {
   @IsString()
   @IsNotEmpty()
   trainingId: string;

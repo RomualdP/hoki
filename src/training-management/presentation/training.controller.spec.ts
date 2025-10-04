@@ -1,20 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TrainingController } from './training.controller';
-import { CreateTrainingUseCase } from '../application/use-cases/create-training/create-training.use-case';
-import { ListTrainingsUseCase } from '../application/use-cases/list-trainings/list-trainings.use-case';
-import { CreateTrainingDto } from '../application/use-cases/create-training/create-training.dto';
-import { ListTrainingsDto } from '../application/use-cases/list-trainings/list-trainings.dto';
+import { CreateTrainingHandler } from '../application/commands/create-training/create-training.handler';
+import { ListTrainingsHandler } from '../application/queries/list-trainings/list-trainings.handler';
+import { GetTrainingHandler } from '../application/queries/get-training/get-training.handler';
+import { CreateTrainingCommand } from '../application/commands/create-training/create-training.command';
+import { ListTrainingsQuery } from '../application/queries/list-trainings/list-trainings.query';
 
 describe('TrainingController', () => {
   let controller: TrainingController;
-  let createTrainingUseCase: CreateTrainingUseCase;
-  let listTrainingsUseCase: ListTrainingsUseCase;
 
-  const mockCreateTrainingUseCase = {
+  const mockCreateTrainingHandler = {
     execute: jest.fn(),
   };
 
-  const mockListTrainingsUseCase = {
+  const mockListTrainingsHandler = {
+    execute: jest.fn(),
+  };
+
+  const mockGetTrainingHandler = {
     execute: jest.fn(),
   };
 
@@ -23,22 +26,21 @@ describe('TrainingController', () => {
       controllers: [TrainingController],
       providers: [
         {
-          provide: CreateTrainingUseCase,
-          useValue: mockCreateTrainingUseCase,
+          provide: CreateTrainingHandler,
+          useValue: mockCreateTrainingHandler,
         },
         {
-          provide: ListTrainingsUseCase,
-          useValue: mockListTrainingsUseCase,
+          provide: ListTrainingsHandler,
+          useValue: mockListTrainingsHandler,
+        },
+        {
+          provide: GetTrainingHandler,
+          useValue: mockGetTrainingHandler,
         },
       ],
     }).compile();
 
     controller = module.get<TrainingController>(TrainingController);
-    createTrainingUseCase = module.get<CreateTrainingUseCase>(
-      CreateTrainingUseCase,
-    );
-    listTrainingsUseCase =
-      module.get<ListTrainingsUseCase>(ListTrainingsUseCase);
   });
 
   afterEach(() => {
@@ -46,8 +48,8 @@ describe('TrainingController', () => {
   });
 
   describe('create', () => {
-    it('should call CreateTrainingUseCase with correct parameters', async () => {
-      const dto: CreateTrainingDto = {
+    it('should call CreateTrainingHandler and return training ID', async () => {
+      const command: CreateTrainingCommand = {
         title: 'Training session',
         description: 'Weekly training',
         scheduledAt: new Date('2025-12-01T18:00:00Z').toISOString(),
@@ -56,27 +58,20 @@ describe('TrainingController', () => {
         maxParticipants: 20,
       };
 
-      const mockResult = {
-        id: 'training-123',
-        ...dto,
-        status: 'SCHEDULED',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockTrainingId = 'training-123';
+      mockCreateTrainingHandler.execute.mockResolvedValue(mockTrainingId);
 
-      mockCreateTrainingUseCase.execute.mockResolvedValue(mockResult);
+      const result = await controller.create(command);
 
-      const result = await controller.create(dto);
-
-      expect(createTrainingUseCase.execute).toHaveBeenCalledWith(dto);
-      expect(createTrainingUseCase.execute).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockResult);
+      expect(mockCreateTrainingHandler.execute).toHaveBeenCalledWith(command);
+      expect(mockCreateTrainingHandler.execute).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ id: mockTrainingId });
     });
   });
 
   describe('findAll', () => {
-    it('should call ListTrainingsUseCase with query parameters', async () => {
-      const query: ListTrainingsDto = {
+    it('should call ListTrainingsHandler with query parameters', async () => {
+      const query: ListTrainingsQuery = {
         page: 1,
         limit: 10,
         status: 'SCHEDULED',
@@ -92,12 +87,12 @@ describe('TrainingController', () => {
         },
       };
 
-      mockListTrainingsUseCase.execute.mockResolvedValue(mockResult);
+      mockListTrainingsHandler.execute.mockResolvedValue(mockResult);
 
       const result = await controller.findAll(query);
 
-      expect(listTrainingsUseCase.execute).toHaveBeenCalledWith(query);
-      expect(listTrainingsUseCase.execute).toHaveBeenCalledTimes(1);
+      expect(mockListTrainingsHandler.execute).toHaveBeenCalledWith(query);
+      expect(mockListTrainingsHandler.execute).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockResult);
     });
   });

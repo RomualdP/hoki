@@ -7,7 +7,7 @@ import {
   Min,
 } from 'class-validator';
 
-export class CreateTrainingDto {
+export class CreateTrainingCommand {
   @IsString()
   @IsNotEmpty()
   title: string;

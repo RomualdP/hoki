@@ -5,22 +5,21 @@ import {
 } from '@nestjs/common';
 import { ITrainingRepository } from '../../../domain/repositories/training.repository.interface';
 import { ITrainingRegistrationRepository } from '../../../domain/repositories/training-registration.repository.interface';
-import { TrainingRegistration } from '../../../domain/entities/training-registration.entity';
-import { RegisterToTrainingDto } from './register-to-training.dto';
+import { RegisterToTrainingCommand } from './register-to-training.command';
 
 @Injectable()
-export class RegisterToTrainingUseCase {
+export class RegisterToTrainingHandler {
   constructor(
     private readonly trainingRepository: ITrainingRepository,
     private readonly registrationRepository: ITrainingRegistrationRepository,
   ) {}
 
-  async execute(dto: RegisterToTrainingDto): Promise<TrainingRegistration> {
-    const training = await this.trainingRepository.findById(dto.trainingId);
+  async execute(command: RegisterToTrainingCommand): Promise<string> {
+    const training = await this.trainingRepository.findById(command.trainingId);
 
     if (!training) {
       throw new NotFoundException(
-        `Training with ID ${dto.trainingId} not found`,
+        `Training with ID ${command.trainingId} not found`,
       );
     }
 
@@ -32,8 +31,8 @@ export class RegisterToTrainingUseCase {
 
     const existingRegistration =
       await this.registrationRepository.existsActiveRegistration(
-        dto.trainingId,
-        dto.userId,
+        command.trainingId,
+        command.userId,
       );
 
     if (existingRegistration) {
@@ -43,7 +42,7 @@ export class RegisterToTrainingUseCase {
     }
 
     const currentParticipantsCount =
-      await this.registrationRepository.countByTrainingId(dto.trainingId);
+      await this.registrationRepository.countByTrainingId(command.trainingId);
 
     const hasAvailableSpots = training.hasAvailableSpots(
       currentParticipantsCount,
@@ -52,12 +51,12 @@ export class RegisterToTrainingUseCase {
     const registrationStatus = hasAvailableSpots ? 'CONFIRMED' : 'WAITLIST';
 
     const registration = await this.registrationRepository.create({
-      trainingId: dto.trainingId,
-      userId: dto.userId,
+      trainingId: command.trainingId,
+      userId: command.userId,
       status: registrationStatus,
       cancelledAt: null,
     });
 
-    return registration;
+    return registration.id;
   }
 }

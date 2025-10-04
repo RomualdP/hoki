@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class ListTrainingsDto {
+export class ListTrainingsQuery {
   @IsOptional()
   @Type(() => Number)
   @IsInt()

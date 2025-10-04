@@ -12,23 +12,23 @@ export class TrainingRegistrationRepositoryMock
 {
   private registrations: TrainingRegistration[] = [];
 
-  async findByTrainingId(): Promise<TrainingRegistration[]> {
-    return this.registrations;
+  findByTrainingId(): Promise<TrainingRegistration[]> {
+    return Promise.resolve(this.registrations);
   }
 
-  async findByUserId(): Promise<TrainingRegistration[]> {
-    return this.registrations;
+  findByUserId(): Promise<TrainingRegistration[]> {
+    return Promise.resolve(this.registrations);
   }
 
-  async findOne(
+  findOne(
     trainingId: string,
     userId: string,
   ): Promise<TrainingRegistration | null> {
-    return (
+    const registration =
       this.registrations.find(
         (r) => r.trainingId === trainingId && r.userId === userId,
-      ) || null
-    );
+      ) || null;
+    return Promise.resolve(registration);
   }
 
   create(data: CreateRegistrationData): Promise<TrainingRegistration> {

@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateNewsDto, QueryNewsDto, UpdateNewsDto } from './dto';
 
 @Controller('news')
 @UseGuards(JwtAuthGuard)
@@ -18,7 +19,7 @@ export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 
   @Get()
-  async findAll(@Query() query: any) {
+  async findAll(@Query() query: QueryNewsDto) {
     return await this.newsService.findAll(query);
   }
 
@@ -28,12 +29,12 @@ export class NewsController {
   }
 
   @Post()
-  async create(@Body() createNewsDto: any) {
+  async create(@Body() createNewsDto: CreateNewsDto) {
     return await this.newsService.create(createNewsDto);
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateNewsDto: any) {
+  async update(@Param('id') id: string, @Body() updateNewsDto: UpdateNewsDto) {
     return await this.newsService.update(id, updateNewsDto);
   }
 

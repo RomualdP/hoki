@@ -7,38 +7,40 @@ import {
   Request,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { RegisterToTrainingUseCase } from '../application/use-cases/register-to-training/register-to-training.use-case';
-import { CancelRegistrationUseCase } from '../application/use-cases/cancel-registration/cancel-registration.use-case';
-import { RegisterToTrainingDto } from '../application/use-cases/register-to-training/register-to-training.dto';
-import { CancelRegistrationDto } from '../application/use-cases/cancel-registration/cancel-registration.dto';
+import { RegisterToTrainingHandler } from '../application/commands/register-to-training/register-to-training.handler';
+import { CancelRegistrationHandler } from '../application/commands/cancel-registration/cancel-registration.handler';
+import { RegisterToTrainingCommand } from '../application/commands/register-to-training/register-to-training.command';
+import { CancelRegistrationCommand } from '../application/commands/cancel-registration/cancel-registration.command';
 
 @Controller('training-registrations')
 @UseGuards(JwtAuthGuard)
 export class TrainingRegistrationController {
   constructor(
-    private readonly registerToTrainingUseCase: RegisterToTrainingUseCase,
-    private readonly cancelRegistrationUseCase: CancelRegistrationUseCase,
+    private readonly registerToTrainingHandler: RegisterToTrainingHandler,
+    private readonly cancelRegistrationHandler: CancelRegistrationHandler,
   ) {}
 
   @Post()
   async register(
-    @Body() registerDto: RegisterToTrainingDto,
+    @Body() command: RegisterToTrainingCommand,
     @Request() req: Express.Request & { user: { userId: string } },
   ) {
-    return this.registerToTrainingUseCase.execute({
-      ...registerDto,
+    const registrationId = await this.registerToTrainingHandler.execute({
+      ...command,
       userId: req.user.userId,
     });
+    return { id: registrationId };
   }
 
   @Delete()
   async cancel(
-    @Body() cancelDto: CancelRegistrationDto,
+    @Body() command: CancelRegistrationCommand,
     @Request() req: Express.Request & { user: { userId: string } },
   ) {
-    return this.cancelRegistrationUseCase.execute({
-      ...cancelDto,
+    await this.cancelRegistrationHandler.execute({
+      ...command,
       userId: req.user.userId,
     });
+    return { success: true };
   }
 }

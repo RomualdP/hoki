@@ -4,19 +4,18 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { ITrainingRegistrationRepository } from '../../../domain/repositories/training-registration.repository.interface';
-import { TrainingRegistration } from '../../../domain/entities/training-registration.entity';
-import { CancelRegistrationDto } from './cancel-registration.dto';
+import { CancelRegistrationCommand } from './cancel-registration.command';
 
 @Injectable()
-export class CancelRegistrationUseCase {
+export class CancelRegistrationHandler {
   constructor(
     private readonly registrationRepository: ITrainingRegistrationRepository,
   ) {}
 
-  async execute(dto: CancelRegistrationDto): Promise<TrainingRegistration> {
+  async execute(command: CancelRegistrationCommand): Promise<void> {
     const registration = await this.registrationRepository.findOne(
-      dto.trainingId,
-      dto.userId,
+      command.trainingId,
+      command.userId,
     );
 
     if (!registration) {
@@ -27,13 +26,10 @@ export class CancelRegistrationUseCase {
       throw new BadRequestException('This registration cannot be cancelled');
     }
 
-    const cancelledRegistration =
-      await this.registrationRepository.updateStatus(
-        registration.id,
-        'CANCELLED',
-        new Date(),
-      );
-
-    return cancelledRegistration;
+    await this.registrationRepository.updateStatus(
+      registration.id,
+      'CANCELLED',
+      new Date(),
+    );
   }
 }
