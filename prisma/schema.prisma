@@ -28,6 +28,7 @@ model User {
   teamMemberships       TeamMember[]
   profile               UserProfile?
   skills                UserSkill[]
+  attributes            UserAttribute[]
   trainingRegistrations TrainingRegistration[]
 
   @@map("users")
@@ -68,6 +69,22 @@ model UserSkill {
 
   @@unique([userId, skill])
   @@map("user_skills")
+}
+
+model UserAttribute {
+  id         String        @id @default(cuid())
+  userId     String
+  attribute  AttributeType
+  value      Float         @default(1.0) @db.DoublePrecision
+  assessedBy String?
+  assessedAt DateTime?
+  notes      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, attribute])
+  @@map("user_attributes")
 }
 
 // ============================================
@@ -245,7 +262,11 @@ enum VolleyballSkill {
   RECEPTION
   SETTING
   BLOCKING
-  TEAMWORK
+}
+
+enum AttributeType {
+  FITNESS
+  LEADERSHIP
 }
 
 enum TrainingStatus {

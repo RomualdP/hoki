@@ -12,6 +12,7 @@ import {
   QueryUsersDto,
   AddSkillDto,
   UpdateSkillDto,
+  UpdateUserAttributesDto,
 } from './dto';
 import { UserWhereInput, VolleyballSkill } from '../types';
 
@@ -52,6 +53,7 @@ export class UsersService {
         take: Number(limit),
         include: {
           profile: true,
+          attributes: true,
           _count: {
             select: {
               skills: true,
@@ -82,6 +84,7 @@ export class UsersService {
         include: {
           profile: true,
           skills: true,
+          attributes: true,
           teamMemberships: {
             include: { team: true },
           },
@@ -221,12 +224,30 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    return this.database.user.create({
+    const user = await this.database.user.create({
       data: createUserDto,
       include: {
         profile: true,
       },
     });
+
+    // Créer automatiquement les attributs FITNESS et LEADERSHIP avec valeur par défaut 1.0
+    await this.database.userAttribute.createMany({
+      data: [
+        {
+          userId: user.id,
+          attribute: 'FITNESS',
+          value: 1.0,
+        },
+        {
+          userId: user.id,
+          attribute: 'LEADERSHIP',
+          value: 1.0,
+        },
+      ],
+    });
+
+    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
@@ -280,5 +301,77 @@ export class UsersService {
         profile: true,
       },
     });
+  }
+
+  async getUserAttributes(userId: string) {
+    return this.database.userAttribute.findMany({
+      where: { userId },
+      orderBy: { attribute: 'asc' },
+    });
+  }
+
+  async updateUserAttributes(
+    userId: string,
+    adminId: string,
+    attributesDto: UpdateUserAttributesDto,
+  ) {
+    const user = await this.database.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UserNotFoundException(userId);
+    }
+
+    const now = new Date();
+
+    if (attributesDto.fitness !== undefined) {
+      await this.database.userAttribute.upsert({
+        where: {
+          userId_attribute: {
+            userId,
+            attribute: 'FITNESS',
+          },
+        },
+        update: {
+          value: attributesDto.fitness,
+          assessedBy: adminId,
+          assessedAt: now,
+          notes: attributesDto.notes,
+        },
+        create: {
+          userId,
+          attribute: 'FITNESS',
+          value: attributesDto.fitness,
+          assessedBy: adminId,
+          assessedAt: now,
+          notes: attributesDto.notes,
+        },
+      });
+    }
+
+    if (attributesDto.leadership !== undefined) {
+      await this.database.userAttribute.upsert({
+        where: {
+          userId_attribute: {
+            userId,
+            attribute: 'LEADERSHIP',
+          },
+        },
+        update: {
+          value: attributesDto.leadership,
+          assessedBy: adminId,
+          assessedAt: now,
+          notes: attributesDto.notes,
+        },
+        create: {
+          userId,
+          attribute: 'LEADERSHIP',
+          value: attributesDto.leadership,
+          assessedBy: adminId,
+          assessedAt: now,
+          notes: attributesDto.notes,
+        },
+      });
+    }
+
+    return this.getUserAttributes(userId);
   }
 }

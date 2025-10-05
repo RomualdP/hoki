@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -11,6 +12,10 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserRole } from '@prisma/client';
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -18,6 +23,7 @@ import {
   QueryUsersDto,
   AddSkillDto,
   UpdateSkillDto,
+  UpdateUserAttributesDto,
 } from './dto';
 
 @Controller('users')
@@ -141,6 +147,34 @@ export class UsersController {
     return {
       success: true,
       message: 'Utilisateur supprimé avec succès',
+    };
+  }
+
+  @Get(':id/attributes')
+  async getUserAttributes(@Param('id') id: string) {
+    const attributes = await this.usersService.getUserAttributes(id);
+    return {
+      success: true,
+      data: attributes,
+      message: 'Attributs récupérés avec succès',
+    };
+  }
+
+  @Patch(':id/attributes')
+  async updateUserAttributes(
+    @Param('id') id: string,
+    @Body() attributesDto: UpdateUserAttributesDto,
+    @CurrentUser() currentUser: { id: string },
+  ) {
+    const attributes = await this.usersService.updateUserAttributes(
+      id,
+      currentUser.id,
+      attributesDto,
+    );
+    return {
+      success: true,
+      data: attributes,
+      message: 'Attributs mis à jour avec succès',
     };
   }
 }

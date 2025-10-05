@@ -70,3 +70,5 @@ export class UpdateSkillDto {
   experienceYears?: number;
   notes?: string;
 }
+
+export { UpdateUserAttributesDto } from './update-user-attributes.dto';
