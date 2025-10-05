@@ -1,21 +1,35 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { Layout } from '../../../../components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../../components/ui';
-import { Input } from '../../../../components/forms';
-import { Select } from '../../../../components/forms/Select';
-import { SkillLevelCard } from '../../../../components/skills';
-import { useUsersStore } from '../../../../store';
-import { useUserSkillsApi } from '../../../../features/users/hooks/useUserSkillsApi';
-import { useUsersApi } from '../../../../features/users/hooks/useUsersApi';
-import { useUserProfileApi } from '../../../../features/users/hooks/useUserProfileApi';
-import Link from 'next/link';
-import type { Gender, User, UserProfile, UserSkillCreateData, UserSkillUpdateData, VolleyballSkill } from '../../../../types';
-import { SKILL_RATING_OPTIONS } from '../../../../constants/skills';
-import { getAllSkillDefinitions } from '../../../../constants/volleyball-skills';
-
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Layout } from "../../../../components/layout";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+} from "../../../../components/ui";
+import { Input } from "../../../../components/forms";
+import { Select } from "../../../../components/forms/Select";
+import { SkillLevelCard } from "../../../../components/skills";
+import { AttributeControl } from "../../../../components/users";
+import { useUsersStore } from "../../../../store";
+import { useUserSkillsApi } from "../../../../features/users/hooks/useUserSkillsApi";
+import { useUsersApi } from "../../../../features/users/hooks/useUsersApi";
+import { useUserProfileApi } from "../../../../features/users/hooks/useUserProfileApi";
+import { useUserAttributesApi } from "../../../../features/users/hooks/useUserAttributesApi";
+import Link from "next/link";
+import type {
+  Gender,
+  User,
+  UserProfile,
+  UserSkillCreateData,
+  UserSkillUpdateData,
+  VolleyballSkill,
+} from "../../../../types";
+import { SKILL_RATING_OPTIONS } from "../../../../constants/skills";
+import { getAllSkillDefinitions } from "../../../../constants/volleyball-skills";
 
 export default function UserDetailPage() {
   const params = useParams();
@@ -35,63 +49,95 @@ export default function UserDetailPage() {
     error: skillsError,
     clearError,
   } = useUserSkillsApi();
-  
-  const [user, setUser] = useState<User & { profile: UserProfile } | null>(null);
+  const {
+    attributes,
+    fetchUserAttributes,
+    updateUserAttributes,
+    isLoading: isLoadingAttributes,
+  } = useUserAttributesApi();
+  console.log(attributes);
+  const [user, setUser] = useState<(User & { profile: UserProfile }) | null>(
+    null,
+  );
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editingSkillId, setEditingSkillId] = useState<VolleyballSkill | null>(null);
-  
+  const [editingSkillId, setEditingSkillId] = useState<VolleyballSkill | null>(
+    null,
+  );
+
   const [profileForm, setProfileForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    gender: '' as '' | Gender,
+    firstName: "",
+    lastName: "",
+    email: "",
+    gender: "" as "" | Gender,
   });
 
   const userSkills = getUserSkills(userId);
 
-
   // Load user data when userId changes
-   
+
   useEffect(() => {
-    const foundUser = users.find(u => u.id === userId);
+    const foundUser = users.find((u) => u.id === userId);
     if (foundUser) {
       setUser(foundUser as User & { profile: UserProfile });
       setProfileForm({
         firstName: foundUser.firstName,
         lastName: foundUser.lastName,
         email: foundUser.email,
-        gender: '' as '' | Gender,
+        gender: "" as "" | Gender,
       });
-      fetchUserProfile(foundUser.id).then((profile) => {
-        if (profile) setProfileForm(prev => ({ ...prev, gender: (profile.gender ?? '') as '' | Gender }));
-      }).catch(() => undefined);
+      fetchUserProfile(foundUser.id)
+        .then((profile) => {
+          if (profile)
+            setProfileForm((prev) => ({
+              ...prev,
+              gender: (profile.gender ?? "") as "" | Gender,
+            }));
+        })
+        .catch(() => undefined);
     } else if (userId) {
       // If user not found in store, fetch from API
-      fetchUserById(userId).then((fetchedUser) => {
-        if (fetchedUser) {
-          setUser(fetchedUser as User & { profile: UserProfile });
-          setProfileForm({
-            firstName: fetchedUser.firstName,
-            lastName: fetchedUser.lastName,
-            email: fetchedUser.email,
-            gender: '' as '' | Gender,
-          });
-          fetchUserProfile(fetchedUser.id).then((profile) => {
-            if (profile) setProfileForm(prev => ({ ...prev, gender: (profile.gender ?? '') as '' | Gender }));
-          }).catch(() => undefined);
-        }
-      }).catch(error => {
-        console.error('Failed to fetch user:', error);
-      });
+      fetchUserById(userId)
+        .then((fetchedUser) => {
+          if (fetchedUser) {
+            setUser(fetchedUser as User & { profile: UserProfile });
+            setProfileForm({
+              firstName: fetchedUser.firstName,
+              lastName: fetchedUser.lastName,
+              email: fetchedUser.email,
+              gender: "" as "" | Gender,
+            });
+            fetchUserProfile(fetchedUser.id)
+              .then((profile) => {
+                if (profile)
+                  setProfileForm((prev) => ({
+                    ...prev,
+                    gender: (profile.gender ?? "") as "" | Gender,
+                  }));
+              })
+              .catch(() => undefined);
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to fetch user:", error);
+        });
     }
   }, [userId]);
 
   // Load user skills when userId changes
   useEffect(() => {
-    fetchUserSkills(userId).catch(error => {
-      console.error('Failed to fetch user skills:', error);
+    fetchUserSkills(userId).catch((error) => {
+      console.error("Failed to fetch user skills:", error);
     });
-  }, [userId, fetchUserSkills]);  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  // Load user attributes when userId changes
+  useEffect(() => {
+    fetchUserAttributes(userId).catch((error) => {
+      console.error("Failed to fetch user attributes:", error);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   const handleProfileSubmit = async () => {
     if (!user) return;
@@ -101,8 +147,19 @@ export default function UserDetailPage() {
     setIsEditingProfile(false);
   };
 
-  const handleSkillLevelChange = async (skill: VolleyballSkill, newLevel: number) => {
-    const existingUserSkill = userSkills.find(us => us.skill === skill);
+  const handleFitnessChange = async (newValue: number) => {
+    await updateUserAttributes(userId, { fitness: newValue });
+  };
+
+  const handleLeadershipChange = async (newValue: number) => {
+    await updateUserAttributes(userId, { leadership: newValue });
+  };
+
+  const handleSkillLevelChange = async (
+    skill: VolleyballSkill,
+    newLevel: number,
+  ) => {
+    const existingUserSkill = userSkills.find((us) => us.skill === skill);
 
     try {
       if (existingUserSkill) {
@@ -129,31 +186,32 @@ export default function UserDetailPage() {
       // Refresh user skills to ensure UI is in sync - force refresh to bypass cache
       await fetchUserSkills(userId);
     } catch (error) {
-      console.error('Error updating skill:', error);
+      console.error("Error updating skill:", error);
     }
 
     setEditingSkillId(null);
   };
 
   const getUserSkillLevel = (skill: VolleyballSkill): number => {
-    const userSkill = userSkills.find(us => us.skill === skill);
+    const userSkill = userSkills.find((us) => us.skill === skill);
     return userSkill ? userSkill.level : 0;
   };
 
   const getRatingLabel = (rating: number): string => {
-    const option = SKILL_RATING_OPTIONS.find(opt => opt.value === rating.toString());
+    const option = SKILL_RATING_OPTIONS.find(
+      (opt) => opt.value === rating.toString(),
+    );
     return option?.label || `${rating}/10`;
   };
 
   const getRatingColor = (rating: number): string => {
-    if (rating >= 9) return 'bg-green-100 text-green-800';
-    if (rating >= 7) return 'bg-orange-100 text-orange-800';
-    if (rating >= 5) return 'bg-blue-100 text-blue-800';
-    if (rating >= 3) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-gray-100 text-gray-800';
+    if (rating >= 9) return "bg-green-100 text-green-800";
+    if (rating >= 7) return "bg-orange-100 text-orange-800";
+    if (rating >= 5) return "bg-blue-100 text-blue-800";
+    if (rating >= 3) return "bg-yellow-100 text-yellow-800";
+    return "bg-gray-100 text-gray-800";
   };
 
-  
   // Show loading state
   if (isLoadingSkills) {
     return (
@@ -170,18 +228,20 @@ export default function UserDetailPage() {
   }
 
   // Show error state only for critical errors, but continue with empty skills for non-critical ones
-  if (skillsError && skillsError.includes('UNAUTHORIZED')) {
+  if (skillsError && skillsError.includes("UNAUTHORIZED")) {
     return (
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
           <Card>
             <CardContent className="text-center py-12">
-              <h2 className="text-xl font-bold text-red-600 mb-4">Accès non autorisé</h2>
+              <h2 className="text-xl font-bold text-red-600 mb-4">
+                Accès non autorisé
+              </h2>
               <p className="text-red-500 mb-4">
                 Vous devez être connecté pour accéder à cette page.
               </p>
-              <Button 
-                onClick={() => window.location.href = '/auth/login'}
+              <Button
+                onClick={() => (window.location.href = "/auth/login")}
                 className="bg-blue-500 hover:bg-blue-600"
               >
                 Se connecter
@@ -217,7 +277,6 @@ export default function UserDetailPage() {
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
         <div className="py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center justify-between">
@@ -230,17 +289,14 @@ export default function UserDetailPage() {
                   </p>
                 </div>
                 <Link href="/admin/users">
-                  <Button variant="outline">
-                    Retour à la liste
-                  </Button>
+                  <Button variant="outline">Retour à la liste</Button>
                 </Link>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              
               {/* Profile Section */}
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1 space-y-6">
                 <Card>
                   <CardHeader>
                     <div className="flex justify-between items-center">
@@ -250,7 +306,7 @@ export default function UserDetailPage() {
                         size="sm"
                         onClick={() => setIsEditingProfile(!isEditingProfile)}
                       >
-                        {isEditingProfile ? 'Annuler' : 'Modifier'}
+                        {isEditingProfile ? "Annuler" : "Modifier"}
                       </Button>
                     </div>
                   </CardHeader>
@@ -259,14 +315,14 @@ export default function UserDetailPage() {
                     <div className="text-center mb-6">
                       <div className="h-24 w-24 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
                         <span className="text-2xl font-bold text-orange-800">
-                          {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                          {user.firstName.charAt(0)}
+                          {user.lastName.charAt(0)}
                         </span>
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">
                         {user.firstName} {user.lastName}
                       </h3>
                       <p className="text-sm text-gray-500">{user.email}</p>
-                      <p className="text-sm text-gray-500">{user.profile?.gender}</p>
                     </div>
 
                     {isEditingProfile ? (
@@ -277,8 +333,34 @@ export default function UserDetailPage() {
                         onCancel={() => setIsEditingProfile(false)}
                       />
                     ) : (
-                      <UserInfoDisplay user={user as User} />
+                      <UserInfoDisplay
+                        user={user as User}
+                        profile={user.profile}
+                      />
                     )}
+                  </CardContent>
+                </Card>
+
+                {/* Attributes Section */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Attributs du joueur</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <AttributeControl
+                        label="Forme physique"
+                        value={attributes.fitness}
+                        onChange={handleFitnessChange}
+                        disabled={isLoadingAttributes}
+                      />
+                      <AttributeControl
+                        label="Leadership"
+                        value={attributes.leadership}
+                        onChange={handleLeadershipChange}
+                        disabled={isLoadingAttributes}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -308,10 +390,12 @@ export default function UserDetailPage() {
                     {/* Skills by Category */}
                     {isLoadingSkills ? (
                       <div className="text-center py-8">
-                        <p className="text-gray-500">Chargement des compétences...</p>
+                        <p className="text-gray-500">
+                          Chargement des compétences...
+                        </p>
                       </div>
                     ) : (
-                      <div className="space-y-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {skillDefinitions.map((skillDef) => (
                           <SkillLevelCard
                             key={skillDef.skill}
@@ -320,7 +404,9 @@ export default function UserDetailPage() {
                             isEditing={editingSkillId === skillDef.skill}
                             onEdit={() => setEditingSkillId(skillDef.skill)}
                             onCancel={() => setEditingSkillId(null)}
-                            onLevelChange={(level) => handleSkillLevelChange(skillDef.skill, level)}
+                            onLevelChange={(level) =>
+                              handleSkillLevelChange(skillDef.skill, level)
+                            }
                             getRatingLabel={getRatingLabel}
                             getRatingColor={getRatingColor}
                           />
@@ -331,7 +417,6 @@ export default function UserDetailPage() {
                 </Card>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -344,7 +429,7 @@ interface ProfileFormData {
   readonly firstName: string;
   readonly lastName: string;
   readonly email: string;
-  readonly gender: '' | Gender;
+  readonly gender: "" | Gender;
 }
 
 interface ProfileEditFormProps {
@@ -354,7 +439,12 @@ interface ProfileEditFormProps {
   readonly onCancel: () => void;
 }
 
-function ProfileEditForm({ form, onChange, onSubmit, onCancel }: ProfileEditFormProps) {
+function ProfileEditForm({
+  form,
+  onChange,
+  onSubmit,
+  onCancel,
+}: ProfileEditFormProps) {
   return (
     <div className="space-y-4">
       <Input
@@ -366,7 +456,7 @@ function ProfileEditForm({ form, onChange, onSubmit, onCancel }: ProfileEditForm
         onChange={(e) => onChange({ ...form, firstName: e.target.value })}
         required
       />
-      
+
       <Input
         id="lastName"
         name="lastName"
@@ -391,11 +481,13 @@ function ProfileEditForm({ form, onChange, onSubmit, onCancel }: ProfileEditForm
         id="gender"
         name="gender"
         label="Genre"
-        value={form.gender || ''}
-        onChange={(e) => onChange({ ...form, gender: (e.target.value || '') as '' | Gender })}
+        value={form.gender || ""}
+        onChange={(e) =>
+          onChange({ ...form, gender: (e.target.value || "") as "" | Gender })
+        }
         options={[
-          { value: 'MALE', label: 'Homme' },
-          { value: 'FEMALE', label: 'Femme' },
+          { value: "MALE", label: "Homme" },
+          { value: "FEMALE", label: "Femme" },
         ]}
         placeholder="Sélectionner..."
       />
@@ -415,12 +507,23 @@ function ProfileEditForm({ form, onChange, onSubmit, onCancel }: ProfileEditForm
 // Dumb component for user info display
 interface UserInfoDisplayProps {
   readonly user: User;
+  readonly profile?: UserProfile | null;
 }
 
-function UserInfoDisplay({ user }: UserInfoDisplayProps) {
+function UserInfoDisplay({ profile }: UserInfoDisplayProps) {
+  const getGenderLabel = (gender?: string | null): string => {
+    if (!gender) return "Non renseigné";
+    return gender === "MALE" ? "Homme" : "Femme";
+  };
+
   return (
-    <div className="space-y-2">
-      <div className="text-sm text-gray-600">{user.email}</div>
+    <div className="space-y-3">
+      <div className="flex justify-between items-center py-2 border-b border-gray-200">
+        <span className="text-sm font-medium text-gray-700">Genre</span>
+        <span className="text-sm text-gray-900">
+          {getGenderLabel(profile?.gender)}
+        </span>
+      </div>
     </div>
   );
 }

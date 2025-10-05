@@ -31,7 +31,7 @@ export function SkillLevelCard({
     <div className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow w-full">
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
-          <h4 className="font-medium text-gray-900">{VOLLEYBALL_SKILL_DEFINITIONS[skill].name}</h4>
+          <p className="font-medium text-gray-900">{VOLLEYBALL_SKILL_DEFINITIONS[skill].name}</p>
           {VOLLEYBALL_SKILL_DEFINITIONS[skill].description && (
             <p className="text-xs text-gray-500 mt-1">{VOLLEYBALL_SKILL_DEFINITIONS[skill].description}</p>
           )}

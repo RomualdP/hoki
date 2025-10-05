@@ -4,8 +4,7 @@ export type VolleyballSkill =
   | 'SERVING' 
   | 'RECEPTION' 
   | 'SETTING' 
-  | 'BLOCKING' 
-  | 'TEAMWORK';
+  | 'BLOCKING';
 
 export interface SkillDefinition {
   readonly skill: VolleyballSkill;
