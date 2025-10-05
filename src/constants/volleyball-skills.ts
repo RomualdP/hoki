@@ -7,7 +7,6 @@ export const VOLLEYBALL_SKILLS: VolleyballSkill[] = [
   'RECEPTION',
   'SETTING',
   'BLOCKING',
-  'TEAMWORK',
 ];
 
 export const VOLLEYBALL_SKILL_DEFINITIONS: Record<VolleyballSkill, SkillDefinition> = {
@@ -40,11 +39,6 @@ export const VOLLEYBALL_SKILL_DEFINITIONS: Record<VolleyballSkill, SkillDefiniti
     skill: 'BLOCKING',
     name: 'Contre',
     description: 'Efficacité au contre, lecture du jeu adverse',
-  },
-  TEAMWORK: {
-    skill: 'TEAMWORK',
-    name: 'Esprit d\'équipe',
-    description: 'Communication, solidarité et esprit d\'équipe',
   },
 };
 
