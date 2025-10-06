@@ -15,6 +15,7 @@ import {
   UpdateUserAttributesDto,
 } from './dto';
 import { UserWhereInput, VolleyballSkill } from '../types';
+import { calculatePlayerLevel } from './helpers';
 
 @Injectable()
 export class UsersService {
@@ -373,5 +374,19 @@ export class UsersService {
     }
 
     return this.getUserAttributes(userId);
+  }
+
+  async getPlayerLevel(userId: string) {
+    const user = await this.database.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UserNotFoundException(userId);
+    }
+
+    const [skills, attributes] = await Promise.all([
+      this.database.userSkill.findMany({ where: { userId } }),
+      this.database.userAttribute.findMany({ where: { userId } }),
+    ]);
+
+    return calculatePlayerLevel(skills, attributes);
   }
 }

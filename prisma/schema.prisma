@@ -185,6 +185,7 @@ model Training {
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
   registrations   TrainingRegistration[]
+  teams           TrainingTeam[]
 
   @@map("trainings")
 }
@@ -201,6 +202,18 @@ model TrainingRegistration {
 
   @@unique([trainingId, userId])
   @@map("training_registrations")
+}
+
+model TrainingTeam {
+  id           String   @id @default(cuid())
+  trainingId   String
+  name         String
+  memberIds    String[]
+  averageLevel Float    @db.DoublePrecision
+  createdAt    DateTime @default(now())
+  training     Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+
+  @@map("training_teams")
 }
 
 // ============================================

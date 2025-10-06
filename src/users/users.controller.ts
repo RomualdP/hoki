@@ -177,4 +177,14 @@ export class UsersController {
       message: 'Attributs mis à jour avec succès',
     };
   }
+
+  @Get(':id/level')
+  async getPlayerLevel(@Param('id') id: string) {
+    const level = await this.usersService.getPlayerLevel(id);
+    return {
+      success: true,
+      data: { level },
+      message: 'Niveau du joueur calculé avec succès',
+    };
+  }
 }

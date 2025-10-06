@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TrainingController } from './training.controller';
 import { CreateTrainingHandler } from '../application/commands/create-training/create-training.handler';
+import { GenerateTrainingTeamsHandler } from '../application/commands/generate-training-teams/generate-training-teams.handler';
 import { ListTrainingsHandler } from '../application/queries/list-trainings/list-trainings.handler';
 import { GetTrainingHandler } from '../application/queries/get-training/get-training.handler';
+import { GetTrainingTeamsHandler } from '../application/queries/get-training-teams/get-training-teams.handler';
 import { CreateTrainingCommand } from '../application/commands/create-training/create-training.command';
 import { ListTrainingsQuery } from '../application/queries/list-trainings/list-trainings.query';
 
@@ -13,11 +15,19 @@ describe('TrainingController', () => {
     execute: jest.fn(),
   };
 
+  const mockGenerateTeamsHandler = {
+    execute: jest.fn(),
+  };
+
   const mockListTrainingsHandler = {
     execute: jest.fn(),
   };
 
   const mockGetTrainingHandler = {
+    execute: jest.fn(),
+  };
+
+  const mockGetTeamsHandler = {
     execute: jest.fn(),
   };
 
@@ -30,12 +40,20 @@ describe('TrainingController', () => {
           useValue: mockCreateTrainingHandler,
         },
         {
+          provide: GenerateTrainingTeamsHandler,
+          useValue: mockGenerateTeamsHandler,
+        },
+        {
           provide: ListTrainingsHandler,
           useValue: mockListTrainingsHandler,
         },
         {
           provide: GetTrainingHandler,
           useValue: mockGetTrainingHandler,
+        },
+        {
+          provide: GetTrainingTeamsHandler,
+          useValue: mockGetTeamsHandler,
         },
       ],
     }).compile();

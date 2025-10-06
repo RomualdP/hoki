@@ -1,1 +1,1 @@
-// Domain services will be exported here
+export * from './team-generation.service';
