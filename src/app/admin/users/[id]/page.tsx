@@ -19,6 +19,7 @@ import { useUserSkillsApi } from "../../../../features/users/hooks/useUserSkills
 import { useUsersApi } from "../../../../features/users/hooks/useUsersApi";
 import { useUserProfileApi } from "../../../../features/users/hooks/useUserProfileApi";
 import { useUserAttributesApi } from "../../../../features/users/hooks/useUserAttributesApi";
+import { usePlayerLevel } from "../../../../features/users/hooks";
 import Link from "next/link";
 import type {
   Gender,
@@ -55,7 +56,7 @@ export default function UserDetailPage() {
     updateUserAttributes,
     isLoading: isLoadingAttributes,
   } = useUserAttributesApi();
-  console.log(attributes);
+  const { level, fetchPlayerLevel } = usePlayerLevel();
   const [user, setUser] = useState<(User & { profile: UserProfile }) | null>(
     null,
   );
@@ -139,6 +140,14 @@ export default function UserDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
+  // Load player level when userId changes
+  useEffect(() => {
+    fetchPlayerLevel(userId).catch((error) => {
+      console.error("Failed to fetch player level:", error);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
   const handleProfileSubmit = async () => {
     if (!user) return;
     await updateUserProfile(user.id, {
@@ -149,10 +158,12 @@ export default function UserDetailPage() {
 
   const handleFitnessChange = async (newValue: number) => {
     await updateUserAttributes(userId, { fitness: newValue });
+    await fetchPlayerLevel(userId);
   };
 
   const handleLeadershipChange = async (newValue: number) => {
     await updateUserAttributes(userId, { leadership: newValue });
+    await fetchPlayerLevel(userId);
   };
 
   const handleSkillLevelChange = async (
@@ -185,6 +196,8 @@ export default function UserDetailPage() {
 
       // Refresh user skills to ensure UI is in sync - force refresh to bypass cache
       await fetchUserSkills(userId);
+      // Refresh player level after skill changes
+      await fetchPlayerLevel(userId);
     } catch (error) {
       console.error("Error updating skill:", error);
     }
@@ -322,7 +335,12 @@ export default function UserDetailPage() {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {user.firstName} {user.lastName}
                       </h3>
-                      <p className="text-sm text-gray-500">{user.email}</p>
+                      <div className="flex items-center justify-center gap-2 mt-2">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                          Niveau: {level.toFixed(1)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-2">{user.email}</p>
                     </div>
 
                     {isEditingProfile ? (
