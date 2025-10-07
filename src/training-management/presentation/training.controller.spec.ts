@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TrainingController } from './training.controller';
 import { CreateTrainingHandler } from '../application/commands/create-training/create-training.handler';
 import { GenerateTrainingTeamsHandler } from '../application/commands/generate-training-teams/generate-training-teams.handler';
+import { DeleteTrainingHandler } from '../application/commands/delete-training/delete-training.handler';
 import { ListTrainingsHandler } from '../application/queries/list-trainings/list-trainings.handler';
 import { GetTrainingHandler } from '../application/queries/get-training/get-training.handler';
 import { GetTrainingTeamsHandler } from '../application/queries/get-training-teams/get-training-teams.handler';
@@ -16,6 +17,10 @@ describe('TrainingController', () => {
   };
 
   const mockGenerateTeamsHandler = {
+    execute: jest.fn(),
+  };
+
+  const mockDeleteTrainingHandler = {
     execute: jest.fn(),
   };
 
@@ -42,6 +47,10 @@ describe('TrainingController', () => {
         {
           provide: GenerateTrainingTeamsHandler,
           useValue: mockGenerateTeamsHandler,
+        },
+        {
+          provide: DeleteTrainingHandler,
+          useValue: mockDeleteTrainingHandler,
         },
         {
           provide: ListTrainingsHandler,

@@ -2,19 +2,24 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Query,
   Param,
   UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CreateTrainingHandler } from '../application/commands/create-training/create-training.handler';
 import { GenerateTrainingTeamsHandler } from '../application/commands/generate-training-teams/generate-training-teams.handler';
+import { DeleteTrainingHandler } from '../application/commands/delete-training/delete-training.handler';
 import { ListTrainingsHandler } from '../application/queries/list-trainings/list-trainings.handler';
 import { GetTrainingHandler } from '../application/queries/get-training/get-training.handler';
 import { GetTrainingTeamsHandler } from '../application/queries/get-training-teams/get-training-teams.handler';
 import { CreateTrainingCommand } from '../application/commands/create-training/create-training.command';
 import { GenerateTrainingTeamsCommand } from '../application/commands/generate-training-teams/generate-training-teams.command';
+import { DeleteTrainingCommand } from '../application/commands/delete-training/delete-training.command';
 import { ListTrainingsQuery } from '../application/queries/list-trainings/list-trainings.query';
 import { GetTrainingQuery } from '../application/queries/get-training/get-training.query';
 import { GetTrainingTeamsQuery } from '../application/queries/get-training-teams/get-training-teams.query';
@@ -25,6 +30,7 @@ export class TrainingController {
   constructor(
     private readonly createTrainingHandler: CreateTrainingHandler,
     private readonly generateTeamsHandler: GenerateTrainingTeamsHandler,
+    private readonly deleteTrainingHandler: DeleteTrainingHandler,
     private readonly listTrainingsHandler: ListTrainingsHandler,
     private readonly getTrainingHandler: GetTrainingHandler,
     private readonly getTeamsHandler: GetTrainingTeamsHandler,
@@ -58,5 +64,12 @@ export class TrainingController {
   async getTeams(@Param('id') trainingId: string) {
     const query: GetTrainingTeamsQuery = { trainingId };
     return this.getTeamsHandler.execute(query);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async delete(@Param('id') id: string) {
+    const command: DeleteTrainingCommand = { id };
+    await this.deleteTrainingHandler.execute(command);
   }
 }

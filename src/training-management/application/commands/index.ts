@@ -6,3 +6,5 @@ export * from './cancel-registration/cancel-registration.command';
 export * from './cancel-registration/cancel-registration.handler';
 export * from './generate-training-teams/generate-training-teams.command';
 export * from './generate-training-teams/generate-training-teams.handler';
+export * from './delete-training/delete-training.command';
+export * from './delete-training/delete-training.handler';

@@ -9,6 +9,7 @@ import { CreateTrainingHandler } from './application/commands/create-training/cr
 import { RegisterToTrainingHandler } from './application/commands/register-to-training/register-to-training.handler';
 import { CancelRegistrationHandler } from './application/commands/cancel-registration/cancel-registration.handler';
 import { GenerateTrainingTeamsHandler } from './application/commands/generate-training-teams/generate-training-teams.handler';
+import { DeleteTrainingHandler } from './application/commands/delete-training/delete-training.handler';
 import { ListTrainingsHandler } from './application/queries/list-trainings/list-trainings.handler';
 import { GetTrainingHandler } from './application/queries/get-training/get-training.handler';
 import { GetTrainingTeamsHandler } from './application/queries/get-training-teams/get-training-teams.handler';
@@ -113,6 +114,13 @@ const TRAINING_TEAM_REPOSITORY = 'ITrainingTeamRepository';
         return new GetTrainingTeamsHandler(teamRepository, db);
       },
       inject: [TRAINING_TEAM_REPOSITORY, DatabaseService],
+    },
+    {
+      provide: DeleteTrainingHandler,
+      useFactory: (trainingRepository: ITrainingRepository) => {
+        return new DeleteTrainingHandler(trainingRepository);
+      },
+      inject: [TRAINING_REPOSITORY],
     },
   ],
 })
