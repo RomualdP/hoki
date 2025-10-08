@@ -13,6 +13,7 @@ import { DeleteTrainingHandler } from './application/commands/delete-training/de
 import { ListTrainingsHandler } from './application/queries/list-trainings/list-trainings.handler';
 import { GetTrainingHandler } from './application/queries/get-training/get-training.handler';
 import { GetTrainingTeamsHandler } from './application/queries/get-training-teams/get-training-teams.handler';
+import { GetTrainingRegistrationsHandler } from './application/queries/get-training-registrations/get-training-registrations.handler';
 
 import { TrainingRepository } from './infrastructure/persistence/repositories/training.repository';
 import { TrainingRegistrationRepository } from './infrastructure/persistence/repositories/training-registration.repository';
@@ -121,6 +122,13 @@ const TRAINING_TEAM_REPOSITORY = 'ITrainingTeamRepository';
         return new DeleteTrainingHandler(trainingRepository);
       },
       inject: [TRAINING_REPOSITORY],
+    },
+    {
+      provide: GetTrainingRegistrationsHandler,
+      useFactory: (db: DatabaseService) => {
+        return new GetTrainingRegistrationsHandler(db);
+      },
+      inject: [DatabaseService],
     },
   ],
 })

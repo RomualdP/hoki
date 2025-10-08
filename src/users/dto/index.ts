@@ -1,4 +1,6 @@
 import { VolleyballSkill } from '../../types';
+import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsInt, Min } from 'class-validator';
 
 export class CreateUserDto {
   readonly email: string;
@@ -50,11 +52,32 @@ export class UpdateUserSkillDto {
 }
 
 export class QueryUsersDto {
+  @IsOptional()
+  @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsString()
   email?: string;
+
+  @IsOptional()
+  @IsString()
   city?: string;
+
+  @IsOptional()
+  @IsString()
   position?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   limit?: number;
 }
 

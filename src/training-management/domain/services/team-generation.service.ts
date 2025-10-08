@@ -1,9 +1,6 @@
 import { randomUUID } from 'crypto';
 import { TrainingTeam } from '../entities/training-team.entity';
-import {
-  ParticipantWithLevel,
-  Gender,
-} from '../value-objects/participant-with-level.value-object';
+import { ParticipantWithLevel } from '../value-objects/participant-with-level.value-object';
 import { TeamSize } from '../value-objects/team-size.value-object';
 
 export class TeamGenerationService {
