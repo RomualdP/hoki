@@ -4,8 +4,7 @@ export type VolleyballSkill =
   | 'SERVING'
   | 'RECEPTION'
   | 'SETTING'
-  | 'BLOCKING'
-  | 'TEAMWORK';
+  | 'BLOCKING';
 
 export const VOLLEYBALL_SKILLS: VolleyballSkill[] = [
   'ATTACK',
@@ -14,7 +13,6 @@ export const VOLLEYBALL_SKILLS: VolleyballSkill[] = [
   'RECEPTION',
   'SETTING',
   'BLOCKING',
-  'TEAMWORK',
 ];
 
 export const VOLLEYBALL_SKILL_LABELS: Record<VolleyballSkill, string> = {
@@ -24,7 +22,6 @@ export const VOLLEYBALL_SKILL_LABELS: Record<VolleyballSkill, string> = {
   RECEPTION: 'Réception',
   SETTING: 'Passe',
   BLOCKING: 'Contre',
-  TEAMWORK: "Esprit d'équipe",
 };
 
 export const VOLLEYBALL_SKILL_DESCRIPTIONS: Record<VolleyballSkill, string> = {
@@ -34,5 +31,4 @@ export const VOLLEYBALL_SKILL_DESCRIPTIONS: Record<VolleyballSkill, string> = {
   RECEPTION: 'Qualité de la réception de service et des ballons difficiles',
   SETTING: 'Précision et créativité dans la distribution du jeu',
   BLOCKING: 'Efficacité au contre, lecture du jeu adverse',
-  TEAMWORK: "Communication, solidarité et esprit d'équipe",
 };

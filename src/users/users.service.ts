@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import {
   UserNotFoundException,
@@ -12,12 +12,14 @@ import {
   QueryUsersDto,
   AddSkillDto,
   UpdateSkillDto,
+  UpdateUserAttributesDto,
 } from './dto';
 import { UserWhereInput, VolleyballSkill } from '../types';
+import { calculatePlayerLevel } from './helpers';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly database: DatabaseService) {}
 
   async findAll(query: QueryUsersDto) {
     const { page = 1, limit = 10, name, email, city, position } = query;
@@ -46,24 +48,23 @@ export class UsersService {
       };
 
     const [users, total] = await Promise.all([
-      this.prisma.user.findMany({
+      this.database.user.findMany({
         where,
         skip,
         take: Number(limit),
         include: {
           profile: true,
-          statistics: true,
+          attributes: true,
           _count: {
             select: {
               skills: true,
-              achievements: true,
               teamMemberships: true,
             },
           },
         },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.user.count({ where }),
+      this.database.user.count({ where }),
     ]);
 
     return {
@@ -79,13 +80,12 @@ export class UsersService {
 
   async findOne(id: string) {
     try {
-      const user = await this.prisma.user.findUnique({
+      const user = await this.database.user.findUnique({
         where: { id },
         include: {
           profile: true,
-          statistics: true,
           skills: true,
-          achievements: true,
+          attributes: true,
           teamMemberships: {
             include: { team: true },
           },
@@ -109,7 +109,7 @@ export class UsersService {
   }
 
   async getProfile(id: string) {
-    const profile = await this.prisma.userProfile.findUnique({
+    const profile = await this.database.userProfile.findUnique({
       where: { userId: id },
       include: {
         user: {
@@ -135,12 +135,12 @@ export class UsersService {
 
   async updateProfile(id: string, updateProfileDto: UpdateProfileDto) {
     try {
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.database.user.findUnique({ where: { id } });
       if (!user) {
         throw new UserNotFoundException(id);
       }
 
-      return this.prisma.userProfile.upsert({
+      return this.database.userProfile.upsert({
         where: { userId: id },
         update: updateProfileDto,
         create: {
@@ -170,40 +170,19 @@ export class UsersService {
     }
   }
 
-  async getStatistics(id: string) {
-    const statistics = await this.prisma.userStatistics.findUnique({
-      where: { userId: id },
-    });
-
-    if (!statistics) {
-      return this.prisma.userStatistics.create({
-        data: { userId: id },
-      });
-    }
-
-    return statistics;
-  }
-
-  async getAchievements(id: string) {
-    return this.prisma.achievement.findMany({
-      where: { userId: id },
-      orderBy: { earnedAt: 'desc' },
-    });
-  }
-
   async getUserSkills(id: string) {
-    return this.prisma.userSkill.findMany({
+    return this.database.userSkill.findMany({
       where: { userId: id },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async addSkill(id: string, skillData: AddSkillDto) {
-    return this.prisma.userSkill.upsert({
+    return this.database.userSkill.upsert({
       where: {
         userId_skill: {
           userId: id,
-          skill: skillData.skill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+          skill: skillData.skill,
         },
       },
       update: {
@@ -214,7 +193,7 @@ export class UsersService {
       },
       create: {
         userId: id,
-        skill: skillData.skill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        skill: skillData.skill,
         level: skillData.level,
         experienceYears: skillData.experienceYears,
         notes: skillData.notes,
@@ -223,11 +202,11 @@ export class UsersService {
   }
 
   async updateSkill(userId: string, skill: string, skillData: UpdateSkillDto) {
-    return this.prisma.userSkill.update({
+    return this.database.userSkill.update({
       where: {
         userId_skill: {
           userId,
-          skill: skill as VolleyballSkill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+          skill: skill as VolleyballSkill,
         },
       },
       data: skillData,
@@ -235,39 +214,55 @@ export class UsersService {
   }
 
   async removeSkill(userId: string, skill: string) {
-    return this.prisma.userSkill.delete({
+    return this.database.userSkill.delete({
       where: {
         userId_skill: {
           userId,
-          skill: skill as VolleyballSkill, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+          skill: skill as VolleyballSkill,
         },
       },
     });
   }
 
   async create(createUserDto: CreateUserDto) {
-    return this.prisma.user.create({
+    const user = await this.database.user.create({
       data: createUserDto,
       include: {
         profile: true,
-        statistics: true,
       },
     });
+
+    // Créer automatiquement les attributs FITNESS et LEADERSHIP avec valeur par défaut 1.0
+    await this.database.userAttribute.createMany({
+      data: [
+        {
+          userId: user.id,
+          attribute: 'FITNESS',
+          value: 1.0,
+        },
+        {
+          userId: user.id,
+          attribute: 'LEADERSHIP',
+          value: 1.0,
+        },
+      ],
+    });
+
+    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.database.user.findUnique({ where: { id } });
       if (!user) {
         throw new UserNotFoundException(id);
       }
 
-      return this.prisma.user.update({
+      return this.database.user.update({
         where: { id },
         data: updateUserDto,
         include: {
           profile: true,
-          statistics: true,
         },
       });
     } catch (error) {
@@ -283,12 +278,12 @@ export class UsersService {
 
   async remove(id: string) {
     try {
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.database.user.findUnique({ where: { id } });
       if (!user) {
         throw new UserNotFoundException(id);
       }
 
-      return this.prisma.user.delete({ where: { id } });
+      return this.database.user.delete({ where: { id } });
     } catch (error) {
       if (error instanceof UserNotFoundException) {
         throw error;
@@ -301,12 +296,97 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
+    return this.database.user.findUnique({
       where: { email },
       include: {
         profile: true,
-        statistics: true,
       },
     });
+  }
+
+  async getUserAttributes(userId: string) {
+    return this.database.userAttribute.findMany({
+      where: { userId },
+      orderBy: { attribute: 'asc' },
+    });
+  }
+
+  async updateUserAttributes(
+    userId: string,
+    adminId: string,
+    attributesDto: UpdateUserAttributesDto,
+  ) {
+    const user = await this.database.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UserNotFoundException(userId);
+    }
+
+    const now = new Date();
+
+    if (attributesDto.fitness !== undefined) {
+      await this.database.userAttribute.upsert({
+        where: {
+          userId_attribute: {
+            userId,
+            attribute: 'FITNESS',
+          },
+        },
+        update: {
+          value: attributesDto.fitness,
+          assessedBy: adminId,
+          assessedAt: now,
+          notes: attributesDto.notes,
+        },
+        create: {
+          userId,
+          attribute: 'FITNESS',
+          value: attributesDto.fitness,
+          assessedBy: adminId,
+          assessedAt: now,
+          notes: attributesDto.notes,
+        },
+      });
+    }
+
+    if (attributesDto.leadership !== undefined) {
+      await this.database.userAttribute.upsert({
+        where: {
+          userId_attribute: {
+            userId,
+            attribute: 'LEADERSHIP',
+          },
+        },
+        update: {
+          value: attributesDto.leadership,
+          assessedBy: adminId,
+          assessedAt: now,
+          notes: attributesDto.notes,
+        },
+        create: {
+          userId,
+          attribute: 'LEADERSHIP',
+          value: attributesDto.leadership,
+          assessedBy: adminId,
+          assessedAt: now,
+          notes: attributesDto.notes,
+        },
+      });
+    }
+
+    return this.getUserAttributes(userId);
+  }
+
+  async getPlayerLevel(userId: string) {
+    const user = await this.database.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UserNotFoundException(userId);
+    }
+
+    const [skills, attributes] = await Promise.all([
+      this.database.userSkill.findMany({ where: { userId } }),
+      this.database.userAttribute.findMany({ where: { userId } }),
+    ]);
+
+    return calculatePlayerLevel(skills, attributes);
   }
 }

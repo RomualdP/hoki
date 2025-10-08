@@ -1,15 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import {
-  CreateTeamDto,
-  UpdateTeamDto,
-  AddTeamMemberDto,
-  QueryTeamsDto,
-} from './dto';
+import { DatabaseService } from '../database/database.service';
+import { CreateTeamDto, UpdateTeamDto, QueryTeamsDto } from './dto';
 
 @Injectable()
 export class TeamsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly database: DatabaseService) {}
 
   async findAll(query: QueryTeamsDto) {
     const { page = 1, limit = 10, search } = query;
@@ -25,7 +20,7 @@ export class TeamsService {
     }
 
     const [teams, total] = await Promise.all([
-      this.prisma.team.findMany({
+      this.database.team.findMany({
         where,
         skip,
         take: Number(limit),
@@ -43,7 +38,7 @@ export class TeamsService {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.team.count({ where }),
+      this.database.team.count({ where }),
     ]);
 
     return {
@@ -58,7 +53,7 @@ export class TeamsService {
   }
 
   async findOne(id: string) {
-    const team = await this.prisma.team.findUnique({
+    const team = await this.database.team.findUnique({
       where: { id },
       include: {
         members: {
@@ -84,38 +79,8 @@ export class TeamsService {
     return team;
   }
 
-  async getMembers(id: string) {
-    return this.prisma.teamMember.findMany({
-      where: { teamId: id },
-      include: { user: true },
-      orderBy: { joinedAt: 'asc' },
-    });
-  }
-
-  async addMember(teamId: string, memberData: AddTeamMemberDto) {
-    return this.prisma.teamMember.create({
-      data: {
-        teamId,
-        userId: memberData.userId,
-        role: memberData.role,
-      },
-      include: { user: true },
-    });
-  }
-
-  async removeMember(teamId: string, userId: string) {
-    return this.prisma.teamMember.delete({
-      where: {
-        userId_teamId: {
-          userId,
-          teamId,
-        },
-      },
-    });
-  }
-
   async create(createTeamDto: CreateTeamDto) {
-    return this.prisma.team.create({
+    return this.database.team.create({
       data: createTeamDto,
       include: {
         members: {
@@ -126,12 +91,12 @@ export class TeamsService {
   }
 
   async update(id: string, updateTeamDto: UpdateTeamDto) {
-    const team = await this.prisma.team.findUnique({ where: { id } });
+    const team = await this.database.team.findUnique({ where: { id } });
     if (!team) {
       throw new NotFoundException(`Team with ID ${id} not found`);
     }
 
-    return this.prisma.team.update({
+    return this.database.team.update({
       where: { id },
       data: updateTeamDto,
       include: {
@@ -143,11 +108,11 @@ export class TeamsService {
   }
 
   async remove(id: string) {
-    const team = await this.prisma.team.findUnique({ where: { id } });
+    const team = await this.database.team.findUnique({ where: { id } });
     if (!team) {
       throw new NotFoundException(`Team with ID ${id} not found`);
     }
 
-    return this.prisma.team.delete({ where: { id } });
+    return this.database.team.delete({ where: { id } });
   }
 }

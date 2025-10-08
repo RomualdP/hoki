@@ -31,4 +31,4 @@ async function bootstrap() {
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
   console.log(`🔗 CORS origins: ${allowedOrigins.join(', ')}`);
 }
-bootstrap();
+void bootstrap();

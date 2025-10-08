@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { AddSkillDto, UpdateSkillDto } from './dto';
+import { DatabaseService } from '../database/database.service';
+import { AddSkillDto, UpdateSkillDto, UpdateUserAttributesDto } from './dto';
+import { UserNotFoundException } from '../common/exceptions/user.exceptions';
 
 describe('UsersService - Skills methods', () => {
   let service: UsersService;
 
-  const mockPrismaService = {
+  const mockDatabaseService = {
     user: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
@@ -18,6 +19,11 @@ describe('UsersService - Skills methods', () => {
       update: jest.fn(),
       delete: jest.fn(),
       upsert: jest.fn(),
+    },
+    userAttribute: {
+      findMany: jest.fn(),
+      upsert: jest.fn(),
+      createMany: jest.fn(),
     },
   };
 
@@ -49,8 +55,8 @@ describe('UsersService - Skills methods', () => {
       providers: [
         UsersService,
         {
-          provide: PrismaService,
-          useValue: mockPrismaService,
+          provide: DatabaseService,
+          useValue: mockDatabaseService,
         },
       ],
     }).compile();
@@ -65,12 +71,12 @@ describe('UsersService - Skills methods', () => {
   describe('getUserSkills', () => {
     it('should return user skills', async () => {
       const mockUserSkills = [mockUserSkill];
-      mockPrismaService.userSkill.findMany.mockResolvedValue(mockUserSkills);
+      mockDatabaseService.userSkill.findMany.mockResolvedValue(mockUserSkills);
 
       const result = await service.getUserSkills('user-1');
 
       expect(result).toEqual(mockUserSkills);
-      expect(mockPrismaService.userSkill.findMany).toHaveBeenCalledWith({
+      expect(mockDatabaseService.userSkill.findMany).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
         orderBy: { createdAt: 'desc' },
       });
@@ -86,12 +92,12 @@ describe('UsersService - Skills methods', () => {
         notes: 'Good service',
       };
 
-      mockPrismaService.userSkill.upsert.mockResolvedValue(mockUserSkill);
+      mockDatabaseService.userSkill.upsert.mockResolvedValue(mockUserSkill);
 
       const result = await service.addSkill('user-1', addSkillDto);
 
       expect(result).toEqual(mockUserSkill);
-      expect(mockPrismaService.userSkill.upsert).toHaveBeenCalledWith({
+      expect(mockDatabaseService.userSkill.upsert).toHaveBeenCalledWith({
         where: {
           userId_skill: {
             userId: 'user-1',
@@ -128,7 +134,7 @@ describe('UsersService - Skills methods', () => {
         updatedAt: new Date(),
       };
 
-      mockPrismaService.userSkill.update.mockResolvedValue(updatedUserSkill);
+      mockDatabaseService.userSkill.update.mockResolvedValue(updatedUserSkill);
 
       const result = await service.updateSkill(
         'user-1',
@@ -137,7 +143,7 @@ describe('UsersService - Skills methods', () => {
       );
 
       expect(result).toEqual(updatedUserSkill);
-      expect(mockPrismaService.userSkill.update).toHaveBeenCalledWith({
+      expect(mockDatabaseService.userSkill.update).toHaveBeenCalledWith({
         where: {
           userId_skill: {
             userId: 'user-1',
@@ -151,12 +157,12 @@ describe('UsersService - Skills methods', () => {
 
   describe('removeSkill', () => {
     it('should remove a user skill', async () => {
-      mockPrismaService.userSkill.delete.mockResolvedValue(mockUserSkill);
+      mockDatabaseService.userSkill.delete.mockResolvedValue(mockUserSkill);
 
       const result = await service.removeSkill('user-1', 'ATTACK');
 
       expect(result).toEqual(mockUserSkill);
-      expect(mockPrismaService.userSkill.delete).toHaveBeenCalledWith({
+      expect(mockDatabaseService.userSkill.delete).toHaveBeenCalledWith({
         where: {
           userId_skill: {
             userId: 'user-1',
@@ -164,6 +170,149 @@ describe('UsersService - Skills methods', () => {
           },
         },
       });
+    });
+  });
+
+  describe('getUserAttributes', () => {
+    it('should return user attributes', async () => {
+      const mockAttributes = [
+        {
+          id: 'attr-1',
+          userId: 'user-1',
+          attribute: 'FITNESS',
+          value: 1.2,
+          assessedBy: 'admin-1',
+          assessedAt: new Date(),
+          notes: 'En forme',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'attr-2',
+          userId: 'user-1',
+          attribute: 'LEADERSHIP',
+          value: 1.5,
+          assessedBy: 'admin-1',
+          assessedAt: new Date(),
+          notes: 'Bon leader',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockDatabaseService.userAttribute.findMany.mockResolvedValue(
+        mockAttributes,
+      );
+
+      const result = await service.getUserAttributes('user-1');
+
+      expect(result).toEqual(mockAttributes);
+      expect(mockDatabaseService.userAttribute.findMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        orderBy: { attribute: 'asc' },
+      });
+    });
+  });
+
+  describe('updateUserAttributes', () => {
+    it('should update user attributes', async () => {
+      const updateDto: UpdateUserAttributesDto = {
+        fitness: 1.3,
+        leadership: 1.6,
+        notes: 'Excellente progression',
+      };
+
+      const mockUser = { id: 'user-1', email: 'test@example.com' };
+      const mockUpdatedAttributes = [
+        {
+          id: 'attr-1',
+          userId: 'user-1',
+          attribute: 'FITNESS' as const,
+          value: 1.3,
+          assessedBy: 'admin-1',
+          assessedAt: expect.any(Date) as Date,
+          notes: 'Excellente progression',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'attr-2',
+          userId: 'user-1',
+          attribute: 'LEADERSHIP' as const,
+          value: 1.6,
+          assessedBy: 'admin-1',
+          assessedAt: expect.any(Date) as Date,
+          notes: 'Excellente progression',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockDatabaseService.user.findUnique.mockResolvedValue(mockUser);
+      mockDatabaseService.userAttribute.upsert.mockResolvedValue(
+        mockUpdatedAttributes[0],
+      );
+      mockDatabaseService.userAttribute.findMany.mockResolvedValue(
+        mockUpdatedAttributes,
+      );
+
+      const result = await service.updateUserAttributes(
+        'user-1',
+        'admin-1',
+        updateDto,
+      );
+
+      expect(result).toEqual(mockUpdatedAttributes);
+      expect(mockDatabaseService.user.findUnique).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+      });
+      expect(mockDatabaseService.userAttribute.upsert).toHaveBeenCalledTimes(2);
+    });
+
+    it('should throw UserNotFoundException if user does not exist', async () => {
+      const updateDto: UpdateUserAttributesDto = {
+        fitness: 1.3,
+      };
+
+      mockDatabaseService.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.updateUserAttributes('nonexistent-user', 'admin-1', updateDto),
+      ).rejects.toThrow(UserNotFoundException);
+    });
+
+    it('should update only provided attributes', async () => {
+      const updateDto: UpdateUserAttributesDto = {
+        fitness: 0.8, // Seulement fitness
+      };
+
+      const mockUser = { id: 'user-1', email: 'test@example.com' };
+      const mockUpdatedAttributes = [
+        {
+          id: 'attr-1',
+          userId: 'user-1',
+          attribute: 'FITNESS' as const,
+          value: 0.8,
+          assessedBy: 'admin-1',
+          assessedAt: expect.any(Date) as Date,
+          notes: undefined,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockDatabaseService.user.findUnique.mockResolvedValue(mockUser);
+      mockDatabaseService.userAttribute.upsert.mockResolvedValue(
+        mockUpdatedAttributes[0],
+      );
+      mockDatabaseService.userAttribute.findMany.mockResolvedValue(
+        mockUpdatedAttributes,
+      );
+
+      await service.updateUserAttributes('user-1', 'admin-1', updateDto);
+
+      // Devrait appeler upsert seulement 1 fois (pour fitness)
+      expect(mockDatabaseService.userAttribute.upsert).toHaveBeenCalledTimes(1);
     });
   });
 });

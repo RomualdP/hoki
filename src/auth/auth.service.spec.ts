@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from './types/user.type';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let prismaService: PrismaService;
+  let databaseService: DatabaseService;
   let jwtService: JwtService;
 
   const mockUser: User = {
@@ -42,7 +42,7 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         {
-          provide: PrismaService,
+          provide: DatabaseService,
           useValue: {
             user: {
               findUnique: jest.fn(),
@@ -61,7 +61,7 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    databaseService = module.get<DatabaseService>(DatabaseService);
     jwtService = module.get<JwtService>(JwtService);
   });
 
@@ -70,7 +70,7 @@ describe('AuthService', () => {
       const findUniqueMock = jest.fn().mockResolvedValue(mockUser);
       const compareMock = jest.fn().mockResolvedValue(true);
 
-      prismaService.user.findUnique = findUniqueMock;
+      databaseService.user.findUnique = findUniqueMock;
       (bcrypt.compare as jest.Mock) = compareMock;
 
       const result = await service.validateUser('test@example.com', 'password');
@@ -79,7 +79,7 @@ describe('AuthService', () => {
 
     it('should return null if user is not found', async () => {
       const findUniqueMock = jest.fn().mockResolvedValue(null);
-      prismaService.user.findUnique = findUniqueMock;
+      databaseService.user.findUnique = findUniqueMock;
 
       const result = await service.validateUser('test@example.com', 'password');
       expect(result).toBeNull();
@@ -89,7 +89,7 @@ describe('AuthService', () => {
       const findUniqueMock = jest.fn().mockResolvedValue(mockUser);
       const compareMock = jest.fn().mockResolvedValue(false);
 
-      prismaService.user.findUnique = findUniqueMock;
+      databaseService.user.findUnique = findUniqueMock;
       (bcrypt.compare as jest.Mock) = compareMock;
 
       const result = await service.validateUser(
@@ -123,8 +123,8 @@ describe('AuthService', () => {
       const createMock = jest.fn().mockResolvedValue(mockUser);
       const hashMock = jest.fn().mockResolvedValue('hashedPassword');
 
-      prismaService.user.findUnique = findUniqueMock;
-      prismaService.user.create = createMock;
+      databaseService.user.findUnique = findUniqueMock;
+      databaseService.user.create = createMock;
       (bcrypt.hash as jest.Mock) = hashMock;
 
       const result = await service.register(
@@ -139,7 +139,7 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException if email already exists', async () => {
       const findUniqueMock = jest.fn().mockResolvedValue(mockUser);
-      prismaService.user.findUnique = findUniqueMock;
+      databaseService.user.findUnique = findUniqueMock;
 
       await expect(
         service.register('test@example.com', 'password', 'Test', 'User'),
@@ -156,7 +156,7 @@ describe('AuthService', () => {
       };
 
       const upsertMock = jest.fn().mockResolvedValue(mockUser);
-      prismaService.user.upsert = upsertMock;
+      databaseService.user.upsert = upsertMock;
 
       const result = await service.validateGoogleUser(googleProfile);
       expect(result).toEqual(mockUser);

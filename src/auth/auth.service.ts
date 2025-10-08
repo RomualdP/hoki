@@ -3,7 +3,7 @@ import {
   UnauthorizedException as ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
+import { DatabaseService } from '../database/database.service';
 import {
   User,
   UserPayload,
@@ -15,7 +15,7 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
+    private database: DatabaseService,
     private jwtService: JwtService,
   ) {}
 
@@ -23,7 +23,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<UserWithoutPassword | null> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.database.user.findUnique({ where: { email } });
     if (user?.password && (await bcrypt.compare(password, user.password))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...result } = user;
@@ -42,7 +42,7 @@ export class AuthService {
   async validateGoogleUser(profile: GoogleProfile): Promise<User> {
     const { email, name, picture } = profile;
 
-    return this.prisma.user.upsert({
+    return this.database.user.upsert({
       where: { email },
       update: {
         firstName: name?.split(' ')[0] || '',
@@ -66,7 +66,7 @@ export class AuthService {
     firstName: string,
     lastName: string = '',
   ): Promise<UserWithoutPassword> {
-    const existingUser = await this.prisma.user.findUnique({
+    const existingUser = await this.database.user.findUnique({
       where: { email },
     });
 
@@ -76,7 +76,7 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await this.prisma.user.create({
+    const user = await this.database.user.create({
       data: {
         email,
         password: hashedPassword,

@@ -3,10 +3,7 @@ import { Prisma } from '@prisma/client';
 export type UserWhereInput = Prisma.UserWhereInput;
 export type MatchWhereInput = Prisma.MatchWhereInput;
 export type NewsWhereInput = Prisma.NewsWhereInput;
-export type ActivityWhereInput = Prisma.ActivityWhereInput;
 export type TeamWhereInput = Prisma.TeamWhereInput;
-export type TournamentWhereInput = Prisma.TournamentWhereInput;
-export type NotificationWhereInput = Prisma.NotificationWhereInput;
 
 export type DateFilter = {
   gte?: Date;
