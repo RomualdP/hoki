@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { ITrainingRepository } from '../../../domain/repositories/training.repository.interface';
 import { ITrainingRegistrationRepository } from '../../../domain/repositories/training-registration.repository.interface';
 import { ITrainingTeamRepository } from '../../../domain/repositories/training-team.repository.interface';
@@ -9,6 +9,8 @@ import {
 import { TeamGenerationService } from '../../../domain/services/team-generation.service';
 import { ParticipantWithLevel } from '../../../domain/value-objects/participant-with-level.value-object';
 import { GenerateTrainingTeamsCommand } from './generate-training-teams.command';
+import { IUnitOfWork } from '../../../../database/unit-of-work.interface';
+import { UNIT_OF_WORK } from '../../../../database/database.module';
 
 @Injectable()
 export class GenerateTrainingTeamsHandler {
@@ -19,6 +21,7 @@ export class GenerateTrainingTeamsHandler {
     private readonly registrationRepository: ITrainingRegistrationRepository,
     private readonly teamRepository: ITrainingTeamRepository,
     private readonly userRepository: IUserRepository,
+    @Inject(UNIT_OF_WORK) private readonly unitOfWork: IUnitOfWork,
   ) {
     this.teamGenerationService = new TeamGenerationService();
   }
@@ -49,23 +52,26 @@ export class GenerateTrainingTeamsHandler {
       this.createParticipantWithLevel(user),
     );
 
-    await this.teamRepository.deleteByTrainingId(command.trainingId);
-
     const teams = this.teamGenerationService.generateTeams(
       command.trainingId,
       participants,
     );
 
-    const createdTeams = await this.teamRepository.createMany(
-      teams.map((team) => ({
-        trainingId: team.trainingId,
-        name: team.name,
-        memberIds: team.memberIds,
-        averageLevel: team.averageLevel,
-      })),
-    );
+    return this.unitOfWork.execute(async (tx) => {
+      await this.teamRepository.deleteByTrainingId(command.trainingId, tx);
 
-    return createdTeams.map((team) => team.id);
+      const createdTeams = await this.teamRepository.createMany(
+        teams.map((team) => ({
+          trainingId: team.trainingId,
+          name: team.name,
+          memberIds: team.memberIds,
+          averageLevel: team.averageLevel,
+        })),
+        tx,
+      );
+
+      return createdTeams.map((team) => team.id);
+    });
   }
 
   private createParticipantWithLevel(

@@ -1,8 +1,26 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import type { Server } from 'http';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { DatabaseService } from '../src/database/database.service';
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
+interface UserAttributeResponse {
+  id: string;
+  userId: string;
+  attribute: string;
+  value: number;
+  notes?: string;
+  assessedBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 describe('User Attributes (e2e)', () => {
   let app: INestApplication;
@@ -11,6 +29,7 @@ describe('User Attributes (e2e)', () => {
   let userToken: string;
   let adminId: string;
   let userId: string;
+  let server: Server;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -21,6 +40,7 @@ describe('User Attributes (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
 
+    server = app.getHttpServer() as Server;
     databaseService = moduleFixture.get<DatabaseService>(DatabaseService);
 
     // Créer un admin
@@ -81,22 +101,21 @@ describe('User Attributes (e2e)', () => {
 
   describe('GET /users/:id/attributes', () => {
     it('should return user attributes for authenticated user', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .get(`/users/${userId}/attributes`)
         .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body).toHaveProperty('data');
-      expect(response.body.data).toHaveLength(2);
-      expect(response.body.data[0]).toHaveProperty('attribute');
-      expect(response.body.data[0]).toHaveProperty('value');
+      const body = response.body as ApiResponse<UserAttributeResponse[]>;
+      expect(body.success).toBe(true);
+      expect(Array.isArray(body.data)).toBe(true);
+      expect(body.data).toHaveLength(2);
+      expect(body.data[0]).toHaveProperty('attribute');
+      expect(body.data[0]).toHaveProperty('value');
     });
 
     it('should return 401 without authentication', async () => {
-      await request(app.getHttpServer())
-        .get(`/users/${userId}/attributes`)
-        .expect(401);
+      await request(server).get(`/users/${userId}/attributes`).expect(401);
     });
   });
 
@@ -108,7 +127,7 @@ describe('User Attributes (e2e)', () => {
         notes: 'Test update',
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .patch(`/users/${userId}/attributes`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send(updateDto)
@@ -139,7 +158,7 @@ describe('User Attributes (e2e)', () => {
         fitness: 1.8,
       };
 
-      await request(app.getHttpServer())
+      await request(server)
         .patch(`/users/${userId}/attributes`)
         .set('Authorization', `Bearer ${userToken}`)
         .send(updateDto)
@@ -151,7 +170,7 @@ describe('User Attributes (e2e)', () => {
         fitness: 3.0, // > 2.0
       };
 
-      await request(app.getHttpServer())
+      await request(server)
         .patch(`/users/${userId}/attributes`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send(invalidDto)
@@ -163,7 +182,7 @@ describe('User Attributes (e2e)', () => {
         fitness: 0.8,
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .patch(`/users/${userId}/attributes`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send(updateDto)
@@ -188,7 +207,7 @@ describe('User Attributes (e2e)', () => {
         fitness: 1.0,
       };
 
-      await request(app.getHttpServer())
+      await request(server)
         .patch('/users/non-existent-id/attributes')
         .set('Authorization', `Bearer ${adminToken}`)
         .send(updateDto)

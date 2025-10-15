@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '../database/database.module';
+import { DatabaseModule, UNIT_OF_WORK } from '../database/database.module';
 
 import { TrainingController } from './presentation/training.controller';
 import { TrainingRegistrationController } from './presentation/training-registration.controller';
@@ -23,6 +23,7 @@ import { ITrainingRepository } from './domain/repositories/training.repository.i
 import { ITrainingRegistrationRepository } from './domain/repositories/training-registration.repository.interface';
 import { ITrainingTeamRepository } from './domain/repositories/training-team.repository.interface';
 import { IUserRepository } from './domain/repositories/user.repository.interface';
+import { IUnitOfWork } from '../database/unit-of-work.interface';
 
 const TRAINING_REPOSITORY = 'ITrainingRepository';
 const TRAINING_REGISTRATION_REPOSITORY = 'ITrainingRegistrationRepository';
@@ -97,12 +98,14 @@ const USER_REPOSITORY = 'IUserRepository';
         registrationRepository: ITrainingRegistrationRepository,
         teamRepository: ITrainingTeamRepository,
         userRepository: IUserRepository,
+        unitOfWork: IUnitOfWork,
       ) => {
         return new GenerateTrainingTeamsHandler(
           trainingRepository,
           registrationRepository,
           teamRepository,
           userRepository,
+          unitOfWork,
         );
       },
       inject: [
@@ -110,6 +113,7 @@ const USER_REPOSITORY = 'IUserRepository';
         TRAINING_REGISTRATION_REPOSITORY,
         TRAINING_TEAM_REPOSITORY,
         USER_REPOSITORY,
+        UNIT_OF_WORK,
       ],
     },
     {

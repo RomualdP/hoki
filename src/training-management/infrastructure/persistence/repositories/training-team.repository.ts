@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../../../database/database.service';
+import { PrismaTransactionClient } from '../../../../database/unit-of-work.interface';
 import {
   ITrainingTeamRepository,
   CreateTrainingTeamData,
@@ -24,9 +25,23 @@ export class TrainingTeamRepository implements ITrainingTeamRepository {
     return TrainingTeamMapper.toDomain(trainingTeam);
   }
 
-  async createMany(data: CreateTrainingTeamData[]): Promise<TrainingTeam[]> {
+  async createMany(
+    data: CreateTrainingTeamData[],
+    tx?: PrismaTransactionClient,
+  ): Promise<TrainingTeam[]> {
+    const client = tx ?? this.db;
     const createdTeams = await Promise.all(
-      data.map((teamData) => this.create(teamData)),
+      data.map(async (teamData) => {
+        const trainingTeam = await client.trainingTeam.create({
+          data: {
+            trainingId: teamData.trainingId,
+            name: teamData.name,
+            memberIds: teamData.memberIds,
+            averageLevel: teamData.averageLevel,
+          },
+        });
+        return TrainingTeamMapper.toDomain(trainingTeam);
+      }),
     );
 
     return createdTeams;
@@ -53,8 +68,12 @@ export class TrainingTeamRepository implements ITrainingTeamRepository {
     return TrainingTeamMapper.toDomain(trainingTeam);
   }
 
-  async deleteByTrainingId(trainingId: string): Promise<void> {
-    await this.db.trainingTeam.deleteMany({
+  async deleteByTrainingId(
+    trainingId: string,
+    tx?: PrismaTransactionClient,
+  ): Promise<void> {
+    const client = tx ?? this.db;
+    await client.trainingTeam.deleteMany({
       where: { trainingId },
     });
   }
