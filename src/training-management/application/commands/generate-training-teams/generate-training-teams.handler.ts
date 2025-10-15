@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../../../../database/database.service';
 import { ITrainingRepository } from '../../../domain/repositories/training.repository.interface';
 import { ITrainingRegistrationRepository } from '../../../domain/repositories/training-registration.repository.interface';
 import { ITrainingTeamRepository } from '../../../domain/repositories/training-team.repository.interface';
+import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { TeamGenerationService } from '../../../domain/services/team-generation.service';
 import { ParticipantWithLevel } from '../../../domain/value-objects/participant-with-level.value-object';
 import { GenerateTrainingTeamsCommand } from './generate-training-teams.command';
@@ -15,7 +15,7 @@ export class GenerateTrainingTeamsHandler {
     private readonly trainingRepository: ITrainingRepository,
     private readonly registrationRepository: ITrainingRegistrationRepository,
     private readonly teamRepository: ITrainingTeamRepository,
-    private readonly db: DatabaseService,
+    private readonly userRepository: IUserRepository,
   ) {
     this.teamGenerationService = new TeamGenerationService();
   }
@@ -40,14 +40,7 @@ export class GenerateTrainingTeamsHandler {
 
     const userIds = registrations.map((reg) => reg.userId);
 
-    const users = await this.db.user.findMany({
-      where: { id: { in: userIds } },
-      include: {
-        profile: true,
-        skills: true,
-        attributes: true,
-      },
-    });
+    const users = await this.userRepository.findManyByIdsWithDetails(userIds);
 
     const participants = users.map((user) =>
       this.createParticipantWithLevel(user),
