@@ -284,7 +284,7 @@ describe('GenerateTrainingTeamsHandler', () => {
       expect(createManySpy).toHaveBeenCalledWith(expect.any(Array), mockTx);
     });
 
-    it('should calculate player levels correctly', async () => {
+    it('should delegate player level calculation to domain service', async () => {
       const command = new GenerateTrainingTeamsCommand();
       command.trainingId = 'training-1';
       const mockCreatedTeams = [
@@ -302,9 +302,8 @@ describe('GenerateTrainingTeamsHandler', () => {
         mockRegistrations,
       );
       const findManyByIdsWithDetailsSpy = jest
-        .fn()
+        .spyOn(userRepository, 'findManyByIdsWithDetails')
         .mockResolvedValue(mockUsers);
-      userRepository.findManyByIdsWithDetails = findManyByIdsWithDetailsSpy;
 
       const executeSpy = jest
         .fn()

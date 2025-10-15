@@ -1,0 +1,7 @@
+export const DEFAULT_FITNESS_COEFFICIENT = 1.0;
+export const DEFAULT_LEADERSHIP_COEFFICIENT = 1.0;
+
+export const ATTRIBUTE_NAMES = {
+  FITNESS: 'FITNESS',
+  LEADERSHIP: 'LEADERSHIP',
+} as const;
