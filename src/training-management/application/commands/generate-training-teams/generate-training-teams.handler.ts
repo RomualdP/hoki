@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ITrainingRepository } from '../../../domain/repositories/training.repository.interface';
 import { ITrainingRegistrationRepository } from '../../../domain/repositories/training-registration.repository.interface';
 import { ITrainingTeamRepository } from '../../../domain/repositories/training-team.repository.interface';
-import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
+import {
+  IUserRepository,
+  UserWithSkillsAndAttributes,
+} from '../../../domain/repositories/user.repository.interface';
 import { TeamGenerationService } from '../../../domain/services/team-generation.service';
 import { ParticipantWithLevel } from '../../../domain/value-objects/participant-with-level.value-object';
 import { GenerateTrainingTeamsCommand } from './generate-training-teams.command';
@@ -66,7 +69,7 @@ export class GenerateTrainingTeamsHandler {
   }
 
   private createParticipantWithLevel(
-    user: UserWithDetails,
+    user: UserWithSkillsAndAttributes,
   ): ParticipantWithLevel {
     const level = this.calculatePlayerLevel(user.skills, user.attributes);
     const gender = user.profile?.gender ?? null;
@@ -79,8 +82,8 @@ export class GenerateTrainingTeamsHandler {
   }
 
   private calculatePlayerLevel(
-    skills: UserSkill[],
-    attributes: UserAttribute[],
+    skills: Array<{ level: number }>,
+    attributes: Array<{ attribute: string; value: number }>,
   ): number {
     const DEFAULT_FITNESS_COEFFICIENT = 1.0;
     const DEFAULT_LEADERSHIP_COEFFICIENT = 1.0;
@@ -99,22 +102,4 @@ export class GenerateTrainingTeamsHandler {
 
     return skillsSum * fitnessCoefficient * leadershipCoefficient;
   }
-}
-
-interface UserWithDetails {
-  id: string;
-  profile: {
-    gender: string | null;
-  } | null;
-  skills: UserSkill[];
-  attributes: UserAttribute[];
-}
-
-interface UserSkill {
-  level: number;
-}
-
-interface UserAttribute {
-  attribute: string;
-  value: number;
 }

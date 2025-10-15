@@ -12,13 +12,39 @@ export interface UserWithSkillsAndAttributes {
   }>;
 }
 
+export interface UserWithFullProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatar: string | null;
+  profile: {
+    gender: string | null;
+  } | null;
+  skills: Array<{
+    level: number;
+  }>;
+  attributes: Array<{
+    attribute: string;
+    value: number;
+  }>;
+}
+
+export interface UserBasicInfo {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  avatar: string | null;
+}
+
 export interface IUserRepository {
-  /**
-   * Trouve plusieurs utilisateurs par leurs IDs avec leurs compétences et attributs
-   * @param userIds Liste des IDs des utilisateurs à récupérer
-   * @returns Liste des utilisateurs avec leurs détails
-   */
   findManyByIdsWithDetails(
     userIds: string[],
   ): Promise<UserWithSkillsAndAttributes[]>;
+
+  findManyByIdsWithFullProfile(
+    userIds: string[],
+  ): Promise<UserWithFullProfile[]>;
+
+  findManyByIdsBasicInfo(userIds: string[]): Promise<UserBasicInfo[]>;
 }

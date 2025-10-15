@@ -43,6 +43,7 @@ export interface ITrainingRepository {
   findById(id: string): Promise<Training | null>;
   create(training: CreateTrainingData): Promise<Training>;
   update(id: string, data: UpdateTrainingData): Promise<Training>;
+  save(training: Training): Promise<Training>;
   delete(id: string): Promise<void>;
   countParticipants(trainingId: string): Promise<number>;
 }

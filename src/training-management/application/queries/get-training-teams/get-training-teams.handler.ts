@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../../../../database/database.service';
 import { ITrainingTeamRepository } from '../../../domain/repositories/training-team.repository.interface';
+import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import {
   TrainingTeamReadModel,
   TeamMemberReadModel,
@@ -11,7 +11,7 @@ import { GetTrainingTeamsQuery } from './get-training-teams.query';
 export class GetTrainingTeamsHandler {
   constructor(
     private readonly teamRepository: ITrainingTeamRepository,
-    private readonly db: DatabaseService,
+    private readonly userRepository: IUserRepository,
   ) {}
 
   async execute(
@@ -22,14 +22,8 @@ export class GetTrainingTeamsHandler {
     const allMemberIds = teams.flatMap((team) => team.memberIds);
     const uniqueMemberIds = [...new Set(allMemberIds)];
 
-    const users = await this.db.user.findMany({
-      where: { id: { in: uniqueMemberIds } },
-      include: {
-        profile: true,
-        skills: true,
-        attributes: true,
-      },
-    });
+    const users =
+      await this.userRepository.findManyByIdsWithFullProfile(uniqueMemberIds);
 
     const userMap = new Map(
       users.map((user) => {
@@ -63,8 +57,8 @@ export class GetTrainingTeamsHandler {
   }
 
   private calculatePlayerLevel(
-    skills: UserSkill[],
-    attributes: UserAttribute[],
+    skills: Array<{ level: number }>,
+    attributes: Array<{ attribute: string; value: number }>,
   ): number {
     const DEFAULT_FITNESS_COEFFICIENT = 1.0;
     const DEFAULT_LEADERSHIP_COEFFICIENT = 1.0;
@@ -83,13 +77,4 @@ export class GetTrainingTeamsHandler {
 
     return skillsSum * fitnessCoefficient * leadershipCoefficient;
   }
-}
-
-interface UserSkill {
-  level: number;
-}
-
-interface UserAttribute {
-  attribute: string;
-  value: number;
 }
