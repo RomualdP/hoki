@@ -17,14 +17,20 @@ RUN echo "=== Checking configuration files ===" && \
 
 RUN npx prisma generate
 
+# Verify NestJS CLI is available
+RUN echo "=== Checking NestJS CLI ===" && \
+    npx nest --version
+
 # Build with verbose output to debug
 RUN echo "=== Starting NestJS build ===" && \
     yarn build && \
     echo "=== Build completed ===" && \
-    echo "=== Listing dist/ directory ===" && \
-    ls -laR dist/ && \
-    echo "=== Checking for dist/main.js ===" && \
-    test -f dist/main.js && echo "dist/main.js EXISTS" || echo "dist/main.js MISSING"
+    echo "=== Listing files in dist/ ===" && \
+    find dist/ -type f -name "*.js" | head -30 && \
+    echo "=== Searching for main.js ===" && \
+    find dist/ -name "main.js" && \
+    echo "=== dist/ structure ===" && \
+    ls -la dist/
 
 FROM node:22-alpine AS production
 
@@ -41,13 +47,13 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
-# Verify that dist/main.js exists
+# Verify that dist/src/main.js exists
 RUN echo "=== Verifying production files ===" && \
     ls -la && \
     echo "=== Checking dist directory ===" && \
     ls -la dist/ && \
-    echo "=== Checking dist/main.js ===" && \
-    test -f dist/main.js && echo "dist/main.js EXISTS" || (echo "dist/main.js MISSING" && exit 1)
+    echo "=== Checking dist/src/main.js ===" && \
+    test -f dist/src/main.js && echo "dist/src/main.js EXISTS ✓" || (echo "dist/src/main.js MISSING" && exit 1)
 
 EXPOSE 3000
 
