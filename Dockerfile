@@ -10,7 +10,14 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 RUN npx prisma generate
-RUN yarn build
+
+# Build with verbose output to debug
+RUN echo "=== Starting NestJS build ===" && \
+    yarn build && \
+    echo "=== Build completed ===" && \
+    ls -la dist/ && \
+    echo "=== dist/main.js exists: ===" && \
+    test -f dist/main.js && echo "YES" || echo "NO"
 
 FROM node:22-alpine AS production
 
