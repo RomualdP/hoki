@@ -8,16 +8,23 @@ COPY package.json .
 COPY yarn.lock .
 RUN yarn install --frozen-lockfile
 
+# Copy all source files and configuration
 COPY . .
+
+# Verify configuration files exist
+RUN echo "=== Checking configuration files ===" && \
+    ls -la nest-cli.json tsconfig.json tsconfig.build.json
+
 RUN npx prisma generate
 
 # Build with verbose output to debug
 RUN echo "=== Starting NestJS build ===" && \
     yarn build && \
     echo "=== Build completed ===" && \
-    ls -la dist/ && \
-    echo "=== dist/main.js exists: ===" && \
-    test -f dist/main.js && echo "YES" || echo "NO"
+    echo "=== Listing dist/ directory ===" && \
+    ls -laR dist/ && \
+    echo "=== Checking for dist/main.js ===" && \
+    test -f dist/main.js && echo "dist/main.js EXISTS" || echo "dist/main.js MISSING"
 
 FROM node:22-alpine AS production
 
