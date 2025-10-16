@@ -28,12 +28,14 @@ export interface ITrainingRegistrationRepository {
     trainingId: string,
     userId: string,
   ): Promise<TrainingRegistration | null>;
+  findById(id: string): Promise<TrainingRegistration | null>;
   create(registration: CreateRegistrationData): Promise<TrainingRegistration>;
   updateStatus(
     id: string,
     status: string,
     cancelledAt?: Date | null,
   ): Promise<TrainingRegistration>;
+  save(registration: TrainingRegistration): Promise<TrainingRegistration>;
   delete(id: string): Promise<void>;
   countByTrainingId(trainingId: string): Promise<number>;
   existsActiveRegistration(

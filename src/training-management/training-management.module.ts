@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '../database/database.module';
-import { DatabaseService } from '../database/database.service';
+import { DatabaseModule, UNIT_OF_WORK } from '../database/database.module';
 
 import { TrainingController } from './presentation/training.controller';
 import { TrainingRegistrationController } from './presentation/training-registration.controller';
@@ -18,14 +17,18 @@ import { GetTrainingRegistrationsHandler } from './application/queries/get-train
 import { TrainingRepository } from './infrastructure/persistence/repositories/training.repository';
 import { TrainingRegistrationRepository } from './infrastructure/persistence/repositories/training-registration.repository';
 import { TrainingTeamRepository } from './infrastructure/persistence/repositories/training-team.repository';
+import { UserRepository } from './infrastructure/persistence/repositories/user.repository';
 
 import { ITrainingRepository } from './domain/repositories/training.repository.interface';
 import { ITrainingRegistrationRepository } from './domain/repositories/training-registration.repository.interface';
 import { ITrainingTeamRepository } from './domain/repositories/training-team.repository.interface';
+import { IUserRepository } from './domain/repositories/user.repository.interface';
+import { IUnitOfWork } from '../database/unit-of-work.interface';
 
 const TRAINING_REPOSITORY = 'ITrainingRepository';
 const TRAINING_REGISTRATION_REPOSITORY = 'ITrainingRegistrationRepository';
 const TRAINING_TEAM_REPOSITORY = 'ITrainingTeamRepository';
+const USER_REPOSITORY = 'IUserRepository';
 
 @Module({
   imports: [DatabaseModule],
@@ -42,6 +45,10 @@ const TRAINING_TEAM_REPOSITORY = 'ITrainingTeamRepository';
     {
       provide: TRAINING_TEAM_REPOSITORY,
       useClass: TrainingTeamRepository,
+    },
+    {
+      provide: USER_REPOSITORY,
+      useClass: UserRepository,
     },
     {
       provide: CreateTrainingHandler,
@@ -90,31 +97,34 @@ const TRAINING_TEAM_REPOSITORY = 'ITrainingTeamRepository';
         trainingRepository: ITrainingRepository,
         registrationRepository: ITrainingRegistrationRepository,
         teamRepository: ITrainingTeamRepository,
-        db: DatabaseService,
+        userRepository: IUserRepository,
+        unitOfWork: IUnitOfWork,
       ) => {
         return new GenerateTrainingTeamsHandler(
           trainingRepository,
           registrationRepository,
           teamRepository,
-          db,
+          userRepository,
+          unitOfWork,
         );
       },
       inject: [
         TRAINING_REPOSITORY,
         TRAINING_REGISTRATION_REPOSITORY,
         TRAINING_TEAM_REPOSITORY,
-        DatabaseService,
+        USER_REPOSITORY,
+        UNIT_OF_WORK,
       ],
     },
     {
       provide: GetTrainingTeamsHandler,
       useFactory: (
         teamRepository: ITrainingTeamRepository,
-        db: DatabaseService,
+        userRepository: IUserRepository,
       ) => {
-        return new GetTrainingTeamsHandler(teamRepository, db);
+        return new GetTrainingTeamsHandler(teamRepository, userRepository);
       },
-      inject: [TRAINING_TEAM_REPOSITORY, DatabaseService],
+      inject: [TRAINING_TEAM_REPOSITORY, USER_REPOSITORY],
     },
     {
       provide: DeleteTrainingHandler,
@@ -125,10 +135,16 @@ const TRAINING_TEAM_REPOSITORY = 'ITrainingTeamRepository';
     },
     {
       provide: GetTrainingRegistrationsHandler,
-      useFactory: (db: DatabaseService) => {
-        return new GetTrainingRegistrationsHandler(db);
+      useFactory: (
+        registrationRepository: ITrainingRegistrationRepository,
+        userRepository: IUserRepository,
+      ) => {
+        return new GetTrainingRegistrationsHandler(
+          registrationRepository,
+          userRepository,
+        );
       },
-      inject: [DatabaseService],
+      inject: [TRAINING_REGISTRATION_REPOSITORY, USER_REPOSITORY],
     },
   ],
 })

@@ -1,8 +1,8 @@
 import { UserAttribute, UserSkill } from '@prisma/client';
 import { getAttributeValue } from './attributes.helper';
 
-const DEFAULT_FITNESS_COEFFICIENT = 1.0;
-const DEFAULT_LEADERSHIP_COEFFICIENT = 1.0;
+export const DEFAULT_FITNESS_COEFFICIENT = 1.0;
+export const DEFAULT_LEADERSHIP_COEFFICIENT = 1.0;
 
 /**
  * Calcule le niveau d'un joueur basé sur ses compétences et attributs

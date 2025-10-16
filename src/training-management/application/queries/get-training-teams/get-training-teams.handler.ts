@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../../../../database/database.service';
 import { ITrainingTeamRepository } from '../../../domain/repositories/training-team.repository.interface';
+import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
+import { PlayerLevelCalculationService } from '../../../domain/services/player-level-calculation.service';
 import {
   TrainingTeamReadModel,
   TeamMemberReadModel,
@@ -9,10 +10,14 @@ import { GetTrainingTeamsQuery } from './get-training-teams.query';
 
 @Injectable()
 export class GetTrainingTeamsHandler {
+  private readonly playerLevelService: PlayerLevelCalculationService;
+
   constructor(
     private readonly teamRepository: ITrainingTeamRepository,
-    private readonly db: DatabaseService,
-  ) {}
+    private readonly userRepository: IUserRepository,
+  ) {
+    this.playerLevelService = new PlayerLevelCalculationService();
+  }
 
   async execute(
     query: GetTrainingTeamsQuery,
@@ -22,18 +27,15 @@ export class GetTrainingTeamsHandler {
     const allMemberIds = teams.flatMap((team) => team.memberIds);
     const uniqueMemberIds = [...new Set(allMemberIds)];
 
-    const users = await this.db.user.findMany({
-      where: { id: { in: uniqueMemberIds } },
-      include: {
-        profile: true,
-        skills: true,
-        attributes: true,
-      },
-    });
+    const users =
+      await this.userRepository.findManyByIdsWithFullProfile(uniqueMemberIds);
 
     const userMap = new Map(
       users.map((user) => {
-        const level = this.calculatePlayerLevel(user.skills, user.attributes);
+        const level = this.playerLevelService.calculateLevel(
+          user.skills,
+          user.attributes,
+        );
         return [
           user.id,
           {
@@ -61,35 +63,4 @@ export class GetTrainingTeamsHandler {
       createdAt: team.createdAt,
     }));
   }
-
-  private calculatePlayerLevel(
-    skills: UserSkill[],
-    attributes: UserAttribute[],
-  ): number {
-    const DEFAULT_FITNESS_COEFFICIENT = 1.0;
-    const DEFAULT_LEADERSHIP_COEFFICIENT = 1.0;
-
-    const skillsSum = skills.reduce((sum, skill) => sum + skill.level, 0);
-
-    const fitnessAttr = attributes.find((attr) => attr.attribute === 'FITNESS');
-    const leadershipAttr = attributes.find(
-      (attr) => attr.attribute === 'LEADERSHIP',
-    );
-
-    const fitnessCoefficient =
-      fitnessAttr?.value ?? DEFAULT_FITNESS_COEFFICIENT;
-    const leadershipCoefficient =
-      leadershipAttr?.value ?? DEFAULT_LEADERSHIP_COEFFICIENT;
-
-    return skillsSum * fitnessCoefficient * leadershipCoefficient;
-  }
-}
-
-interface UserSkill {
-  level: number;
-}
-
-interface UserAttribute {
-  attribute: string;
-  value: number;
 }

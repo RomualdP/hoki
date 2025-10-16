@@ -52,6 +52,14 @@ export class TrainingRepositoryMock implements ITrainingRepository {
     return Promise.resolve(training);
   }
 
+  save(training: Training): Promise<Training> {
+    const index = this.trainings.findIndex((t) => t.id === training.id);
+    if (index === -1) {
+      throw new Error('Training not found');
+    }
+    return Promise.resolve(training);
+  }
+
   delete(): Promise<void> {
     return Promise.resolve();
   }

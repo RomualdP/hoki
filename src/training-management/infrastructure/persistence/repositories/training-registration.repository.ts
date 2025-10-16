@@ -93,6 +93,19 @@ export class TrainingRegistrationRepository
     return TrainingRegistrationMapper.toDomain(prismaRegistration);
   }
 
+  async findById(id: string): Promise<TrainingRegistration | null> {
+    const prismaRegistration =
+      await this.database.trainingRegistration.findUnique({
+        where: { id },
+      });
+
+    if (!prismaRegistration) {
+      return null;
+    }
+
+    return TrainingRegistrationMapper.toDomain(prismaRegistration);
+  }
+
   async updateStatus(
     id: string,
     status: string,
@@ -112,6 +125,31 @@ export class TrainingRegistrationRepository
       data: {
         status: status as RegistrationStatus,
         cancelledAt,
+      },
+    });
+
+    return TrainingRegistrationMapper.toDomain(prismaRegistration);
+  }
+
+  async save(
+    registration: TrainingRegistration,
+  ): Promise<TrainingRegistration> {
+    const existingRegistration =
+      await this.database.trainingRegistration.findUnique({
+        where: { id: registration.id },
+      });
+
+    if (!existingRegistration) {
+      throw new NotFoundException(
+        `Registration with ID ${registration.id} not found`,
+      );
+    }
+
+    const prismaRegistration = await this.database.trainingRegistration.update({
+      where: { id: registration.id },
+      data: {
+        status: registration.status as RegistrationStatus,
+        cancelledAt: registration.cancelledAt,
       },
     });
 

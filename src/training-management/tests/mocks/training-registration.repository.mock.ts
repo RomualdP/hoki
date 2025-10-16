@@ -31,6 +31,11 @@ export class TrainingRegistrationRepositoryMock
     return Promise.resolve(registration);
   }
 
+  findById(id: string): Promise<TrainingRegistration | null> {
+    const registration = this.registrations.find((r) => r.id === id) || null;
+    return Promise.resolve(registration);
+  }
+
   create(data: CreateRegistrationData): Promise<TrainingRegistration> {
     const props: TrainingRegistrationProps = {
       id: `registration-${Date.now()}`,
@@ -69,6 +74,14 @@ export class TrainingRegistrationRepositoryMock
     const index = this.registrations.findIndex((r) => r.id === id);
     this.registrations[index] = updatedRegistration;
     return Promise.resolve(updatedRegistration);
+  }
+
+  save(registration: TrainingRegistration): Promise<TrainingRegistration> {
+    const index = this.registrations.findIndex((r) => r.id === registration.id);
+    if (index === -1) {
+      throw new Error('Registration not found');
+    }
+    return Promise.resolve(registration);
   }
 
   delete(): Promise<void> {

@@ -103,6 +103,35 @@ export class TrainingRepository implements ITrainingRepository {
     return TrainingMapper.toDomain(prismaTraining);
   }
 
+  async save(training: Training): Promise<Training> {
+    const existingTraining = await this.database.training.findUnique({
+      where: { id: training.id },
+    });
+
+    if (!existingTraining) {
+      throw new NotFoundException(`Training with ID ${training.id} not found`);
+    }
+
+    const updateData = TrainingMapper.toPrisma({
+      title: training.title,
+      description: training.description,
+      scheduledAt: training.scheduledAt,
+      duration: training.duration,
+      location: training.location,
+      maxParticipants: training.maxParticipants,
+      status: training.status,
+    });
+
+    const prismaTraining = await this.database.training.update({
+      where: { id: training.id },
+      data: updateData as Parameters<
+        typeof this.database.training.update
+      >[0]['data'],
+    });
+
+    return TrainingMapper.toDomain(prismaTraining);
+  }
+
   async delete(id: string): Promise<void> {
     const existingTraining = await this.database.training.findUnique({
       where: { id },

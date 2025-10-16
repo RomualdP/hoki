@@ -3,9 +3,11 @@ import { TrainingController } from './training.controller';
 import { CreateTrainingHandler } from '../application/commands/create-training/create-training.handler';
 import { GenerateTrainingTeamsHandler } from '../application/commands/generate-training-teams/generate-training-teams.handler';
 import { DeleteTrainingHandler } from '../application/commands/delete-training/delete-training.handler';
+import { RegisterToTrainingHandler } from '../application/commands/register-to-training/register-to-training.handler';
 import { ListTrainingsHandler } from '../application/queries/list-trainings/list-trainings.handler';
 import { GetTrainingHandler } from '../application/queries/get-training/get-training.handler';
 import { GetTrainingTeamsHandler } from '../application/queries/get-training-teams/get-training-teams.handler';
+import { GetTrainingRegistrationsHandler } from '../application/queries/get-training-registrations/get-training-registrations.handler';
 import { CreateTrainingCommand } from '../application/commands/create-training/create-training.command';
 import { ListTrainingsQuery } from '../application/queries/list-trainings/list-trainings.query';
 
@@ -36,6 +38,14 @@ describe('TrainingController', () => {
     execute: jest.fn(),
   };
 
+  const mockRegisterToTrainingHandler = {
+    execute: jest.fn(),
+  };
+
+  const mockGetRegistrationsHandler = {
+    execute: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TrainingController],
@@ -53,6 +63,10 @@ describe('TrainingController', () => {
           useValue: mockDeleteTrainingHandler,
         },
         {
+          provide: RegisterToTrainingHandler,
+          useValue: mockRegisterToTrainingHandler,
+        },
+        {
           provide: ListTrainingsHandler,
           useValue: mockListTrainingsHandler,
         },
@@ -63,6 +77,10 @@ describe('TrainingController', () => {
         {
           provide: GetTrainingTeamsHandler,
           useValue: mockGetTeamsHandler,
+        },
+        {
+          provide: GetTrainingRegistrationsHandler,
+          useValue: mockGetRegistrationsHandler,
         },
       ],
     }).compile();

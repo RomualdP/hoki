@@ -1,3 +1,5 @@
+import { DomainException } from '../exceptions/domain.exception';
+
 export type RegistrationStatus =
   | 'PENDING'
   | 'CONFIRMED'
@@ -14,7 +16,7 @@ export interface TrainingRegistrationProps {
 }
 
 export class TrainingRegistration {
-  private readonly props: TrainingRegistrationProps;
+  private props: TrainingRegistrationProps;
 
   constructor(props: TrainingRegistrationProps) {
     this.props = props;
@@ -66,5 +68,35 @@ export class TrainingRegistration {
 
   isActive(): boolean {
     return this.isConfirmed() || this.isPending() || this.isOnWaitlist();
+  }
+
+  confirm(): void {
+    if (!this.canBeConfirmed()) {
+      throw new DomainException(
+        'Cannot confirm: registration must be pending or on waitlist',
+      );
+    }
+    this.props.status = 'CONFIRMED';
+  }
+
+  cancel(): void {
+    if (!this.canBeCancelled()) {
+      throw new DomainException('Cannot cancel: registration is not active');
+    }
+    this.props.status = 'CANCELLED';
+    this.props.cancelledAt = new Date();
+  }
+
+  moveToWaitlist(): void {
+    if (!this.isPending()) {
+      throw new DomainException(
+        'Only pending registrations can be moved to waitlist',
+      );
+    }
+    this.props.status = 'WAITLIST';
+  }
+
+  private canBeConfirmed(): boolean {
+    return this.isPending() || this.isOnWaitlist();
   }
 }
