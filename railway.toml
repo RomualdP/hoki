@@ -1,0 +1,12 @@
+# Railway Configuration for Volley App Backend
+
+[build]
+# Use Dockerfile for building
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Start command is handled by Dockerfile CMD
+# Migrations are run automatically: "npx prisma migrate deploy && yarn start:prod"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
