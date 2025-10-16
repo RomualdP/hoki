@@ -29,9 +29,18 @@ COPY package.json .
 COPY yarn.lock .
 RUN yarn install --frozen-lockfile --production
 
+# Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Verify that dist/main.js exists
+RUN echo "=== Verifying production files ===" && \
+    ls -la && \
+    echo "=== Checking dist directory ===" && \
+    ls -la dist/ && \
+    echo "=== Checking dist/main.js ===" && \
+    test -f dist/main.js && echo "dist/main.js EXISTS" || (echo "dist/main.js MISSING" && exit 1)
 
 EXPOSE 3000
 
