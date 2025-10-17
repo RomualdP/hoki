@@ -1,15 +1,16 @@
-/**
- * Presentation Layer - Barrel Exports
- *
- * This file exports all presentation layer components:
- * - Controllers: HTTP request/response handlers
- * - DTOs: Data Transfer Objects for API requests and responses
- */
-
-// Controllers will be exported here once created
-// export * from './clubs.controller';
-// export * from './subscriptions.controller';
-// export * from './invitations.controller';
-
-// DTOs
+// Barrel exports for presentation layer
+export * from './clubs.controller';
+export * from './subscriptions.controller';
+export * from './invitations.controller';
 export * from './dtos';
+
+// Controllers array for module registration
+import { ClubsController } from './clubs.controller';
+import { SubscriptionsController } from './subscriptions.controller';
+import { InvitationsController } from './invitations.controller';
+
+export const Controllers = [
+  ClubsController,
+  SubscriptionsController,
+  InvitationsController,
+];
