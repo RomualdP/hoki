@@ -128,7 +128,9 @@ describe('AuthService', () => {
     it('should create a new user with profile and attributes', async () => {
       const findUniqueMock = jest.fn().mockResolvedValue(null);
       const createMock = jest.fn().mockResolvedValue(mockUser);
-      const createProfileMock = jest.fn().mockResolvedValue({ id: 'profile-1', userId: '1' });
+      const createProfileMock = jest
+        .fn()
+        .mockResolvedValue({ id: 'profile-1', userId: '1' });
       const createManyMock = jest.fn().mockResolvedValue({ count: 2 });
       const hashMock = jest.fn().mockResolvedValue('hashedPassword');
 
@@ -203,11 +205,17 @@ describe('AuthService', () => {
         picture: 'https://example.com/photo.jpg',
       };
 
-      const newUser = { ...mockUser, id: 'new-user-id', email: 'new@example.com' };
+      const newUser = {
+        ...mockUser,
+        id: 'new-user-id',
+        email: 'new@example.com',
+      };
 
       const findUniqueMock = jest.fn().mockResolvedValue(null);
       const createMock = jest.fn().mockResolvedValue(newUser);
-      const createProfileMock = jest.fn().mockResolvedValue({ id: 'profile-1', userId: 'new-user-id' });
+      const createProfileMock = jest
+        .fn()
+        .mockResolvedValue({ id: 'profile-1', userId: 'new-user-id' });
       const createManyMock = jest.fn().mockResolvedValue({ count: 2 });
 
       databaseService.user.findUnique = findUniqueMock;

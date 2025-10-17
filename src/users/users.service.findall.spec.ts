@@ -5,7 +5,6 @@ import { QueryUsersDto } from './dto';
 
 describe('UsersService - findAll', () => {
   let service: UsersService;
-  let databaseService: DatabaseService;
 
   const mockUser = {
     id: 'user-1',
@@ -79,7 +78,6 @@ describe('UsersService - findAll', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    databaseService = module.get<DatabaseService>(DatabaseService);
   });
 
   afterEach(() => {
@@ -90,7 +88,12 @@ describe('UsersService - findAll', () => {
     it('should return paginated users with profiles', async () => {
       const query: QueryUsersDto = { page: 1, limit: 10 };
       const mockUsers = [
-        { ...mockUser, profile: mockProfile, attributes: mockAttributes, _count: { skills: 0, teamMemberships: 0 } },
+        {
+          ...mockUser,
+          profile: mockProfile,
+          attributes: mockAttributes,
+          _count: { skills: 0, teamMemberships: 0 },
+        },
       ];
 
       mockDatabaseService.user.findMany.mockResolvedValue(mockUsers);
@@ -126,7 +129,12 @@ describe('UsersService - findAll', () => {
     it('should handle users without profiles', async () => {
       const query: QueryUsersDto = { page: 1, limit: 10 };
       const mockUsers = [
-        { ...mockUser, profile: null, attributes: mockAttributes, _count: { skills: 0, teamMemberships: 0 } },
+        {
+          ...mockUser,
+          profile: null,
+          attributes: mockAttributes,
+          _count: { skills: 0, teamMemberships: 0 },
+        },
       ];
 
       mockDatabaseService.user.findMany.mockResolvedValue(mockUsers);
@@ -141,7 +149,12 @@ describe('UsersService - findAll', () => {
     it('should apply pagination correctly', async () => {
       const query: QueryUsersDto = { page: 2, limit: 5 };
       const mockUsers = [
-        { ...mockUser, profile: mockProfile, attributes: mockAttributes, _count: { skills: 0, teamMemberships: 0 } },
+        {
+          ...mockUser,
+          profile: mockProfile,
+          attributes: mockAttributes,
+          _count: { skills: 0, teamMemberships: 0 },
+        },
       ];
 
       mockDatabaseService.user.findMany.mockResolvedValue(mockUsers);
@@ -168,7 +181,12 @@ describe('UsersService - findAll', () => {
     it('should filter by name (case insensitive)', async () => {
       const query: QueryUsersDto = { page: 1, limit: 10, name: 'john' };
       const mockUsers = [
-        { ...mockUser, profile: mockProfile, attributes: mockAttributes, _count: { skills: 0, teamMemberships: 0 } },
+        {
+          ...mockUser,
+          profile: mockProfile,
+          attributes: mockAttributes,
+          _count: { skills: 0, teamMemberships: 0 },
+        },
       ];
 
       mockDatabaseService.user.findMany.mockResolvedValue(mockUsers);
@@ -191,9 +209,18 @@ describe('UsersService - findAll', () => {
 
   describe('findAll with email filter', () => {
     it('should filter by email (case insensitive)', async () => {
-      const query: QueryUsersDto = { page: 1, limit: 10, email: 'test@example' };
+      const query: QueryUsersDto = {
+        page: 1,
+        limit: 10,
+        email: 'test@example',
+      };
       const mockUsers = [
-        { ...mockUser, profile: mockProfile, attributes: mockAttributes, _count: { skills: 0, teamMemberships: 0 } },
+        {
+          ...mockUser,
+          profile: mockProfile,
+          attributes: mockAttributes,
+          _count: { skills: 0, teamMemberships: 0 },
+        },
       ];
 
       mockDatabaseService.user.findMany.mockResolvedValue(mockUsers);
@@ -205,8 +232,8 @@ describe('UsersService - findAll', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             email: { contains: 'test@example', mode: 'insensitive' },
-          }),
-        }),
+          }) as Record<string, unknown>,
+        }) as Record<string, unknown>,
       );
     });
   });
@@ -215,7 +242,12 @@ describe('UsersService - findAll', () => {
     it('should filter by city when users have profiles', async () => {
       const query: QueryUsersDto = { page: 1, limit: 10, city: 'Paris' };
       const mockUsers = [
-        { ...mockUser, profile: mockProfile, attributes: mockAttributes, _count: { skills: 0, teamMemberships: 0 } },
+        {
+          ...mockUser,
+          profile: mockProfile,
+          attributes: mockAttributes,
+          _count: { skills: 0, teamMemberships: 0 },
+        },
       ];
 
       mockDatabaseService.user.findMany.mockResolvedValue(mockUsers);
@@ -229,8 +261,8 @@ describe('UsersService - findAll', () => {
             profile: {
               city: { contains: 'Paris', mode: 'insensitive' },
             },
-          }),
-        }),
+          }) as Record<string, unknown>,
+        }) as Record<string, unknown>,
       );
     });
 
@@ -251,7 +283,12 @@ describe('UsersService - findAll', () => {
     it('should filter by position when users have profiles', async () => {
       const query: QueryUsersDto = { page: 1, limit: 10, position: 'SETTER' };
       const mockUsers = [
-        { ...mockUser, profile: mockProfile, attributes: mockAttributes, _count: { skills: 0, teamMemberships: 0 } },
+        {
+          ...mockUser,
+          profile: mockProfile,
+          attributes: mockAttributes,
+          _count: { skills: 0, teamMemberships: 0 },
+        },
       ];
 
       mockDatabaseService.user.findMany.mockResolvedValue(mockUsers);
@@ -265,17 +302,27 @@ describe('UsersService - findAll', () => {
             profile: {
               position: 'SETTER',
             },
-          }),
-        }),
+          }) as Record<string, unknown>,
+        }) as Record<string, unknown>,
       );
     });
   });
 
   describe('findAll with combined filters', () => {
     it('should apply city and position filters together', async () => {
-      const query: QueryUsersDto = { page: 1, limit: 10, city: 'Paris', position: 'SETTER' };
+      const query: QueryUsersDto = {
+        page: 1,
+        limit: 10,
+        city: 'Paris',
+        position: 'SETTER',
+      };
       const mockUsers = [
-        { ...mockUser, profile: mockProfile, attributes: mockAttributes, _count: { skills: 0, teamMemberships: 0 } },
+        {
+          ...mockUser,
+          profile: mockProfile,
+          attributes: mockAttributes,
+          _count: { skills: 0, teamMemberships: 0 },
+        },
       ];
 
       mockDatabaseService.user.findMany.mockResolvedValue(mockUsers);
@@ -290,8 +337,8 @@ describe('UsersService - findAll', () => {
               city: { contains: 'Paris', mode: 'insensitive' },
               position: 'SETTER',
             },
-          }),
-        }),
+          }) as Record<string, unknown>,
+        }) as Record<string, unknown>,
       );
     });
 
@@ -305,7 +352,12 @@ describe('UsersService - findAll', () => {
         position: 'SETTER',
       };
       const mockUsers = [
-        { ...mockUser, profile: mockProfile, attributes: mockAttributes, _count: { skills: 0, teamMemberships: 0 } },
+        {
+          ...mockUser,
+          profile: mockProfile,
+          attributes: mockAttributes,
+          _count: { skills: 0, teamMemberships: 0 },
+        },
       ];
 
       mockDatabaseService.user.findMany.mockResolvedValue(mockUsers);
@@ -341,11 +393,17 @@ describe('UsersService - findAll', () => {
       };
 
       const createdUser = { ...mockUser, id: 'new-user', ...createUserDto };
-      const createdProfile = { ...mockProfile, id: 'new-profile', userId: 'new-user' };
+      const createdProfile = {
+        ...mockProfile,
+        id: 'new-profile',
+        userId: 'new-user',
+      };
 
       mockDatabaseService.user.create.mockResolvedValue(createdUser);
       mockDatabaseService.userProfile.create.mockResolvedValue(createdProfile);
-      mockDatabaseService.userAttribute.createMany.mockResolvedValue({ count: 2 });
+      mockDatabaseService.userAttribute.createMany.mockResolvedValue({
+        count: 2,
+      });
       mockDatabaseService.user.findUnique.mockResolvedValue({
         ...createdUser,
         profile: createdProfile,
@@ -362,12 +420,14 @@ describe('UsersService - findAll', () => {
         data: { userId: 'new-user' },
       });
 
-      expect(mockDatabaseService.userAttribute.createMany).toHaveBeenCalledWith({
-        data: [
-          { userId: 'new-user', attribute: 'FITNESS', value: 1.0 },
-          { userId: 'new-user', attribute: 'LEADERSHIP', value: 1.0 },
-        ],
-      });
+      expect(mockDatabaseService.userAttribute.createMany).toHaveBeenCalledWith(
+        {
+          data: [
+            { userId: 'new-user', attribute: 'FITNESS', value: 1.0 },
+            { userId: 'new-user', attribute: 'LEADERSHIP', value: 1.0 },
+          ],
+        },
+      );
 
       expect(result?.profile).toBeDefined();
     });
