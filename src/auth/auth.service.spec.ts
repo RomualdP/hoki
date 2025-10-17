@@ -47,7 +47,14 @@ describe('AuthService', () => {
             user: {
               findUnique: jest.fn(),
               create: jest.fn(),
+              update: jest.fn(),
               upsert: jest.fn(),
+            },
+            userProfile: {
+              create: jest.fn(),
+            },
+            userAttribute: {
+              createMany: jest.fn(),
             },
           },
         },
@@ -118,13 +125,17 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    it('should create a new user and return user without password', async () => {
+    it('should create a new user with profile and attributes', async () => {
       const findUniqueMock = jest.fn().mockResolvedValue(null);
       const createMock = jest.fn().mockResolvedValue(mockUser);
+      const createProfileMock = jest.fn().mockResolvedValue({ id: 'profile-1', userId: '1' });
+      const createManyMock = jest.fn().mockResolvedValue({ count: 2 });
       const hashMock = jest.fn().mockResolvedValue('hashedPassword');
 
       databaseService.user.findUnique = findUniqueMock;
       databaseService.user.create = createMock;
+      databaseService.userProfile.create = createProfileMock;
+      databaseService.userAttribute.createMany = createManyMock;
       (bcrypt.hash as jest.Mock) = hashMock;
 
       const result = await service.register(
@@ -133,8 +144,18 @@ describe('AuthService', () => {
         'Test',
         'User',
       );
+
       expect(result).toEqual(mockUserWithoutPassword);
       expect(createMock).toHaveBeenCalled();
+      expect(createProfileMock).toHaveBeenCalledWith({
+        data: { userId: '1' },
+      });
+      expect(createManyMock).toHaveBeenCalledWith({
+        data: [
+          { userId: '1', attribute: 'FITNESS', value: 1.0 },
+          { userId: '1', attribute: 'LEADERSHIP', value: 1.0 },
+        ],
+      });
     });
 
     it('should throw UnauthorizedException if email already exists', async () => {
@@ -148,34 +169,72 @@ describe('AuthService', () => {
   });
 
   describe('validateGoogleUser', () => {
-    it('should create or update user with Google profile', async () => {
+    it('should update existing user without creating profile', async () => {
       const googleProfile = {
         email: 'test@example.com',
         name: 'Test User',
         picture: 'https://example.com/photo.jpg',
       };
 
-      const upsertMock = jest.fn().mockResolvedValue(mockUser);
-      databaseService.user.upsert = upsertMock;
+      const findUniqueMock = jest.fn().mockResolvedValue(mockUser);
+      const updateMock = jest.fn().mockResolvedValue(mockUser);
+
+      databaseService.user.findUnique = findUniqueMock;
+      databaseService.user.update = updateMock;
 
       const result = await service.validateGoogleUser(googleProfile);
       expect(result).toEqual(mockUser);
 
-      expect(upsertMock).toHaveBeenCalledWith({
+      expect(updateMock).toHaveBeenCalledWith({
         where: { email: googleProfile.email },
-        update: {
+        data: {
           firstName: 'Test',
           lastName: 'User',
           avatar: googleProfile.picture,
           lastLoginAt: expect.any(Date) as Date,
         },
-        create: {
+      });
+    });
+
+    it('should create new user with profile and attributes for Google OAuth', async () => {
+      const googleProfile = {
+        email: 'new@example.com',
+        name: 'New User',
+        picture: 'https://example.com/photo.jpg',
+      };
+
+      const newUser = { ...mockUser, id: 'new-user-id', email: 'new@example.com' };
+
+      const findUniqueMock = jest.fn().mockResolvedValue(null);
+      const createMock = jest.fn().mockResolvedValue(newUser);
+      const createProfileMock = jest.fn().mockResolvedValue({ id: 'profile-1', userId: 'new-user-id' });
+      const createManyMock = jest.fn().mockResolvedValue({ count: 2 });
+
+      databaseService.user.findUnique = findUniqueMock;
+      databaseService.user.create = createMock;
+      databaseService.userProfile.create = createProfileMock;
+      databaseService.userAttribute.createMany = createManyMock;
+
+      const result = await service.validateGoogleUser(googleProfile);
+
+      expect(result).toEqual(newUser);
+      expect(createMock).toHaveBeenCalledWith({
+        data: {
           email: googleProfile.email,
-          firstName: 'Test',
+          firstName: 'New',
           lastName: 'User',
           avatar: googleProfile.picture,
           lastLoginAt: expect.any(Date) as Date,
         },
+      });
+      expect(createProfileMock).toHaveBeenCalledWith({
+        data: { userId: 'new-user-id' },
+      });
+      expect(createManyMock).toHaveBeenCalledWith({
+        data: [
+          { userId: 'new-user-id', attribute: 'FITNESS', value: 1.0 },
+          { userId: 'new-user-id', attribute: 'LEADERSHIP', value: 1.0 },
+        ],
       });
     });
   });
