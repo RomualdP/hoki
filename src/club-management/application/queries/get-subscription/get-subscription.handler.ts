@@ -6,6 +6,7 @@ import {
   SUBSCRIPTION_REPOSITORY,
 } from '../../../domain/repositories/subscription.repository';
 import { SubscriptionStatusReadModel } from '../../read-models/subscription-status.read-model';
+import { SubscriptionStatus } from '../../../domain/entities/subscription.entity';
 
 @Injectable()
 @QueryHandler(GetSubscriptionQuery)
@@ -64,7 +65,7 @@ export class GetSubscriptionHandler
       currentPeriodEnd: subscription.currentPeriodEnd || new Date(),
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
       isActive: subscription.isActive(),
-      isCanceled: subscription.status === 'CANCELED',
+      isCanceled: subscription.status === SubscriptionStatus.CANCELED,
       remainingDays,
       formattedPrice,
       hasUnlimitedTeams: subscription.hasUnlimitedTeams(),

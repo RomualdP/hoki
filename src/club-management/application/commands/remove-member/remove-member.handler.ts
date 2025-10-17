@@ -5,7 +5,6 @@ import {
   IMemberRepository,
   MEMBER_REPOSITORY,
 } from '../../../domain/repositories/member.repository';
-import { ClubRole } from '../../../domain/entities/member.entity';
 
 @Injectable()
 @CommandHandler(RemoveMemberCommand)

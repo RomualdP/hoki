@@ -1,42 +1,27 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { CreateClubHandler } from '../create-club.handler';
 import { CreateClubCommand } from '../create-club.command';
 import {
   IClubRepository,
   CLUB_REPOSITORY,
 } from '../../../../domain/repositories/club.repository';
-import { Club } from '../../../../domain/entities/club.entity';
+import { TestRepositoryFactory } from '../../../../__tests__/factories/repository.factory';
+import { TestModuleFactory } from '../../../../__tests__/factories/test-module.factory';
+import { ClubBuilder } from '../../../../__tests__/builders/club.builder';
 
 describe('CreateClubHandler', () => {
   let handler: CreateClubHandler;
   let clubRepository: jest.Mocked<IClubRepository>;
 
   beforeEach(async () => {
-    // Create mock repository
-    const mockClubRepository: jest.Mocked<IClubRepository> = {
-      save: jest.fn(),
-      findById: jest.fn(),
-      findByOwnerId: jest.fn(),
-      findAll: jest.fn(),
-      existsByName: jest.fn(),
-      getAllClubNames: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      count: jest.fn(),
-    };
+    // Create mock repository using factory
+    clubRepository = TestRepositoryFactory.createMockClubRepository();
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        CreateClubHandler,
-        {
-          provide: CLUB_REPOSITORY,
-          useValue: mockClubRepository,
-        },
-      ],
-    }).compile();
+    // Create test module using factory
+    const setup = await TestModuleFactory.createForHandler(CreateClubHandler, [
+      { provide: CLUB_REPOSITORY, useValue: clubRepository },
+    ]);
 
-    handler = module.get<CreateClubHandler>(CreateClubHandler);
-    clubRepository = module.get(CLUB_REPOSITORY);
+    handler = setup.handler;
   });
 
   describe('execute()', () => {
@@ -51,14 +36,14 @@ describe('CreateClubHandler', () => {
 
       clubRepository.getAllClubNames.mockResolvedValue([]);
 
-      const mockClub = Club.create({
-        id: 'club-1',
-        name: command.name,
-        description: command.description || undefined,
-        logo: command.logo || undefined,
-        location: command.location || undefined,
-        ownerId: command.ownerId,
-      });
+      // Use ClubBuilder for cleaner test setup
+      const mockClub = new ClubBuilder()
+        .withName(command.name)
+        .withDescription(command.description)
+        .withLogo(command.logo)
+        .withLocation(command.location)
+        .withOwnerId(command.ownerId)
+        .build();
 
       clubRepository.save.mockResolvedValue(mockClub);
 
@@ -89,11 +74,12 @@ describe('CreateClubHandler', () => {
 
       clubRepository.getAllClubNames.mockResolvedValue([]);
 
-      const mockClub = Club.create({
-        id: 'club-2',
-        name: command.name,
-        ownerId: command.ownerId,
-      });
+      // Use ClubBuilder with minimal configuration
+      const mockClub = new ClubBuilder()
+        .withId('club-2')
+        .withName(command.name)
+        .withOwnerId(command.ownerId)
+        .build();
 
       clubRepository.save.mockResolvedValue(mockClub);
 
@@ -232,11 +218,10 @@ describe('CreateClubHandler', () => {
 
       clubRepository.getAllClubNames.mockResolvedValue([]);
 
-      const mockClub = Club.create({
-        id: 'club-3',
-        name: 'Club With Spaces',
-        ownerId: 'user-1',
-      });
+      const mockClub = new ClubBuilder()
+        .withId('club-3')
+        .withName('Club With Spaces')
+        .build();
 
       clubRepository.save.mockResolvedValue(mockClub);
 

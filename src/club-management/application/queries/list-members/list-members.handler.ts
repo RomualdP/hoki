@@ -10,6 +10,7 @@ import {
   IClubRepository,
   CLUB_REPOSITORY,
 } from '../../../domain/repositories/club.repository';
+import { ClubRole } from '../../../domain/entities/member.entity';
 
 @Injectable()
 @QueryHandler(ListMembersQuery)
@@ -52,9 +53,9 @@ export class ListMembersHandler
       canManageTeams: member.canManageTeams(),
       canInviteMembers: member.canInviteMembers(),
       canManageSubscription: member.canManageSubscription(),
-      isCoach: member.role === 'COACH',
-      isAssistantCoach: member.role === 'ASSISTANT_COACH',
-      isPlayer: member.role === 'PLAYER',
+      isCoach: member.role === ClubRole.COACH,
+      isAssistantCoach: member.role === ClubRole.ASSISTANT_COACH,
+      isPlayer: member.role === ClubRole.PLAYER,
     }));
   }
 }

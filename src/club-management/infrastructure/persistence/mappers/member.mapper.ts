@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/unbound-method */
+import type { Member as PrismaMember } from '@prisma/client';
 import { Member } from '../../../domain/entities/member.entity';
 import { ClubRole } from '../../../domain/value-objects/club-role.vo';
 
@@ -8,7 +10,7 @@ export class MemberMapper {
   /**
    * Convert Prisma Member to Domain Member entity
    */
-  static toDomain(prismaMember: any): Member {
+  static toDomain(prismaMember: PrismaMember): Member {
     return Member.reconstitute({
       id: prismaMember.id,
       userId: prismaMember.userId,
@@ -22,7 +24,7 @@ export class MemberMapper {
   /**
    * Convert Domain Member entity to Prisma data
    */
-  static toPrisma(member: Member): any {
+  static toPrisma(member: Member): PrismaMember {
     return {
       id: member.id,
       userId: member.userId,
@@ -36,7 +38,14 @@ export class MemberMapper {
   /**
    * Convert Domain Member entity to Prisma create data
    */
-  static toPrismaCreate(member: Member): any {
+  static toPrismaCreate(member: Member): {
+    id: string;
+    userId: string;
+    clubId: string;
+    role: string;
+    joinedAt: Date;
+    isActive: boolean;
+  } {
     return {
       id: member.id,
       userId: member.userId,
@@ -50,7 +59,10 @@ export class MemberMapper {
   /**
    * Convert Domain Member entity to Prisma update data
    */
-  static toPrismaUpdate(member: Member): any {
+  static toPrismaUpdate(member: Member): {
+    role: string;
+    isActive: boolean;
+  } {
     return {
       role: member.role.value,
       isActive: member.isActive,

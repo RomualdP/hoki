@@ -1,4 +1,3 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { SubscribeToPlanHandler } from '../subscribe-to-plan.handler';
 import { SubscribeToPlanCommand } from '../subscribe-to-plan.command';
@@ -10,11 +9,11 @@ import {
   IClubRepository,
   CLUB_REPOSITORY,
 } from '../../../../domain/repositories/club.repository';
-import { Club } from '../../../../domain/entities/club.entity';
-import {
-  Subscription,
-  SubscriptionPlanId,
-} from '../../../../domain/entities/subscription.entity';
+import { SubscriptionPlanId } from '../../../../domain/entities/subscription.entity';
+import { TestRepositoryFactory } from '../../../../__tests__/factories/repository.factory';
+import { TestModuleFactory } from '../../../../__tests__/factories/test-module.factory';
+import { ClubBuilder } from '../../../../__tests__/builders/club.builder';
+import { SubscriptionBuilder } from '../../../../__tests__/builders/subscription.builder';
 
 describe('SubscribeToPlanHandler', () => {
   let handler: SubscribeToPlanHandler;
@@ -22,51 +21,21 @@ describe('SubscribeToPlanHandler', () => {
   let clubRepository: jest.Mocked<IClubRepository>;
 
   beforeEach(async () => {
-    const mockSubscriptionRepository: jest.Mocked<ISubscriptionRepository> = {
-      save: jest.fn(),
-      update: jest.fn(),
-      findById: jest.fn(),
-      findByClubId: jest.fn(),
-      findByStripeSubscriptionId: jest.fn(),
-      findByStripeCustomerId: jest.fn(),
-      findByPlanId: jest.fn(),
-      findAllActive: jest.fn(),
-      findExpiringSubscriptions: jest.fn(),
-      findCanceledButActive: jest.fn(),
-      delete: jest.fn(),
-      count: jest.fn(),
-      countByPlanId: jest.fn(),
-    };
+    // Create mock repositories using factories
+    subscriptionRepository =
+      TestRepositoryFactory.createMockSubscriptionRepository();
+    clubRepository = TestRepositoryFactory.createMockClubRepository();
 
-    const mockClubRepository: jest.Mocked<IClubRepository> = {
-      save: jest.fn(),
-      update: jest.fn(),
-      findById: jest.fn(),
-      findByOwnerId: jest.fn(),
-      findAll: jest.fn(),
-      existsByName: jest.fn(),
-      getAllClubNames: jest.fn(),
-      delete: jest.fn(),
-      count: jest.fn(),
-    };
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        SubscribeToPlanHandler,
-        {
-          provide: SUBSCRIPTION_REPOSITORY,
-          useValue: mockSubscriptionRepository,
-        },
-        {
-          provide: CLUB_REPOSITORY,
-          useValue: mockClubRepository,
-        },
+    // Create test module using factory
+    const setup = await TestModuleFactory.createForHandler(
+      SubscribeToPlanHandler,
+      [
+        { provide: SUBSCRIPTION_REPOSITORY, useValue: subscriptionRepository },
+        { provide: CLUB_REPOSITORY, useValue: clubRepository },
       ],
-    }).compile();
+    );
 
-    handler = module.get<SubscribeToPlanHandler>(SubscribeToPlanHandler);
-    subscriptionRepository = module.get(SUBSCRIPTION_REPOSITORY);
-    clubRepository = module.get(CLUB_REPOSITORY);
+    handler = setup.handler;
   });
 
   describe('execute()', () => {
@@ -78,24 +47,16 @@ describe('SubscribeToPlanHandler', () => {
         'sub_123',
       );
 
-      const mockClub = Club.create({
-        id: 'club-1',
-        name: 'Test Club',
-        ownerId: 'user-1',
-      });
+      // Use ClubBuilder for club creation
+      const mockClub = new ClubBuilder().build();
 
       clubRepository.findById.mockResolvedValue(mockClub);
       subscriptionRepository.findByClubId.mockResolvedValue(null);
 
-      const mockSubscription = Subscription.create({
-        id: 'subscription-1',
-        clubId: 'club-1',
-        planId: SubscriptionPlanId.STARTER,
-        maxTeams: 1,
-        price: 500,
-        stripeCustomerId: 'cus_123',
-        stripeSubscriptionId: 'sub_123',
-      });
+      // Use SubscriptionBuilder for subscription creation
+      const mockSubscription = new SubscriptionBuilder()
+        .withStarterPlan()
+        .build();
 
       subscriptionRepository.save.mockResolvedValue(mockSubscription);
 
@@ -126,24 +87,21 @@ describe('SubscribeToPlanHandler', () => {
         'sub_456',
       );
 
-      const mockClub = Club.create({
-        id: 'club-2',
-        name: 'Pro Club',
-        ownerId: 'user-2',
-      });
+      const mockClub = new ClubBuilder()
+        .withId('club-2')
+        .withName('Pro Club')
+        .withOwnerId('user-2')
+        .build();
 
       clubRepository.findById.mockResolvedValue(mockClub);
       subscriptionRepository.findByClubId.mockResolvedValue(null);
 
-      const mockSubscription = Subscription.create({
-        id: 'subscription-2',
-        clubId: 'club-2',
-        planId: SubscriptionPlanId.PRO,
-        maxTeams: 5,
-        price: 1500,
-        stripeCustomerId: 'cus_456',
-        stripeSubscriptionId: 'sub_456',
-      });
+      // Use SubscriptionBuilder with PRO plan preset
+      const mockSubscription = new SubscriptionBuilder()
+        .withId('subscription-2')
+        .withClubId('club-2')
+        .withProPlan()
+        .build();
 
       subscriptionRepository.save.mockResolvedValue(mockSubscription);
 
@@ -165,22 +123,21 @@ describe('SubscribeToPlanHandler', () => {
         SubscriptionPlanId.BETA,
       );
 
-      const mockClub = Club.create({
-        id: 'club-3',
-        name: 'Beta Club',
-        ownerId: 'user-3',
-      });
+      const mockClub = new ClubBuilder()
+        .withId('club-3')
+        .withName('Beta Club')
+        .withOwnerId('user-3')
+        .build();
 
       clubRepository.findById.mockResolvedValue(mockClub);
       subscriptionRepository.findByClubId.mockResolvedValue(null);
 
-      const mockSubscription = Subscription.create({
-        id: 'subscription-3',
-        clubId: 'club-3',
-        planId: SubscriptionPlanId.BETA,
-        maxTeams: null,
-        price: 0,
-      });
+      // Use SubscriptionBuilder with BETA plan preset
+      const mockSubscription = new SubscriptionBuilder()
+        .withId('subscription-3')
+        .withClubId('club-3')
+        .withBetaPlan()
+        .build();
 
       subscriptionRepository.save.mockResolvedValue(mockSubscription);
 
@@ -222,21 +179,12 @@ describe('SubscribeToPlanHandler', () => {
         SubscriptionPlanId.STARTER,
       );
 
-      const mockClub = Club.create({
-        id: 'club-1',
-        name: 'Test Club',
-        ownerId: 'user-1',
-      });
+      const mockClub = new ClubBuilder().build();
 
-      const existingSubscription = Subscription.create({
-        id: 'existing-sub',
-        clubId: 'club-1',
-        planId: SubscriptionPlanId.STARTER,
-        maxTeams: 1,
-        price: 500,
-        stripeCustomerId: 'cus_123',
-        stripeSubscriptionId: 'sub_123',
-      });
+      const existingSubscription = new SubscriptionBuilder()
+        .withId('existing-sub')
+        .withStarterPlan()
+        .build();
 
       clubRepository.findById.mockResolvedValue(mockClub);
       subscriptionRepository.findByClubId.mockResolvedValue(
@@ -260,11 +208,7 @@ describe('SubscribeToPlanHandler', () => {
         'INVALID_PLAN' as SubscriptionPlanId,
       );
 
-      const mockClub = Club.create({
-        id: 'club-1',
-        name: 'Test Club',
-        ownerId: 'user-1',
-      });
+      const mockClub = new ClubBuilder().build();
 
       clubRepository.findById.mockResolvedValue(mockClub);
       subscriptionRepository.findByClubId.mockResolvedValue(null);
@@ -284,11 +228,7 @@ describe('SubscribeToPlanHandler', () => {
         'sub_123',
       );
 
-      const mockClub = Club.create({
-        id: 'club-1',
-        name: 'Test Club',
-        ownerId: 'user-1',
-      });
+      const mockClub = new ClubBuilder().build();
 
       clubRepository.findById.mockResolvedValue(mockClub);
       subscriptionRepository.findByClubId.mockResolvedValue(null);

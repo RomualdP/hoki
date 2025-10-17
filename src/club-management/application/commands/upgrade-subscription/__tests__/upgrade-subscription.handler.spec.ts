@@ -9,7 +9,6 @@ import {
 import {
   Subscription,
   SubscriptionPlanId,
-  SubscriptionStatus,
 } from '../../../../domain/entities/subscription.entity';
 
 describe('UpgradeSubscriptionHandler', () => {

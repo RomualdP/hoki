@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 import { Injectable } from '@nestjs/common';
+import type { Invitation as PrismaInvitation } from '@prisma/client';
 import { IInvitationRepository } from '../../../domain/repositories/invitation.repository';
 import { Invitation } from '../../../domain/entities/invitation.entity';
 import { PrismaService } from '../../../../prisma/prisma.service';
@@ -15,9 +17,9 @@ export class InvitationRepositoryImpl implements IInvitationRepository {
   async save(invitation: Invitation): Promise<Invitation> {
     const prismaData = InvitationMapper.toPrismaCreate(invitation);
 
-    const savedInvitation = await this.prisma.invitation.create({
+    const savedInvitation = (await this.prisma.invitation.create({
       data: prismaData,
-    });
+    })) as PrismaInvitation;
 
     return InvitationMapper.toDomain(savedInvitation);
   }
@@ -39,10 +41,10 @@ export class InvitationRepositoryImpl implements IInvitationRepository {
   }
 
   async findByClubId(clubId: string): Promise<Invitation[]> {
-    const invitations = await this.prisma.invitation.findMany({
+    const invitations = (await this.prisma.invitation.findMany({
       where: { clubId },
       orderBy: { createdAt: 'desc' },
-    });
+    })) as PrismaInvitation[];
 
     return invitations.map((inv) => InvitationMapper.toDomain(inv));
   }
@@ -50,10 +52,10 @@ export class InvitationRepositoryImpl implements IInvitationRepository {
   async update(invitation: Invitation): Promise<Invitation> {
     const prismaData = InvitationMapper.toPrismaUpdate(invitation);
 
-    const updatedInvitation = await this.prisma.invitation.update({
+    const updatedInvitation = (await this.prisma.invitation.update({
       where: { id: invitation.id },
       data: prismaData,
-    });
+    })) as PrismaInvitation;
 
     return InvitationMapper.toDomain(updatedInvitation);
   }
@@ -65,9 +67,9 @@ export class InvitationRepositoryImpl implements IInvitationRepository {
   }
 
   async existsByToken(token: string): Promise<boolean> {
-    const count = await this.prisma.invitation.count({
+    const count = (await this.prisma.invitation.count({
       where: { token },
-    });
+    })) as number;
 
     return count > 0;
   }

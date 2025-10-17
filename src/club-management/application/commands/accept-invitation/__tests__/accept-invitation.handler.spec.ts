@@ -111,7 +111,9 @@ describe('AcceptInvitationHandler', () => {
       expect(invitationRepository.findByToken).toHaveBeenCalledWith(
         'valid-token-123',
       );
+
       expect(invitationRepository.update).toHaveBeenCalled();
+
       expect(memberRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: 'user-1',
@@ -152,6 +154,7 @@ describe('AcceptInvitationHandler', () => {
       const result = await handler.execute(command);
 
       expect(result).toBe('member-2');
+
       expect(memberRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           role: ClubRole.ASSISTANT_COACH,
@@ -172,7 +175,9 @@ describe('AcceptInvitationHandler', () => {
       expect(invitationRepository.findByToken).toHaveBeenCalledWith(
         'invalid-token',
       );
+
       expect(invitationRepository.update).not.toHaveBeenCalled();
+
       expect(memberRepository.save).not.toHaveBeenCalled();
     });
 
@@ -202,6 +207,7 @@ describe('AcceptInvitationHandler', () => {
       );
 
       expect(invitationRepository.update).not.toHaveBeenCalled();
+
       expect(memberRepository.save).not.toHaveBeenCalled();
     });
 
@@ -228,6 +234,7 @@ describe('AcceptInvitationHandler', () => {
       );
 
       expect(invitationRepository.update).not.toHaveBeenCalled();
+
       expect(memberRepository.save).not.toHaveBeenCalled();
     });
 
@@ -250,6 +257,7 @@ describe('AcceptInvitationHandler', () => {
       );
 
       expect(invitationRepository.update).not.toHaveBeenCalled();
+
       expect(memberRepository.save).not.toHaveBeenCalled();
     });
 
@@ -276,7 +284,9 @@ describe('AcceptInvitationHandler', () => {
       );
 
       expect(invitationRepository.findByToken).toHaveBeenCalled();
+
       expect(invitationRepository.update).toHaveBeenCalled();
+
       expect(memberRepository.save).toHaveBeenCalled();
     });
   });

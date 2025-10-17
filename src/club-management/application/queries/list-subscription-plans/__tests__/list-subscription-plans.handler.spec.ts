@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ListSubscriptionPlansHandler } from '../list-subscription-plans.handler';
-import { ListSubscriptionPlansQuery } from '../list-subscription-plans.query';
 import { SubscriptionPlanId } from '../../../../domain/entities/subscription.entity';
 
 describe('ListSubscriptionPlansHandler', () => {
@@ -49,7 +48,7 @@ describe('ListSubscriptionPlansHandler', () => {
       const result = await handler.execute();
 
       const betaPlan = result.find(
-        (plan) => plan.id === SubscriptionPlanId.BETA,
+        (plan) => plan.id === (SubscriptionPlanId.BETA as string),
       );
 
       expect(betaPlan).toBeDefined();
@@ -75,7 +74,7 @@ describe('ListSubscriptionPlansHandler', () => {
       const result = await handler.execute();
 
       const starterPlan = result.find(
-        (plan) => plan.id === SubscriptionPlanId.STARTER,
+        (plan) => plan.id === (SubscriptionPlanId.STARTER as string),
       );
 
       expect(starterPlan).toBeDefined();
@@ -100,7 +99,9 @@ describe('ListSubscriptionPlansHandler', () => {
     it('should return PRO plan with correct details', async () => {
       const result = await handler.execute();
 
-      const proPlan = result.find((plan) => plan.id === SubscriptionPlanId.PRO);
+      const proPlan = result.find(
+        (plan) => plan.id === (SubscriptionPlanId.PRO as string),
+      );
 
       expect(proPlan).toBeDefined();
       expect(proPlan).toMatchObject({

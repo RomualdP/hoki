@@ -32,4 +32,13 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-argument': 'warn'
     },
   },
+  // Specific rules for test files
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts', '**/__tests__/**/*.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off', // Jest matchers like expect.objectContaining are unbound methods
+      '@typescript-eslint/no-unsafe-assignment': 'off', // Test assertions often work with any types
+      '@typescript-eslint/no-unsafe-member-access': 'off', // Test assertions often access any properties
+    },
+  },
 );

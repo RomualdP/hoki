@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+import type { Subscription as PrismaSubscription } from '@prisma/client';
 import { Subscription } from '../../../domain/entities/subscription.entity';
 import {
   SubscriptionStatus,
@@ -12,7 +14,7 @@ export class SubscriptionMapper {
   /**
    * Convert Prisma Subscription to Domain Subscription entity
    */
-  static toDomain(prismaSubscription: any): Subscription {
+  static toDomain(prismaSubscription: PrismaSubscription): Subscription {
     // Get plan configuration from catalog
     const planConfig = SubscriptionPlans.getById(
       prismaSubscription.planId as SubscriptionPlanId,
@@ -44,7 +46,7 @@ export class SubscriptionMapper {
   /**
    * Convert Domain Subscription entity to Prisma data
    */
-  static toPrisma(subscription: Subscription): any {
+  static toPrisma(subscription: Subscription): PrismaSubscription {
     return {
       id: subscription.id,
       clubId: subscription.clubId,
@@ -65,7 +67,19 @@ export class SubscriptionMapper {
   /**
    * Convert Domain Subscription entity to Prisma create data
    */
-  static toPrismaCreate(subscription: Subscription): any {
+  static toPrismaCreate(subscription: Subscription): {
+    id: string;
+    clubId: string;
+    planId: string;
+    status: string;
+    price: number;
+    maxTeams: number;
+    stripeCustomerId: string | null;
+    stripeSubscriptionId: string | null;
+    currentPeriodStart: Date;
+    currentPeriodEnd: Date;
+    cancelAtPeriodEnd: boolean;
+  } {
     return {
       id: subscription.id,
       clubId: subscription.clubId,
@@ -84,7 +98,18 @@ export class SubscriptionMapper {
   /**
    * Convert Domain Subscription entity to Prisma update data
    */
-  static toPrismaUpdate(subscription: Subscription): any {
+  static toPrismaUpdate(subscription: Subscription): {
+    status: string;
+    price: number;
+    maxTeams: number;
+    planId: string;
+    stripeCustomerId: string | null;
+    stripeSubscriptionId: string | null;
+    currentPeriodStart: Date;
+    currentPeriodEnd: Date;
+    cancelAtPeriodEnd: boolean;
+    updatedAt: Date;
+  } {
     return {
       status: subscription.status,
       price: subscription.price,

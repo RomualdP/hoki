@@ -18,7 +18,6 @@ describe('ChangeClubHandler', () => {
   let handler: ChangeClubHandler;
   let memberRepository: jest.Mocked<IMemberRepository>;
   let clubRepository: jest.Mocked<IClubRepository>;
-  let clubTransferService: ClubTransferService;
 
   beforeEach(async () => {
     const mockMemberRepository: jest.Mocked<IMemberRepository> = {
@@ -70,7 +69,6 @@ describe('ChangeClubHandler', () => {
     handler = module.get<ChangeClubHandler>(ChangeClubHandler);
     memberRepository = module.get(MEMBER_REPOSITORY);
     clubRepository = module.get(CLUB_REPOSITORY);
-    clubTransferService = module.get<ClubTransferService>(ClubTransferService);
   });
 
   describe('execute()', () => {

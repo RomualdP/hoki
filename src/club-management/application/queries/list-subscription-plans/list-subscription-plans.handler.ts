@@ -10,19 +10,21 @@ export class ListSubscriptionPlansHandler
   implements
     IQueryHandler<ListSubscriptionPlansQuery, SubscriptionPlanReadModel[]>
 {
-  async execute(): Promise<SubscriptionPlanReadModel[]> {
+  execute(): Promise<SubscriptionPlanReadModel[]> {
     const plans = SubscriptionPlans.getAll();
 
-    return plans.map((plan) => ({
-      id: plan.id,
-      name: plan.name,
-      description: plan.description,
-      price: plan.price,
-      maxTeams: plan.maxTeams,
-      features: plan.features,
-      formattedPrice: plan.getFormattedPrice(),
-      isFree: plan.isFree(),
-      hasUnlimitedTeams: plan.hasUnlimitedTeams(),
-    }));
+    return Promise.resolve(
+      plans.map((plan) => ({
+        id: plan.id,
+        name: plan.name,
+        description: plan.description,
+        price: plan.price,
+        maxTeams: plan.maxTeams,
+        features: plan.features,
+        formattedPrice: plan.getFormattedPrice(),
+        isFree: plan.isFree(),
+        hasUnlimitedTeams: plan.hasUnlimitedTeams(),
+      })),
+    );
   }
 }

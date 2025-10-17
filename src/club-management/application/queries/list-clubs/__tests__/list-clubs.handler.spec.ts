@@ -6,7 +6,6 @@ import {
   CLUB_REPOSITORY,
 } from '../../../../domain/repositories/club.repository';
 import { Club } from '../../../../domain/entities/club.entity';
-import { ClubListReadModel } from '../../../read-models/club-list.read-model';
 
 describe('ListClubsHandler', () => {
   let handler: ListClubsHandler;
