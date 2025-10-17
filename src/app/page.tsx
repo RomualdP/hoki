@@ -25,18 +25,6 @@ export default function HomePage() {
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
-        {/* Hero Section */}
-        <div className="relative py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4 font-heading">
-              VolleyApp
-            </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Votre plateforme de gestion volleyball
-            </p>
-          </div>
-        </div>
-
         {/* Main Content */}
         <div className="py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">

@@ -15,7 +15,6 @@ export default function TeamsPage() {
 
   const handleTeamSelect = (team: Team) => {
     selectTeam(team);
-    console.log('Selected team:', team.name);
     // TODO: Navigation vers la page de détail de l'équipe
   };
 
