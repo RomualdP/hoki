@@ -108,7 +108,7 @@ describe('UsersService - Skills methods', () => {
           level: 7,
           experienceYears: 3,
           notes: 'Good service',
-          updatedAt: expect.any(Date), // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+          updatedAt: expect.any(Date),
         },
         create: {
           userId: 'user-1',
