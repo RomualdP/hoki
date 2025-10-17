@@ -27,9 +27,16 @@ export class ListClubsHandler
     return clubs.map((club) => ({
       id: club.id,
       name: club.name,
+      description: club.description,
       logo: club.logo,
       location: club.location,
+      ownerId: club.ownerId,
       createdAt: club.createdAt,
+      // TODO: Implement member/team count aggregation from repositories
+      memberCount: 0,
+      teamCount: 0,
+      subscriptionPlanName: 'Unknown', // TODO: Fetch from subscription repository
+      subscriptionStatus: 'Unknown', // TODO: Fetch from subscription repository
     }));
   }
 }

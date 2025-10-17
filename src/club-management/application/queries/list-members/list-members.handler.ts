@@ -34,9 +34,8 @@ export class ListMembersHandler
     let members = await this.memberRepository.findByClubId(query.clubId);
 
     if (query.roleFilter) {
-      members = members.filter(
-        (member) => member.role.value === query.roleFilter.value,
-      );
+      const roleValue = query.roleFilter.value;
+      members = members.filter((member) => member.role === roleValue);
     }
 
     // Mapper vers le read model
@@ -44,18 +43,18 @@ export class ListMembersHandler
       id: member.id,
       userId: member.userId,
       clubId: member.clubId,
-      role: member.role.value,
-      roleName: member.role.getName(),
+      role: member.role,
+      roleName: member.getRoleDisplayName(),
       joinedAt: member.joinedAt,
-      isActive: member.isActive,
+      isActive: member.isActive(),
       // Permissions calculées pour l'UI
       canManageClubSettings: member.canManageClubSettings(),
       canManageTeams: member.canManageTeams(),
       canInviteMembers: member.canInviteMembers(),
       canManageSubscription: member.canManageSubscription(),
-      isCoach: member.isCoach(),
-      isAssistantCoach: member.isAssistantCoach(),
-      isPlayer: member.isPlayer(),
+      isCoach: member.role === 'COACH',
+      isAssistantCoach: member.role === 'ASSISTANT_COACH',
+      isPlayer: member.role === 'PLAYER',
     }));
   }
 }

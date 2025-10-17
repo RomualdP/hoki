@@ -27,17 +27,46 @@ export class GetSubscriptionHandler
       throw new NotFoundException('Subscription not found');
     }
 
+    // Calculate remaining days
+    const now = new Date();
+    const periodEnd = subscription.currentPeriodEnd || now;
+    const remainingMs = periodEnd.getTime() - now.getTime();
+    const remainingDays = Math.max(
+      0,
+      Math.ceil(remainingMs / (1000 * 60 * 60 * 24)),
+    );
+
+    // Get plan name
+    const planNames = {
+      BETA: 'Beta',
+      STARTER: 'Starter',
+      PRO: 'Pro',
+    };
+    const planName = planNames[subscription.planId] || subscription.planId;
+
+    // Format price
+    const formattedPrice =
+      subscription.price === 0
+        ? 'Gratuit'
+        : `${(subscription.price / 100).toFixed(2).replace('.', ',')} €`;
+
     return {
       id: subscription.id,
       clubId: subscription.clubId,
       planId: subscription.planId,
+      planName,
       status: subscription.status,
       maxTeams: subscription.maxTeams,
       price: subscription.price,
-      currentPeriodStart: subscription.currentPeriodStart,
-      currentPeriodEnd: subscription.currentPeriodEnd,
+      stripeCustomerId: subscription.stripeCustomerId,
+      stripeSubscriptionId: subscription.stripeSubscriptionId,
+      currentPeriodStart: subscription.currentPeriodStart || new Date(),
+      currentPeriodEnd: subscription.currentPeriodEnd || new Date(),
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
       isActive: subscription.isActive(),
+      isCanceled: subscription.status === 'CANCELED',
+      remainingDays,
+      formattedPrice,
       hasUnlimitedTeams: subscription.hasUnlimitedTeams(),
     };
   }

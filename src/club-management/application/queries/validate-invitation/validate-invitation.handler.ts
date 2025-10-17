@@ -47,10 +47,14 @@ export class ValidateInvitationHandler
       (invitation.expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
     );
 
+    const isExpired = invitation.isExpired();
+    const isUsed = invitation.isUsed();
+    const isValid = invitation.isValid();
+
     let status: 'valid' | 'expired' | 'used';
-    if (invitation.isUsed()) {
+    if (isUsed) {
       status = 'used';
-    } else if (invitation.isExpired()) {
+    } else if (isExpired) {
       status = 'expired';
     } else {
       status = 'valid';
@@ -59,7 +63,7 @@ export class ValidateInvitationHandler
     return {
       id: invitation.id,
       token: invitation.token,
-      type: invitation.type.value,
+      type: invitation.type,
       clubId: club.id,
       clubName: club.name,
       expiresAt: invitation.expiresAt,
@@ -69,6 +73,10 @@ export class ValidateInvitationHandler
       createdAt: invitation.createdAt,
       usedAt: invitation.usedAt ?? undefined,
       usedBy: invitation.usedBy ?? undefined,
+      isValid,
+      isExpired,
+      isUsed,
+      canBeUsed: !isExpired && !isUsed,
     };
   }
 }

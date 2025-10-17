@@ -26,7 +26,17 @@ export class UpgradeSubscriptionHandler
     }
 
     const newPlan = SubscriptionPlans.getById(command.newPlanId);
-    subscription.upgrade(newPlan);
+
+    // Map SubscriptionPlan VO to SubscriptionPlanConfig
+    const planConfig = {
+      id: newPlan.id,
+      name: newPlan.name,
+      price: newPlan.price,
+      maxTeams: newPlan.maxTeams,
+      stripePriceId: newPlan.stripePriceId || undefined,
+    };
+
+    subscription.upgrade(planConfig);
 
     await this.subscriptionRepository.update(subscription);
   }
