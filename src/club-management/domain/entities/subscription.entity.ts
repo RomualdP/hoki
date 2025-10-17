@@ -131,10 +131,11 @@ export class Subscription {
    * @returns true if the club can create a new team, false otherwise
    */
   canCreateTeam(currentTeamCount: number): boolean {
-    // Inactive or canceled subscriptions cannot create teams
+    // Inactive, canceled, or payment failed subscriptions cannot create teams
     if (
       this.status === SubscriptionStatus.INACTIVE ||
-      this.status === SubscriptionStatus.CANCELED
+      this.status === SubscriptionStatus.CANCELED ||
+      this.status === SubscriptionStatus.PAYMENT_FAILED
     ) {
       return false;
     }
