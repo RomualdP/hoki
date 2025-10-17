@@ -11,7 +11,7 @@
  * - Cross-aggregate operations that need domain logic
  */
 
-import { Member } from '../entities/member.entity';
+import { Member, ClubRole } from '../entities/member.entity';
 import { Injectable } from '@nestjs/common';
 
 export interface TransferPlayerParams {
@@ -58,7 +58,7 @@ export class ClubTransferService {
     }
 
     // Only PLAYERS can transfer (coaches and assistants cannot)
-    if (!currentMember.isPlayer()) {
+    if (currentMember.role !== ClubRole.PLAYER) {
       return {
         canTransfer: false,
         reason:
