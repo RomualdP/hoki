@@ -30,7 +30,7 @@ const Navigation = () => {
               className="flex items-center space-x-2"
             >
               <Image
-                src="/images/logo.svg"
+                src="/images/logo_volley_app.svg"
                 alt="VolleyApp Logo"
                 width={40}
                 height={40}
