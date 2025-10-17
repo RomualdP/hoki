@@ -42,15 +42,27 @@ export class AuthService {
   async validateGoogleUser(profile: GoogleProfile): Promise<User> {
     const { email, name, picture } = profile;
 
-    return this.database.user.upsert({
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await this.database.user.findUnique({
       where: { email },
-      update: {
-        firstName: name?.split(' ')[0] || '',
-        lastName: name?.split(' ').slice(1).join(' ') || '',
-        avatar: picture,
-        lastLoginAt: new Date(),
-      },
-      create: {
+    });
+
+    if (existingUser) {
+      // Mise à jour de l'utilisateur existant
+      return this.database.user.update({
+        where: { email },
+        data: {
+          firstName: name?.split(' ')[0] || '',
+          lastName: name?.split(' ').slice(1).join(' ') || '',
+          avatar: picture,
+          lastLoginAt: new Date(),
+        },
+      });
+    }
+
+    // Création d'un nouvel utilisateur avec profil et attributs
+    const user = await this.database.user.create({
+      data: {
         email,
         firstName: name?.split(' ')[0] || '',
         lastName: name?.split(' ').slice(1).join(' ') || '',
@@ -58,6 +70,31 @@ export class AuthService {
         lastLoginAt: new Date(),
       },
     });
+
+    // Créer automatiquement un profil vide
+    await this.database.userProfile.create({
+      data: {
+        userId: user.id,
+      },
+    });
+
+    // Créer automatiquement les attributs FITNESS et LEADERSHIP
+    await this.database.userAttribute.createMany({
+      data: [
+        {
+          userId: user.id,
+          attribute: 'FITNESS',
+          value: 1.0,
+        },
+        {
+          userId: user.id,
+          attribute: 'LEADERSHIP',
+          value: 1.0,
+        },
+      ],
+    });
+
+    return user;
   }
 
   async register(
@@ -83,6 +120,29 @@ export class AuthService {
         firstName,
         lastName,
       },
+    });
+
+    // Créer automatiquement un profil vide
+    await this.database.userProfile.create({
+      data: {
+        userId: user.id,
+      },
+    });
+
+    // Créer automatiquement les attributs FITNESS et LEADERSHIP
+    await this.database.userAttribute.createMany({
+      data: [
+        {
+          userId: user.id,
+          attribute: 'FITNESS',
+          value: 1.0,
+        },
+        {
+          userId: user.id,
+          attribute: 'LEADERSHIP',
+          value: 1.0,
+        },
+      ],
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

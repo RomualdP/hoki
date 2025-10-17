@@ -35,17 +35,24 @@ export class UsersService {
     }
 
     if (email) where.email = { contains: email, mode: 'insensitive' };
-    if (city) where.profile = { city: { contains: city, mode: 'insensitive' } };
-    if (position)
-      where.profile = {
-        position: position as
+
+    if (city || position) {
+      where.profile = {};
+
+      if (city) {
+        where.profile.city = { contains: city, mode: 'insensitive' };
+      }
+
+      if (position) {
+        where.profile.position = position as
           | 'SETTER'
           | 'OUTSIDE_HITTER'
           | 'MIDDLE_BLOCKER'
           | 'OPPOSITE'
           | 'LIBERO'
-          | 'DEFENSIVE_SPECIALIST',
-      };
+          | 'DEFENSIVE_SPECIALIST';
+      }
+    }
 
     const [users, total] = await Promise.all([
       this.database.user.findMany({
@@ -232,6 +239,13 @@ export class UsersService {
       },
     });
 
+    // Créer automatiquement un profil vide pour le nouvel utilisateur
+    await this.database.userProfile.create({
+      data: {
+        userId: user.id,
+      },
+    });
+
     // Créer automatiquement les attributs FITNESS et LEADERSHIP avec valeur par défaut 1.0
     await this.database.userAttribute.createMany({
       data: [
@@ -248,7 +262,11 @@ export class UsersService {
       ],
     });
 
-    return user;
+    // Récupérer l'utilisateur avec son profil
+    return this.database.user.findUnique({
+      where: { id: user.id },
+      include: { profile: true },
+    });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

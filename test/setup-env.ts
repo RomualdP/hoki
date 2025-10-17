@@ -1,30 +1,22 @@
-import * as dotenv from 'dotenv';
+import { config } from 'dotenv';
 import * as path from 'path';
-
-/**
- * Setup environment variables for tests
- *
- * This file is automatically loaded by Jest before running tests.
- * It loads the appropriate .env file based on the environment:
- * - In CI (GitHub Actions): Uses environment variables set in the workflow
- * - In local development: Loads .env.test
- */
+import * as fs from 'fs';
 
 const isCI = process.env.CI === 'true';
 
 if (!isCI) {
-  // Load .env.test for local testing
   const envPath = path.resolve(__dirname, '..', '.env.test');
-  const result = dotenv.config({ path: envPath });
 
-  if (result.error) {
-    console.warn(
-      `Warning: Could not load .env.test file from ${envPath}. ` +
-        'Tests may fail if DATABASE_URL is not set.',
-    );
+  if (fs.existsSync(envPath)) {
+    const envConfig = config({ path: envPath });
+
+    if (envConfig.parsed) {
+      Object.assign(process.env, envConfig.parsed);
+    }
   } else {
-    console.log('✓ Loaded .env.test for local testing');
+    throw new Error(
+      `Could not find .env.test file at ${envPath}. ` +
+        'Tests cannot run without DATABASE_URL.',
+    );
   }
-} else {
-  console.log('✓ Running in CI - using environment variables from workflow');
 }
