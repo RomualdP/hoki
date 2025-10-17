@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { AcceptInvitationCommand } from './accept-invitation.command';
-import { Member } from '../../../domain/entities/member.entity';
+import { Member, ClubRole } from '../../../domain/entities/member.entity';
 import {
   IInvitationRepository,
   INVITATION_REPOSITORY,
@@ -10,6 +10,7 @@ import {
   IMemberRepository,
   MEMBER_REPOSITORY,
 } from '../../../domain/repositories/member.repository';
+import { InvitationType } from '../../../domain/entities/invitation.entity';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -47,12 +48,15 @@ export class AcceptInvitationHandler
     invitation.markAsUsed(command.userId);
     await this.invitationRepository.update(invitation);
 
-    // 4. Create member entity
+    // 4. Map invitation type to club role
+    const role = this.mapInvitationTypeToClubRole(invitation.type);
+
+    // 5. Create member entity
     const member = Member.create({
       id: randomUUID(),
       userId: command.userId,
       clubId: invitation.clubId,
-      role: invitation.type.toClubRole(),
+      role,
       invitedBy: invitation.createdBy,
     });
 
@@ -61,5 +65,14 @@ export class AcceptInvitationHandler
 
     // 6. Return member ID
     return savedMember.id;
+  }
+
+  private mapInvitationTypeToClubRole(type: InvitationType): ClubRole {
+    const mapping = {
+      [InvitationType.PLAYER]: ClubRole.PLAYER,
+      [InvitationType.ASSISTANT_COACH]: ClubRole.ASSISTANT_COACH,
+    };
+
+    return mapping[type];
   }
 }
