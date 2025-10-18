@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 import { Injectable } from '@nestjs/common';
-import type { Invitation as PrismaInvitation } from '@prisma/client';
+import type { InvitationType as PrismaInvitationType } from '@prisma/client';
 import { IInvitationRepository } from '../../../domain/repositories/invitation.repository';
 import { Invitation } from '../../../domain/entities/invitation.entity';
+import { InvitationType } from '../../../domain/value-objects/invitation-type.vo';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { InvitationMapper } from '../mappers/invitation.mapper';
 
@@ -17,9 +17,9 @@ export class InvitationRepositoryImpl implements IInvitationRepository {
   async save(invitation: Invitation): Promise<Invitation> {
     const prismaData = InvitationMapper.toPrismaCreate(invitation);
 
-    const savedInvitation = (await this.prisma.invitation.create({
+    const savedInvitation = await this.prisma.invitation.create({
       data: prismaData,
-    })) as PrismaInvitation;
+    });
 
     return InvitationMapper.toDomain(savedInvitation);
   }
@@ -41,10 +41,10 @@ export class InvitationRepositoryImpl implements IInvitationRepository {
   }
 
   async findByClubId(clubId: string): Promise<Invitation[]> {
-    const invitations = (await this.prisma.invitation.findMany({
+    const invitations = await this.prisma.invitation.findMany({
       where: { clubId },
       orderBy: { createdAt: 'desc' },
-    })) as PrismaInvitation[];
+    });
 
     return invitations.map((inv) => InvitationMapper.toDomain(inv));
   }
@@ -52,10 +52,10 @@ export class InvitationRepositoryImpl implements IInvitationRepository {
   async update(invitation: Invitation): Promise<Invitation> {
     const prismaData = InvitationMapper.toPrismaUpdate(invitation);
 
-    const updatedInvitation = (await this.prisma.invitation.update({
+    const updatedInvitation = await this.prisma.invitation.update({
       where: { id: invitation.id },
       data: prismaData,
-    })) as PrismaInvitation;
+    });
 
     return InvitationMapper.toDomain(updatedInvitation);
   }
@@ -67,10 +67,108 @@ export class InvitationRepositoryImpl implements IInvitationRepository {
   }
 
   async existsByToken(token: string): Promise<boolean> {
-    const count = (await this.prisma.invitation.count({
+    const count = await this.prisma.invitation.count({
       where: { token },
-    })) as number;
+    });
 
     return count > 0;
+  }
+
+  async findByCreatorId(creatorId: string): Promise<Invitation[]> {
+    const invitations = await this.prisma.invitation.findMany({
+      where: { createdBy: creatorId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return invitations.map((inv) => InvitationMapper.toDomain(inv));
+  }
+
+  async findByType(type: InvitationType): Promise<Invitation[]> {
+    const invitations = await this.prisma.invitation.findMany({
+      where: { type: type as PrismaInvitationType },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return invitations.map((inv) => InvitationMapper.toDomain(inv));
+  }
+
+  async findValidByClubId(clubId: string): Promise<Invitation[]> {
+    const now = new Date();
+
+    const invitations = await this.prisma.invitation.findMany({
+      where: {
+        clubId,
+        expiresAt: { gt: now },
+        usedAt: null,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return invitations.map((inv) => InvitationMapper.toDomain(inv));
+  }
+
+  async findExpired(): Promise<Invitation[]> {
+    const now = new Date();
+
+    const invitations = await this.prisma.invitation.findMany({
+      where: {
+        expiresAt: { lte: now },
+        usedAt: null,
+      },
+      orderBy: { expiresAt: 'desc' },
+    });
+
+    return invitations.map((inv) => InvitationMapper.toDomain(inv));
+  }
+
+  async findUsed(): Promise<Invitation[]> {
+    const invitations = await this.prisma.invitation.findMany({
+      where: {
+        usedAt: { not: null },
+      },
+      orderBy: { usedAt: 'desc' },
+    });
+
+    return invitations.map((inv) => InvitationMapper.toDomain(inv));
+  }
+
+  async findUsedByUserId(userId: string): Promise<Invitation[]> {
+    const invitations = await this.prisma.invitation.findMany({
+      where: { usedBy: userId },
+      orderBy: { usedAt: 'desc' },
+    });
+
+    return invitations.map((inv) => InvitationMapper.toDomain(inv));
+  }
+
+  async deleteExpired(): Promise<number> {
+    const now = new Date();
+
+    const result = await this.prisma.invitation.deleteMany({
+      where: {
+        expiresAt: { lte: now },
+        usedAt: null,
+      },
+    });
+
+    return result.count;
+  }
+
+  async countByClubId(clubId: string): Promise<number> {
+    return this.prisma.invitation.count({
+      where: { clubId },
+    });
+  }
+
+  async countValidByClubId(clubId: string): Promise<number> {
+    const now = new Date();
+
+    return this.prisma.invitation.count({
+      where: {
+        clubId,
+        expiresAt: { gt: now },
+        usedAt: null,
+      },
+    });
   }
 }

@@ -10,11 +10,10 @@ import {
   IMemberRepository,
   MEMBER_REPOSITORY,
 } from '../../../../domain/repositories/member.repository';
-import {
-  Invitation,
-  InvitationType,
-} from '../../../../domain/entities/invitation.entity';
-import { Member, ClubRole } from '../../../../domain/entities/member.entity';
+import { Invitation } from '../../../../domain/entities/invitation.entity';
+import { InvitationType } from '../../../../domain/value-objects/invitation-type.vo';
+import { Member } from '../../../../domain/entities/member.entity';
+import { ClubRole } from '../../../../domain/value-objects/club-role.vo';
 
 describe('AcceptInvitationHandler', () => {
   let handler: AcceptInvitationHandler;

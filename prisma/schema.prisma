@@ -217,6 +217,81 @@ model TrainingTeam {
 }
 
 // ============================================
+// CLUB MANAGEMENT
+// ============================================
+
+model Club {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  description  String?
+  logo         String?
+  location     String?
+  ownerId      String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  members      Member[]
+  invitations  Invitation[]
+  subscription Subscription?
+
+  @@map("clubs")
+}
+
+model Subscription {
+  id                    String             @id @default(cuid())
+  clubId                String             @unique
+  planId                SubscriptionPlanId
+  maxTeams              Int?
+  price                 Int
+  status                SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean            @default(false)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  club                  Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Member {
+  id        String    @id @default(cuid())
+  userId    String
+  clubId    String
+  role      ClubRole
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+  invitedBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  club      Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clubId])
+  @@index([clubId])
+  @@index([userId])
+  @@map("members")
+}
+
+model Invitation {
+  id        String         @id @default(cuid())
+  token     String         @unique
+  clubId    String
+  type      InvitationType
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  usedBy    String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  club      Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([clubId])
+  @@map("invitations")
+}
+
+// ============================================
 // ENUMS
 // ============================================
 
@@ -294,4 +369,28 @@ enum RegistrationStatus {
   CONFIRMED
   CANCELLED
   WAITLIST
+}
+
+enum ClubRole {
+  COACH
+  ASSISTANT_COACH
+  PLAYER
+}
+
+enum SubscriptionPlanId {
+  BETA
+  STARTER
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELED
+  PAYMENT_FAILED
+}
+
+enum InvitationType {
+  PLAYER
+  ASSISTANT_COACH
 }

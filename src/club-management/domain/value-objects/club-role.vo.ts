@@ -5,17 +5,37 @@
  * Encapsulates role-specific behavior and permission checks.
  */
 
-import { ClubRole as ClubRoleEnum } from '../entities/member.entity';
+/**
+ * ClubRole enum - represents valid club roles
+ */
+export enum ClubRole {
+  COACH = 'COACH',
+  ASSISTANT_COACH = 'ASSISTANT_COACH',
+  PLAYER = 'PLAYER',
+}
 
 export class ClubRoleVO {
-  private constructor(public readonly value: ClubRoleEnum) {}
+  private constructor(public readonly value: ClubRole) {}
 
   /**
-   * Factory method to create a ClubRole value object
+   * Factory method to create a ClubRole value object from enum
    */
-  static create(role: ClubRoleEnum): ClubRoleVO {
-    if (!Object.values(ClubRoleEnum).includes(role)) {
+  static create(role: ClubRole): ClubRoleVO {
+    if (!Object.values(ClubRole).includes(role)) {
       throw new Error(`Invalid club role: ${role}`);
+    }
+
+    return new ClubRoleVO(role);
+  }
+
+  /**
+   * Factory method to create a ClubRole value object from string (for Prisma)
+   */
+  static fromString(roleString: string): ClubRoleVO {
+    const role = roleString as ClubRole;
+
+    if (!Object.values(ClubRole).includes(role)) {
+      throw new Error(`Invalid club role string: ${roleString}`);
     }
 
     return new ClubRoleVO(role);
@@ -25,30 +45,30 @@ export class ClubRoleVO {
    * Factory methods for each role type
    */
   static coach(): ClubRoleVO {
-    return new ClubRoleVO(ClubRoleEnum.COACH);
+    return new ClubRoleVO(ClubRole.COACH);
   }
 
   static assistantCoach(): ClubRoleVO {
-    return new ClubRoleVO(ClubRoleEnum.ASSISTANT_COACH);
+    return new ClubRoleVO(ClubRole.ASSISTANT_COACH);
   }
 
   static player(): ClubRoleVO {
-    return new ClubRoleVO(ClubRoleEnum.PLAYER);
+    return new ClubRoleVO(ClubRole.PLAYER);
   }
 
   /**
    * Type checks
    */
   isCoach(): boolean {
-    return this.value === ClubRoleEnum.COACH;
+    return this.value === ClubRole.COACH;
   }
 
   isAssistantCoach(): boolean {
-    return this.value === ClubRoleEnum.ASSISTANT_COACH;
+    return this.value === ClubRole.ASSISTANT_COACH;
   }
 
   isPlayer(): boolean {
-    return this.value === ClubRoleEnum.PLAYER;
+    return this.value === ClubRole.PLAYER;
   }
 
   /**
@@ -98,9 +118,9 @@ export class ClubRoleVO {
    */
   getDisplayName(): string {
     const displayNames = {
-      [ClubRoleEnum.COACH]: 'Coach',
-      [ClubRoleEnum.ASSISTANT_COACH]: 'Assistant Coach',
-      [ClubRoleEnum.PLAYER]: 'Player',
+      [ClubRole.COACH]: 'Coach',
+      [ClubRole.ASSISTANT_COACH]: 'Assistant Coach',
+      [ClubRole.PLAYER]: 'Player',
     };
 
     return displayNames[this.value];
@@ -111,11 +131,11 @@ export class ClubRoleVO {
    */
   getDescription(): string {
     const descriptions = {
-      [ClubRoleEnum.COACH]:
+      [ClubRole.COACH]:
         'Full access to club management, subscription, and all features',
-      [ClubRoleEnum.ASSISTANT_COACH]:
+      [ClubRole.ASSISTANT_COACH]:
         'Can manage teams and invite members, but cannot modify club settings or subscription',
-      [ClubRoleEnum.PLAYER]:
+      [ClubRole.PLAYER]:
         'Can view club information and participate in team activities',
     };
 
@@ -127,9 +147,9 @@ export class ClubRoleVO {
    */
   getHierarchyLevel(): number {
     const levels = {
-      [ClubRoleEnum.PLAYER]: 1,
-      [ClubRoleEnum.ASSISTANT_COACH]: 2,
-      [ClubRoleEnum.COACH]: 3,
+      [ClubRole.PLAYER]: 1,
+      [ClubRole.ASSISTANT_COACH]: 2,
+      [ClubRole.COACH]: 3,
     };
 
     return levels[this.value];

@@ -1,5 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
-import type { Invitation as PrismaInvitation } from '@prisma/client';
+import type {
+  Invitation as PrismaInvitation,
+  InvitationType as PrismaInvitationType,
+} from '@prisma/client';
 import { Invitation } from '../../../domain/entities/invitation.entity';
 import { InvitationType } from '../../../domain/value-objects/invitation-type.vo';
 
@@ -11,26 +13,17 @@ export class InvitationMapper {
    * Convert Prisma Invitation to Domain Invitation entity
    */
   static toDomain(prismaInvitation: PrismaInvitation): Invitation {
-    const id: string = prismaInvitation.id;
-    const token: string = prismaInvitation.token;
-    const clubId: string = prismaInvitation.clubId;
-    const type = InvitationType.fromString(prismaInvitation.type);
-    const expiresAt: Date = prismaInvitation.expiresAt;
-    const createdBy: string = prismaInvitation.createdBy;
-    const createdAt: Date = prismaInvitation.createdAt;
-    const usedAt: Date | null = prismaInvitation.usedAt;
-    const usedBy: string | null = prismaInvitation.usedBy;
-
     return Invitation.reconstitute({
-      id,
-      token,
-      clubId,
-      type,
-      expiresAt,
-      createdBy,
-      createdAt,
-      usedAt,
-      usedBy,
+      id: prismaInvitation.id,
+      token: prismaInvitation.token,
+      clubId: prismaInvitation.clubId,
+      type: prismaInvitation.type as InvitationType,
+      expiresAt: prismaInvitation.expiresAt,
+      createdBy: prismaInvitation.createdBy,
+      createdAt: prismaInvitation.createdAt,
+      usedAt: prismaInvitation.usedAt,
+      usedBy: prismaInvitation.usedBy,
+      updatedAt: prismaInvitation.updatedAt,
     });
   }
 
@@ -38,26 +31,17 @@ export class InvitationMapper {
    * Convert Domain Invitation entity to Prisma data
    */
   static toPrisma(invitation: Invitation): PrismaInvitation {
-    const id: string = invitation.id;
-    const token: string = invitation.token;
-    const clubId: string = invitation.clubId;
-    const type: string = invitation.type.value;
-    const expiresAt: Date = invitation.expiresAt;
-    const createdBy: string = invitation.createdBy;
-    const createdAt: Date = invitation.createdAt;
-    const usedAt: Date | null = invitation.usedAt;
-    const usedBy: string | null = invitation.usedBy;
-
     return {
-      id,
-      token,
-      clubId,
-      type,
-      expiresAt,
-      createdBy,
-      createdAt,
-      usedAt,
-      usedBy,
+      id: invitation.id,
+      token: invitation.token,
+      clubId: invitation.clubId,
+      type: invitation.type,
+      expiresAt: invitation.expiresAt,
+      createdBy: invitation.createdBy,
+      createdAt: invitation.createdAt,
+      usedAt: invitation.usedAt,
+      usedBy: invitation.usedBy,
+      updatedAt: invitation.updatedAt,
     };
   }
 
@@ -68,27 +52,21 @@ export class InvitationMapper {
     id: string;
     token: string;
     clubId: string;
-    type: string;
+    type: PrismaInvitationType;
     expiresAt: Date;
     createdBy: string;
     createdAt: Date;
+    updatedAt: Date;
   } {
-    const id: string = invitation.id;
-    const token: string = invitation.token;
-    const clubId: string = invitation.clubId;
-    const type: string = invitation.type.value;
-    const expiresAt: Date = invitation.expiresAt;
-    const createdBy: string = invitation.createdBy;
-    const createdAt: Date = invitation.createdAt;
-
     return {
-      id,
-      token,
-      clubId,
-      type,
-      expiresAt,
-      createdBy,
-      createdAt,
+      id: invitation.id,
+      token: invitation.token,
+      clubId: invitation.clubId,
+      type: invitation.type as PrismaInvitationType,
+      expiresAt: invitation.expiresAt,
+      createdBy: invitation.createdBy,
+      createdAt: invitation.createdAt,
+      updatedAt: invitation.updatedAt,
     };
   }
 
@@ -99,10 +77,12 @@ export class InvitationMapper {
   static toPrismaUpdate(invitation: Invitation): {
     usedAt: Date | null;
     usedBy: string | null;
+    updatedAt: Date;
   } {
     return {
       usedAt: invitation.usedAt,
       usedBy: invitation.usedBy,
+      updatedAt: invitation.updatedAt,
     };
   }
 }

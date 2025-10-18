@@ -11,7 +11,8 @@ import {
   CLUB_REPOSITORY,
 } from '../../../../domain/repositories/club.repository';
 import { ClubTransferService } from '../../../../domain/services/club-transfer.service';
-import { Member, ClubRole } from '../../../../domain/entities/member.entity';
+import { Member } from '../../../../domain/entities/member.entity';
+import { ClubRole } from '../../../../domain/value-objects/club-role.vo';
 import { Club } from '../../../../domain/entities/club.entity';
 
 describe('ChangeClubHandler', () => {

@@ -41,10 +41,10 @@ export class ClubsController {
 
     const command = new CreateClubCommand(
       dto.name,
+      dto.description ?? null,
+      dto.logo ?? null,
+      dto.location ?? null,
       ownerId,
-      dto.description,
-      dto.logo,
-      dto.location,
     );
 
     const clubId = await this.commandBus.execute(command);
@@ -77,19 +77,23 @@ export class ClubsController {
    */
   @Get()
   async listClubs(
-    @Query('ownerId') ownerId?: string,
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
+    @Query('search') searchTerm?: string,
   ) {
-    const query = new ListClubsQuery(ownerId, limit, offset);
+    const query = new ListClubsQuery(
+      skip ? parseInt(skip, 10) : undefined,
+      take ? parseInt(take, 10) : undefined,
+      searchTerm,
+    );
     const clubs = await this.queryBus.execute(query);
 
     return {
       success: true,
       data: clubs,
       meta: {
-        limit,
-        offset,
+        skip,
+        take,
         count: clubs.length,
       },
     };
@@ -123,7 +127,10 @@ export class ClubsController {
    */
   @Delete(':id')
   async deleteClub(@Param('id') id: string) {
-    const command = new DeleteClubCommand(id);
+    // TODO: Extract requesterId from JWT token
+    const requesterId = 'user-id-from-jwt'; // Placeholder
+
+    const command = new DeleteClubCommand(id, requesterId);
     await this.commandBus.execute(command);
 
     return {

@@ -11,6 +11,7 @@ import {
   GetSubscriptionQuery,
   ListSubscriptionPlansQuery,
 } from '../application/queries';
+import { SubscriptionPlanId } from '../domain/entities/subscription.entity';
 
 /**
  * Subscriptions Controller - Presentation Layer
@@ -34,7 +35,7 @@ export class SubscriptionsController {
 
     const command = new SubscribeToPlanCommand(
       clubId,
-      dto.planId,
+      dto.planId as SubscriptionPlanId,
       dto.stripeCustomerId,
       dto.stripeSubscriptionId,
     );
@@ -87,7 +88,10 @@ export class SubscriptionsController {
     @Param('id') subscriptionId: string,
     @Body('newPlanId') newPlanId: string,
   ) {
-    const command = new UpgradeSubscriptionCommand(subscriptionId, newPlanId);
+    const command = new UpgradeSubscriptionCommand(
+      subscriptionId,
+      newPlanId as SubscriptionPlanId,
+    );
     await this.commandBus.execute(command);
 
     return {

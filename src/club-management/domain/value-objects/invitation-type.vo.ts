@@ -5,18 +5,38 @@
  * Encapsulates invitation type-specific behavior and validation.
  */
 
-import { InvitationType as InvitationTypeEnum } from '../entities/invitation.entity';
-import { ClubRole } from '../entities/member.entity';
+import { ClubRole } from './club-role.vo';
+
+/**
+ * InvitationType enum - represents valid invitation types
+ */
+export enum InvitationType {
+  PLAYER = 'PLAYER',
+  ASSISTANT_COACH = 'ASSISTANT_COACH',
+}
 
 export class InvitationTypeVO {
-  private constructor(public readonly value: InvitationTypeEnum) {}
+  private constructor(public readonly value: InvitationType) {}
 
   /**
-   * Factory method to create an InvitationType value object
+   * Factory method to create an InvitationType value object from enum
    */
-  static create(type: InvitationTypeEnum): InvitationTypeVO {
-    if (!Object.values(InvitationTypeEnum).includes(type)) {
+  static create(type: InvitationType): InvitationTypeVO {
+    if (!Object.values(InvitationType).includes(type)) {
       throw new Error(`Invalid invitation type: ${type}`);
+    }
+
+    return new InvitationTypeVO(type);
+  }
+
+  /**
+   * Factory method to create an InvitationType value object from string (for Prisma)
+   */
+  static fromString(typeString: string): InvitationTypeVO {
+    const type = typeString as InvitationType;
+
+    if (!Object.values(InvitationType).includes(type)) {
+      throw new Error(`Invalid invitation type string: ${typeString}`);
     }
 
     return new InvitationTypeVO(type);
@@ -26,22 +46,22 @@ export class InvitationTypeVO {
    * Factory methods for each invitation type
    */
   static player(): InvitationTypeVO {
-    return new InvitationTypeVO(InvitationTypeEnum.PLAYER);
+    return new InvitationTypeVO(InvitationType.PLAYER);
   }
 
   static assistantCoach(): InvitationTypeVO {
-    return new InvitationTypeVO(InvitationTypeEnum.ASSISTANT_COACH);
+    return new InvitationTypeVO(InvitationType.ASSISTANT_COACH);
   }
 
   /**
    * Type checks
    */
   isPlayer(): boolean {
-    return this.value === InvitationTypeEnum.PLAYER;
+    return this.value === InvitationType.PLAYER;
   }
 
   isAssistantCoach(): boolean {
-    return this.value === InvitationTypeEnum.ASSISTANT_COACH;
+    return this.value === InvitationType.ASSISTANT_COACH;
   }
 
   /**
@@ -49,8 +69,8 @@ export class InvitationTypeVO {
    */
   toClubRole(): ClubRole {
     const roleMapping = {
-      [InvitationTypeEnum.PLAYER]: ClubRole.PLAYER,
-      [InvitationTypeEnum.ASSISTANT_COACH]: ClubRole.ASSISTANT_COACH,
+      [InvitationType.PLAYER]: ClubRole.PLAYER,
+      [InvitationType.ASSISTANT_COACH]: ClubRole.ASSISTANT_COACH,
     };
 
     return roleMapping[this.value];
@@ -61,8 +81,8 @@ export class InvitationTypeVO {
    */
   getDisplayName(): string {
     const displayNames = {
-      [InvitationTypeEnum.PLAYER]: 'Player',
-      [InvitationTypeEnum.ASSISTANT_COACH]: 'Assistant Coach',
+      [InvitationType.PLAYER]: 'Player',
+      [InvitationType.ASSISTANT_COACH]: 'Assistant Coach',
     };
 
     return displayNames[this.value];
@@ -73,9 +93,9 @@ export class InvitationTypeVO {
    */
   getDescription(): string {
     const descriptions = {
-      [InvitationTypeEnum.PLAYER]:
+      [InvitationType.PLAYER]:
         'Invite a player to join your club and participate in team activities',
-      [InvitationTypeEnum.ASSISTANT_COACH]:
+      [InvitationType.ASSISTANT_COACH]:
         'Invite an assistant coach to help manage teams and members',
     };
 
@@ -87,8 +107,8 @@ export class InvitationTypeVO {
    */
   getSignupPath(): string {
     const paths = {
-      [InvitationTypeEnum.PLAYER]: 'signup/player',
-      [InvitationTypeEnum.ASSISTANT_COACH]: 'signup/assistant',
+      [InvitationType.PLAYER]: 'signup/player',
+      [InvitationType.ASSISTANT_COACH]: 'signup/assistant',
     };
 
     return paths[this.value];

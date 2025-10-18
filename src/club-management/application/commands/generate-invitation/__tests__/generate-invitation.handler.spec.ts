@@ -5,10 +5,8 @@ import {
   IInvitationRepository,
   INVITATION_REPOSITORY,
 } from '../../../../domain/repositories/invitation.repository';
-import {
-  Invitation,
-  InvitationType,
-} from '../../../../domain/entities/invitation.entity';
+import { Invitation } from '../../../../domain/entities/invitation.entity';
+import { InvitationType } from '../../../../domain/value-objects/invitation-type.vo';
 
 describe('GenerateInvitationHandler', () => {
   let handler: GenerateInvitationHandler;

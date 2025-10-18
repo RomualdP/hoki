@@ -10,7 +10,7 @@ import {
   IClubRepository,
   CLUB_REPOSITORY,
 } from '../../../domain/repositories/club.repository';
-import { ClubRole } from '../../../domain/entities/member.entity';
+import { ClubRole } from '../../../domain/value-objects/club-role.vo';
 
 @Injectable()
 @QueryHandler(ListMembersQuery)

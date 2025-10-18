@@ -1,7 +1,5 @@
-import {
-  Invitation,
-  InvitationType,
-} from '../../domain/entities/invitation.entity';
+import { Invitation } from '../../domain/entities/invitation.entity';
+import { InvitationType } from '../../domain/value-objects/invitation-type.vo';
 
 /**
  * Builder for creating Invitation test instances with fluent API

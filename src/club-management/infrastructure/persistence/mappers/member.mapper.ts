@@ -1,5 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/unbound-method */
-import type { Member as PrismaMember } from '@prisma/client';
+import type {
+  Member as PrismaMember,
+  ClubRole as PrismaClubRole,
+} from '@prisma/client';
 import { Member } from '../../../domain/entities/member.entity';
 import { ClubRole } from '../../../domain/value-objects/club-role.vo';
 
@@ -15,9 +17,12 @@ export class MemberMapper {
       id: prismaMember.id,
       userId: prismaMember.userId,
       clubId: prismaMember.clubId,
-      role: ClubRole.fromString(prismaMember.role),
+      role: prismaMember.role as ClubRole,
       joinedAt: prismaMember.joinedAt,
-      isActive: prismaMember.isActive,
+      leftAt: prismaMember.leftAt,
+      invitedBy: prismaMember.invitedBy,
+      createdAt: prismaMember.createdAt,
+      updatedAt: prismaMember.updatedAt,
     });
   }
 
@@ -29,9 +34,12 @@ export class MemberMapper {
       id: member.id,
       userId: member.userId,
       clubId: member.clubId,
-      role: member.role.value,
+      role: member.role,
       joinedAt: member.joinedAt,
-      isActive: member.isActive,
+      leftAt: member.leftAt,
+      invitedBy: member.invitedBy,
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
     };
   }
 
@@ -42,17 +50,23 @@ export class MemberMapper {
     id: string;
     userId: string;
     clubId: string;
-    role: string;
+    role: PrismaClubRole;
     joinedAt: Date;
-    isActive: boolean;
+    leftAt: Date | null;
+    invitedBy: string | null;
+    createdAt: Date;
+    updatedAt: Date;
   } {
     return {
       id: member.id,
       userId: member.userId,
       clubId: member.clubId,
-      role: member.role.value,
+      role: member.role as PrismaClubRole,
       joinedAt: member.joinedAt,
-      isActive: member.isActive,
+      leftAt: member.leftAt,
+      invitedBy: member.invitedBy,
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
     };
   }
 
@@ -60,12 +74,14 @@ export class MemberMapper {
    * Convert Domain Member entity to Prisma update data
    */
   static toPrismaUpdate(member: Member): {
-    role: string;
-    isActive: boolean;
+    role: PrismaClubRole;
+    leftAt: Date | null;
+    updatedAt: Date;
   } {
     return {
-      role: member.role.value,
-      isActive: member.isActive,
+      role: member.role as PrismaClubRole,
+      leftAt: member.leftAt,
+      updatedAt: member.updatedAt,
     };
   }
 }

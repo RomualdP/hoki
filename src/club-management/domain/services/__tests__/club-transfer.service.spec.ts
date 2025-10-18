@@ -1,5 +1,6 @@
 import { ClubTransferService } from '../club-transfer.service';
-import { Member, ClubRole } from '../../entities/member.entity';
+import { Member } from '../../entities/member.entity';
+import { ClubRole } from '../../value-objects/club-role.vo';
 
 describe('ClubTransferService', () => {
   let service: ClubTransferService;

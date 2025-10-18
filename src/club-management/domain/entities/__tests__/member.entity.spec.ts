@@ -1,4 +1,5 @@
-import { Member, ClubRole } from '../member.entity';
+import { Member } from '../member.entity';
+import { ClubRole } from '../../value-objects/club-role.vo';
 
 describe('Member Entity', () => {
   describe('create()', () => {
