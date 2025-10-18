@@ -5,11 +5,7 @@
  * Encapsulates business logic related to club membership and permissions.
  */
 
-export enum ClubRole {
-  COACH = 'COACH', // Club owner with full permissions
-  ASSISTANT_COACH = 'ASSISTANT_COACH', // Can manage teams but not subscription/club settings
-  PLAYER = 'PLAYER', // Regular player with limited permissions
-}
+import { ClubRole } from '../value-objects/club-role.vo';
 
 export class Member {
   private constructor(

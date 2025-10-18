@@ -1,7 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { AcceptInvitationCommand } from './accept-invitation.command';
-import { Member, ClubRole } from '../../../domain/entities/member.entity';
+import { Member } from '../../../domain/entities/member.entity';
+import { ClubRole } from '../../../domain/value-objects/club-role.vo';
 import {
   IInvitationRepository,
   INVITATION_REPOSITORY,
@@ -10,7 +11,7 @@ import {
   IMemberRepository,
   MEMBER_REPOSITORY,
 } from '../../../domain/repositories/member.repository';
-import { InvitationType } from '../../../domain/entities/invitation.entity';
+import { InvitationType } from '../../../domain/value-objects/invitation-type.vo';
 import { randomUUID } from 'crypto';
 
 @Injectable()

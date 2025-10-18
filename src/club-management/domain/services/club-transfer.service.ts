@@ -11,7 +11,8 @@
  * - Cross-aggregate operations that need domain logic
  */
 
-import { Member, ClubRole } from '../entities/member.entity';
+import { Member } from '../entities/member.entity';
+import { ClubRole } from '../value-objects/club-role.vo';
 import { Injectable } from '@nestjs/common';
 
 export interface TransferPlayerParams {

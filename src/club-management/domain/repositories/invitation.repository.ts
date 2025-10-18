@@ -6,7 +6,8 @@
  * in the Infrastructure layer.
  */
 
-import { Invitation, InvitationType } from '../entities/invitation.entity';
+import { Invitation } from '../entities/invitation.entity';
+import { InvitationType } from '../value-objects/invitation-type.vo';
 
 export interface IInvitationRepository {
   /**

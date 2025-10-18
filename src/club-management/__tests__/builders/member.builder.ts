@@ -1,4 +1,5 @@
-import { Member, ClubRole } from '../../domain/entities/member.entity';
+import { Member } from '../../domain/entities/member.entity';
+import { ClubRole } from '../../domain/value-objects/club-role.vo';
 
 /**
  * Builder for creating Member test instances with fluent API
@@ -158,7 +159,7 @@ export class MemberBuilder {
       userId: this.props.userId,
       clubId: this.props.clubId,
       role: this.props.role,
-      invitedBy: this.props.invitedBy,
+      invitedBy: this.props.invitedBy ?? undefined,
     });
   }
 }

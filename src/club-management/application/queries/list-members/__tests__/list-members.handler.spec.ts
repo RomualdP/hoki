@@ -11,8 +11,11 @@ import {
   CLUB_REPOSITORY,
 } from '../../../../domain/repositories/club.repository';
 import { Club } from '../../../../domain/entities/club.entity';
-import { Member, ClubRole } from '../../../../domain/entities/member.entity';
-import { ClubRoleVO } from '../../../../domain/value-objects/club-role.vo';
+import { Member } from '../../../../domain/entities/member.entity';
+import {
+  ClubRole,
+  ClubRoleVO,
+} from '../../../../domain/value-objects/club-role.vo';
 
 describe('ListMembersHandler', () => {
   let handler: ListMembersHandler;

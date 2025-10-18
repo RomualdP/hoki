@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Controller,
   Get,
@@ -19,6 +19,8 @@ import {
   ValidateInvitationQuery,
   ListMembersQuery,
 } from '../application/queries';
+import { InvitationTypeVO } from '../domain/value-objects/invitation-type.vo';
+import { ClubRoleVO } from '../domain/value-objects/club-role.vo';
 
 /**
  * Invitations Controller - Presentation Layer
@@ -41,9 +43,11 @@ export class InvitationsController {
     const clubId = 'club-id-from-jwt'; // Placeholder
     const createdBy = 'user-id-from-jwt'; // Placeholder
 
+    const invitationType = InvitationTypeVO.fromString(dto.type).value;
+
     const command = new GenerateInvitationCommand(
       clubId,
-      dto.type,
+      invitationType,
       createdBy,
       dto.expirationDays,
     );
@@ -102,7 +106,7 @@ export class InvitationsController {
   ) {
     const query = new ListMembersQuery(
       clubId,
-      role ? ({ value: role } as any) : undefined,
+      role ? ClubRoleVO.fromString(role) : undefined,
     );
     const members = await this.queryBus.execute(query);
 
@@ -118,7 +122,10 @@ export class InvitationsController {
    */
   @Delete('members/:memberId')
   async removeMember(@Param('memberId') memberId: string) {
-    const command = new RemoveMemberCommand(memberId);
+    // TODO: Extract removerId from JWT token
+    const removerId = 'user-id-from-jwt'; // Placeholder
+
+    const command = new RemoveMemberCommand(memberId, removerId);
     await this.commandBus.execute(command);
 
     return {

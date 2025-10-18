@@ -1,4 +1,5 @@
-import { Invitation, InvitationType } from '../invitation.entity';
+import { Invitation } from '../invitation.entity';
+import { InvitationType } from '../../value-objects/invitation-type.vo';
 
 describe('Invitation Entity', () => {
   describe('isExpired()', () => {

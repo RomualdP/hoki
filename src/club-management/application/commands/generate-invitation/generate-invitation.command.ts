@@ -1,4 +1,4 @@
-import { InvitationType } from '../../../domain/entities/invitation.entity';
+import { InvitationType } from '../../../domain/value-objects/invitation-type.vo';
 
 export class GenerateInvitationCommand {
   constructor(

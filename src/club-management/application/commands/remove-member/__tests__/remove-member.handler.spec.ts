@@ -6,7 +6,8 @@ import {
   IMemberRepository,
   MEMBER_REPOSITORY,
 } from '../../../../domain/repositories/member.repository';
-import { Member, ClubRole } from '../../../../domain/entities/member.entity';
+import { Member } from '../../../../domain/entities/member.entity';
+import { ClubRole } from '../../../../domain/value-objects/club-role.vo';
 
 describe('RemoveMemberHandler', () => {
   let handler: RemoveMemberHandler;

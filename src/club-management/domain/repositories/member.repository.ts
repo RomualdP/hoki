@@ -6,7 +6,8 @@
  * in the Infrastructure layer.
  */
 
-import { Member, ClubRole } from '../entities/member.entity';
+import { Member } from '../entities/member.entity';
+import { ClubRole } from '../value-objects/club-role.vo';
 
 export interface IMemberRepository {
   /**

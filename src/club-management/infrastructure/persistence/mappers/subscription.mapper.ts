@@ -1,5 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
-import type { Subscription as PrismaSubscription } from '@prisma/client';
+import type {
+  Subscription as PrismaSubscription,
+  SubscriptionPlanId as PrismaSubscriptionPlanId,
+  SubscriptionStatus as PrismaSubscriptionStatus,
+} from '@prisma/client';
 import { Subscription } from '../../../domain/entities/subscription.entity';
 import {
   SubscriptionStatus,
@@ -70,21 +73,21 @@ export class SubscriptionMapper {
   static toPrismaCreate(subscription: Subscription): {
     id: string;
     clubId: string;
-    planId: string;
-    status: string;
+    planId: PrismaSubscriptionPlanId;
+    status: PrismaSubscriptionStatus;
     price: number;
-    maxTeams: number;
+    maxTeams: number | null;
     stripeCustomerId: string | null;
     stripeSubscriptionId: string | null;
-    currentPeriodStart: Date;
-    currentPeriodEnd: Date;
+    currentPeriodStart: Date | null;
+    currentPeriodEnd: Date | null;
     cancelAtPeriodEnd: boolean;
   } {
     return {
       id: subscription.id,
       clubId: subscription.clubId,
-      planId: subscription.planId,
-      status: subscription.status,
+      planId: subscription.planId as PrismaSubscriptionPlanId,
+      status: subscription.status as PrismaSubscriptionStatus,
       price: subscription.price,
       maxTeams: subscription.maxTeams,
       stripeCustomerId: subscription.stripeCustomerId,
@@ -99,22 +102,22 @@ export class SubscriptionMapper {
    * Convert Domain Subscription entity to Prisma update data
    */
   static toPrismaUpdate(subscription: Subscription): {
-    status: string;
+    status: PrismaSubscriptionStatus;
     price: number;
-    maxTeams: number;
-    planId: string;
+    maxTeams: number | null;
+    planId: PrismaSubscriptionPlanId;
     stripeCustomerId: string | null;
     stripeSubscriptionId: string | null;
-    currentPeriodStart: Date;
-    currentPeriodEnd: Date;
+    currentPeriodStart: Date | null;
+    currentPeriodEnd: Date | null;
     cancelAtPeriodEnd: boolean;
     updatedAt: Date;
   } {
     return {
-      status: subscription.status,
+      status: subscription.status as PrismaSubscriptionStatus,
       price: subscription.price,
       maxTeams: subscription.maxTeams,
-      planId: subscription.planId,
+      planId: subscription.planId as PrismaSubscriptionPlanId,
       stripeCustomerId: subscription.stripeCustomerId,
       stripeSubscriptionId: subscription.stripeSubscriptionId,
       currentPeriodStart: subscription.currentPeriodStart,

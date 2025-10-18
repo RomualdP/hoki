@@ -1,8 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 import { Injectable } from '@nestjs/common';
-import type { Subscription as PrismaSubscription } from '@prisma/client';
+import type { SubscriptionPlanId as PrismaSubscriptionPlanId } from '@prisma/client';
 import { ISubscriptionRepository } from '../../../domain/repositories/subscription.repository';
-import { Subscription } from '../../../domain/entities/subscription.entity';
+import {
+  Subscription,
+  SubscriptionPlanId,
+} from '../../../domain/entities/subscription.entity';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { SubscriptionMapper } from '../mappers/subscription.mapper';
 
@@ -17,11 +19,11 @@ export class SubscriptionRepositoryImpl implements ISubscriptionRepository {
   async save(subscription: Subscription): Promise<Subscription> {
     const prismaData = SubscriptionMapper.toPrismaCreate(subscription);
 
-    const savedSubscription = (await this.prisma.subscription.upsert({
+    const savedSubscription = await this.prisma.subscription.upsert({
       where: { id: subscription.id },
       create: prismaData,
       update: SubscriptionMapper.toPrismaUpdate(subscription),
-    })) as PrismaSubscription;
+    });
 
     return SubscriptionMapper.toDomain(savedSubscription);
   }
@@ -65,10 +67,10 @@ export class SubscriptionRepositoryImpl implements ISubscriptionRepository {
   async update(subscription: Subscription): Promise<Subscription> {
     const prismaData = SubscriptionMapper.toPrismaUpdate(subscription);
 
-    const updatedSubscription = (await this.prisma.subscription.update({
+    const updatedSubscription = await this.prisma.subscription.update({
       where: { id: subscription.id },
       data: prismaData,
-    })) as PrismaSubscription;
+    });
 
     return SubscriptionMapper.toDomain(updatedSubscription);
   }
@@ -76,6 +78,62 @@ export class SubscriptionRepositoryImpl implements ISubscriptionRepository {
   async delete(id: string): Promise<void> {
     await this.prisma.subscription.delete({
       where: { id },
+    });
+  }
+
+  async findByPlanId(planId: SubscriptionPlanId): Promise<Subscription[]> {
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: { planId: planId as PrismaSubscriptionPlanId },
+    });
+
+    return subscriptions.map((sub) => SubscriptionMapper.toDomain(sub));
+  }
+
+  async findAllActive(): Promise<Subscription[]> {
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: { status: 'ACTIVE' },
+    });
+
+    return subscriptions.map((sub) => SubscriptionMapper.toDomain(sub));
+  }
+
+  async findExpiringSubscriptions(
+    daysUntilExpiration: number,
+  ): Promise<Subscription[]> {
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + daysUntilExpiration);
+
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: {
+        currentPeriodEnd: {
+          lte: targetDate,
+          gte: new Date(),
+        },
+        status: 'ACTIVE',
+      },
+    });
+
+    return subscriptions.map((sub) => SubscriptionMapper.toDomain(sub));
+  }
+
+  async findCanceledButActive(): Promise<Subscription[]> {
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: {
+        cancelAtPeriodEnd: true,
+        status: 'ACTIVE',
+      },
+    });
+
+    return subscriptions.map((sub) => SubscriptionMapper.toDomain(sub));
+  }
+
+  async count(): Promise<number> {
+    return this.prisma.subscription.count();
+  }
+
+  async countByPlanId(planId: SubscriptionPlanId): Promise<number> {
+    return this.prisma.subscription.count({
+      where: { planId: planId as PrismaSubscriptionPlanId },
     });
   }
 }

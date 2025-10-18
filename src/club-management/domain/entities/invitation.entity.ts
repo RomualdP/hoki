@@ -5,10 +5,7 @@
  * Encapsulates business logic related to invitation lifecycle and validation.
  */
 
-export enum InvitationType {
-  PLAYER = 'PLAYER',
-  ASSISTANT_COACH = 'ASSISTANT_COACH',
-}
+import { InvitationType } from '../value-objects/invitation-type.vo';
 
 export class Invitation {
   private constructor(

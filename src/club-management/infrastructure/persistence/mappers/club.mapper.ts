@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import type { Club as PrismaClub } from '@prisma/client';
 import { Club } from '../../../domain/entities/club.entity';
 
