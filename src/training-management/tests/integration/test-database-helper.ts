@@ -102,6 +102,8 @@ export class TestDatabaseHelper {
         firstName: overrides?.firstName ?? 'Test',
         lastName: overrides?.lastName ?? 'User',
         role: 'USER',
+        clubId: null,
+        clubRole: null,
       },
     });
   }

@@ -20,6 +20,8 @@ model User {
   avatar                String?
   password              String?
   role                  UserRole               @default(USER)
+  clubId                String?
+  clubRole              ClubRole?
   isActive              Boolean                @default(true)
   lastLoginAt           DateTime?
   createdAt             DateTime               @default(now())
@@ -30,7 +32,9 @@ model User {
   skills                UserSkill[]
   attributes            UserAttribute[]
   trainingRegistrations TrainingRegistration[]
+  club                  Club?                  @relation(fields: [clubId], references: [id], onDelete: SetNull)
 
+  @@index([clubId])
   @@map("users")
 }
 
@@ -97,12 +101,15 @@ model Team {
   logo        String?
   description String?
   foundedYear Int?
+  clubId      String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   awayMatches Match[]      @relation("AwayTeam")
   homeMatches Match[]      @relation("HomeTeam")
   members     TeamMember[]
+  club        Club?        @relation(fields: [clubId], references: [id], onDelete: SetNull)
 
+  @@index([clubId])
   @@map("teams")
 }
 
@@ -229,6 +236,8 @@ model Club {
   ownerId      String
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  users        User[]
+  teams        Team[]
   members      Member[]
   invitations  Invitation[]
   subscription Subscription?
