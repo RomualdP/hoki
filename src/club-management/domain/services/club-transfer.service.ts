@@ -14,6 +14,7 @@
 import { Member } from '../entities/member.entity';
 import { ClubRole } from '../value-objects/club-role.vo';
 import { Injectable } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 
 export interface TransferPlayerParams {
   currentMember: Member;
@@ -95,7 +96,7 @@ export class ClubTransferService {
     // Validate transfer
     const validation = this.validateTransfer(currentMember, newClubId);
     if (!validation.canTransfer) {
-      throw new Error(validation.reason);
+      throw new BadRequestException(validation.reason);
     }
 
     // Mark current membership as inactive (player left the club)

@@ -1,3 +1,10 @@
+import {
+  SubscriptionPlanNameEmptyException,
+  SubscriptionPlanPriceNegativeException,
+  SubscriptionPlanMaxTeamsNegativeException,
+  SubscriptionPlanNotFoundException,
+} from '../exceptions';
+
 /**
  * SubscriptionPlan - Value Object
  *
@@ -31,15 +38,15 @@ export class SubscriptionPlan {
     features: string[];
   }): SubscriptionPlan {
     if (!props.name || props.name.trim().length === 0) {
-      throw new Error('Plan name cannot be empty');
+      throw new SubscriptionPlanNameEmptyException();
     }
 
     if (props.price < 0) {
-      throw new Error('Plan price cannot be negative');
+      throw new SubscriptionPlanPriceNegativeException();
     }
 
     if (props.maxTeams !== null && props.maxTeams < 0) {
-      throw new Error('Max teams cannot be negative');
+      throw new SubscriptionPlanMaxTeamsNegativeException();
     }
 
     return new SubscriptionPlan(
@@ -194,7 +201,7 @@ export class SubscriptionPlans {
 
     const plan = plans[planId];
     if (!plan) {
-      throw new Error(`Plan with ID ${planId} not found`);
+      throw new SubscriptionPlanNotFoundException(planId);
     }
 
     return plan;

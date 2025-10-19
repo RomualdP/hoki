@@ -1,3 +1,14 @@
+import {
+  MemberUserRequiredException,
+  MemberClubRequiredException,
+  MemberAlreadyInactiveException,
+  MemberInactiveException,
+  MemberAlreadyHasRoleException,
+  CannotChangeMemberRoleException,
+  CannotRemoveSelfException,
+  MemberInsufficientPermissionsException,
+} from '../exceptions';
+
 /**
  * Member - Domain Entity (Rich Domain Model)
  *
@@ -31,11 +42,11 @@ export class Member {
     invitedBy?: string;
   }): Member {
     if (!props.userId) {
-      throw new Error('Member must be associated with a user');
+      throw new MemberUserRequiredException();
     }
 
     if (!props.clubId) {
-      throw new Error('Member must be associated with a club');
+      throw new MemberClubRequiredException();
     }
 
     const now = new Date();
@@ -92,11 +103,11 @@ export class Member {
    */
   markAsLeft(): void {
     if (!this.isActive()) {
-      throw new Error('Member has already left the club');
+      throw new MemberAlreadyInactiveException();
     }
 
     if (this.role === ClubRole.COACH) {
-      throw new Error(
+      throw new CannotChangeMemberRoleException(
         'Coach cannot leave their own club. Club must be deleted or transferred.',
       );
     }
@@ -113,23 +124,23 @@ export class Member {
    */
   changeRole(newRole: ClubRole): void {
     if (!this.isActive()) {
-      throw new Error('Cannot change role of inactive member');
+      throw new MemberInactiveException('change role');
     }
 
     if (this.role === newRole) {
-      throw new Error('Member already has this role');
+      throw new MemberAlreadyHasRoleException(newRole);
     }
 
     // COACH role cannot be changed (must transfer ownership)
     if (this.role === ClubRole.COACH) {
-      throw new Error(
+      throw new CannotChangeMemberRoleException(
         'Cannot change role of club owner. Use ownership transfer instead.',
       );
     }
 
     // Cannot promote to COACH (must transfer ownership)
     if (newRole === ClubRole.COACH) {
-      throw new Error(
+      throw new CannotChangeMemberRoleException(
         'Cannot promote to COACH role. Use ownership transfer instead.',
       );
     }
@@ -185,19 +196,17 @@ export class Member {
    */
   validateCanBeRemovedBy(removerRole: ClubRole): void {
     if (!this.isActive()) {
-      throw new Error('Cannot remove inactive member');
+      throw new MemberInactiveException('remove');
     }
 
     // Only COACH can remove members
     if (removerRole !== ClubRole.COACH) {
-      throw new Error('Only club owner can remove members');
+      throw new MemberInsufficientPermissionsException();
     }
 
     // COACH cannot remove themselves
     if (this.role === ClubRole.COACH) {
-      throw new Error(
-        'Club owner cannot be removed. Delete club or transfer ownership.',
-      );
+      throw new CannotRemoveSelfException();
     }
   }
 

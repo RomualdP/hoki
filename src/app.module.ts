@@ -12,6 +12,7 @@ import { TeamsModule } from './teams/teams.module';
 import { MatchesModule } from './matches/matches.module';
 import { NewsModule } from './news/news.module';
 import { TrainingManagementModule } from './training-management/training-management.module';
+import { ClubManagementModule } from './club-management/club-management.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TrainingManagementModule } from './training-management/training-managem
     MatchesModule,
     NewsModule,
     TrainingManagementModule,
+    ClubManagementModule,
   ],
   controllers: [AppController],
   providers: [

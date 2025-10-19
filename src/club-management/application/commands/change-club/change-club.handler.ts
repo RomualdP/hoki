@@ -1,5 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  MemberNotFoundException,
+  ClubNotFoundException,
+} from '../../../domain/exceptions';
+import { Inject, Injectable } from '@nestjs/common';
 import { ChangeClubCommand } from './change-club.command';
 import { Member } from '../../../domain/entities/member.entity';
 import {
@@ -32,13 +36,13 @@ export class ChangeClubHandler
       command.userId,
     );
     if (!currentMember) {
-      throw new NotFoundException('User has no active club membership');
+      throw new MemberNotFoundException('User has no active club membership');
     }
 
     // 2. Verify new club exists
     const newClub = await this.clubRepository.findById(command.newClubId);
     if (!newClub) {
-      throw new NotFoundException('New club not found');
+      throw new ClubNotFoundException(command.newClubId);
     }
 
     // 3. Execute transfer (domain service handles validations)

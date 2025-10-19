@@ -5,6 +5,17 @@
  * Encapsulates business logic related to subscription management and team creation limits.
  */
 
+import {
+  SubscriptionClubRequiredException,
+  SubscriptionPriceNegativeException,
+  SubscriptionMaxTeamsNegativeException,
+  CannotDowngradeSubscriptionException,
+  CannotUpgradeFromBETAPlanException,
+  AlreadySubscribedToPlanException,
+  SubscriptionAlreadyCanceledException,
+  SubscriptionAlreadyActiveException,
+} from '../exceptions';
+
 export enum SubscriptionStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
@@ -58,15 +69,15 @@ export class Subscription {
     currentPeriodEnd?: Date;
   }): Subscription {
     if (!props.clubId) {
-      throw new Error('Subscription must be associated with a club');
+      throw new SubscriptionClubRequiredException();
     }
 
     if (props.price < 0) {
-      throw new Error('Price cannot be negative');
+      throw new SubscriptionPriceNegativeException();
     }
 
     if (props.maxTeams !== null && props.maxTeams < 0) {
-      throw new Error('Max teams cannot be negative');
+      throw new SubscriptionMaxTeamsNegativeException();
     }
 
     const now = new Date();
@@ -158,19 +169,17 @@ export class Subscription {
   upgrade(newPlanConfig: SubscriptionPlanConfig): void {
     // Cannot upgrade from BETA to paid plans (must create new subscription)
     if (this.planId === SubscriptionPlanId.BETA) {
-      throw new Error(
-        'Cannot upgrade from BETA plan. Please subscribe to a paid plan.',
-      );
+      throw new CannotUpgradeFromBETAPlanException();
     }
 
     // Validate upgrade path
     if (newPlanConfig.id === SubscriptionPlanId.BETA) {
-      throw new Error('Cannot downgrade to BETA plan');
+      throw new CannotDowngradeSubscriptionException('BETA');
     }
 
     // Cannot "upgrade" to the same plan
     if (this.planId === newPlanConfig.id) {
-      throw new Error('Already subscribed to this plan');
+      throw new AlreadySubscribedToPlanException();
     }
 
     // Validate upgrade direction (prevent downgrades)
@@ -178,9 +187,7 @@ export class Subscription {
     const newPlanOrder = this.getPlanOrder(newPlanConfig.id);
 
     if (newPlanOrder <= currentPlanOrder) {
-      throw new Error(
-        'Can only upgrade to a higher plan. Use cancel() to downgrade.',
-      );
+      throw new CannotDowngradeSubscriptionException(newPlanConfig.name);
     }
 
     // Update subscription details
@@ -195,7 +202,7 @@ export class Subscription {
    */
   cancel(): void {
     if (this.status === SubscriptionStatus.CANCELED) {
-      throw new Error('Subscription is already canceled');
+      throw new SubscriptionAlreadyCanceledException();
     }
 
     if (this.planId === SubscriptionPlanId.BETA) {
@@ -230,7 +237,7 @@ export class Subscription {
    */
   reactivate(): void {
     if (this.status === SubscriptionStatus.ACTIVE) {
-      throw new Error('Subscription is already active');
+      throw new SubscriptionAlreadyActiveException();
     }
 
     this.status = SubscriptionStatus.ACTIVE;

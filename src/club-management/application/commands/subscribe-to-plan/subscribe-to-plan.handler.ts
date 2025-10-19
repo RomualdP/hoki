@@ -2,8 +2,12 @@
  * SubscribeToPlanHandler - CQRS Command Handler
  */
 
+import {
+  ClubNotFoundException,
+  SubscriptionAlreadyActiveException,
+} from '../../../domain/exceptions';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SubscribeToPlanCommand } from './subscribe-to-plan.command';
 import { Subscription } from '../../../domain/entities/subscription.entity';
 import {
@@ -33,7 +37,7 @@ export class SubscribeToPlanHandler
     // 1. Verify club exists
     const club = await this.clubRepository.findById(command.clubId);
     if (!club) {
-      throw new NotFoundException(`Club with ID ${command.clubId} not found`);
+      throw new ClubNotFoundException(command.clubId);
     }
 
     // 2. Check if club already has a subscription
@@ -41,7 +45,7 @@ export class SubscribeToPlanHandler
       command.clubId,
     );
     if (existingSubscription) {
-      throw new Error('Club already has an active subscription');
+      throw new SubscriptionAlreadyActiveException();
     }
 
     // 3. Get plan configuration

@@ -5,6 +5,13 @@
  * Encapsulates business logic related to club management.
  */
 
+import {
+  ClubNameEmptyException,
+  ClubNameTooLongException,
+  ClubOwnerRequiredException,
+  ClubNameAlreadyExistsException,
+} from '../exceptions';
+
 export class Club {
   private constructor(
     public readonly id: string,
@@ -30,15 +37,15 @@ export class Club {
   }): Club {
     // Business validations
     if (!props.name || props.name.trim().length === 0) {
-      throw new Error('Club name cannot be empty');
+      throw new ClubNameEmptyException();
     }
 
     if (props.name.length > 100) {
-      throw new Error('Club name cannot exceed 100 characters');
+      throw new ClubNameTooLongException();
     }
 
     if (!props.ownerId) {
-      throw new Error('Club must have an owner');
+      throw new ClubOwnerRequiredException();
     }
 
     const now = new Date();
@@ -91,10 +98,10 @@ export class Club {
   }): void {
     if (props.name !== undefined) {
       if (!props.name || props.name.trim().length === 0) {
-        throw new Error('Club name cannot be empty');
+        throw new ClubNameEmptyException();
       }
       if (props.name.length > 100) {
-        throw new Error('Club name cannot exceed 100 characters');
+        throw new ClubNameTooLongException();
       }
       this.name = props.name.trim();
     }
@@ -135,7 +142,7 @@ export class Club {
     );
 
     if (isDuplicate) {
-      throw new Error('A club with this name already exists');
+      throw new ClubNameAlreadyExistsException();
     }
   }
 }

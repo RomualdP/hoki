@@ -31,15 +31,30 @@ export class TestDatabaseHelper {
   /**
    * Reset database to clean state by deleting all records from all tables
    * Uses Prisma's deleteMany for type-safety and automatic model discovery
+   * Gracefully handles missing tables by attempting deletions individually
    */
   async reset(): Promise<void> {
     const modelNames = this.getModelNames();
 
-    const deleteOperations = modelNames.map((modelName) => {
-      return this.getModelDelegate(modelName).deleteMany();
-    });
-
-    await this.databaseService.$transaction(deleteOperations);
+    // Delete from each table individually to handle missing tables gracefully
+    for (const modelName of modelNames) {
+      try {
+        await this.getModelDelegate(modelName).deleteMany();
+      } catch (error) {
+        // Skip tables that don't exist in the database yet
+        if (
+          error instanceof Error &&
+          error.message.includes('does not exist in the current database')
+        ) {
+          console.warn(
+            `Skipping ${modelName} table - not yet migrated to test database`,
+          );
+          continue;
+        }
+        // Re-throw other errors
+        throw error;
+      }
+    }
 
     this.userIdSequence = 0;
     this.trainingIdSequence = 0;

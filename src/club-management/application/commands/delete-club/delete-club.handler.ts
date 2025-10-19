@@ -2,13 +2,9 @@
  * DeleteClubHandler - CQRS Command Handler
  */
 
+import { ClubNotFoundException } from '../../../domain/exceptions';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Inject, Injectable, ForbiddenException } from '@nestjs/common';
 import { DeleteClubCommand } from './delete-club.command';
 import {
   IClubRepository,
@@ -29,7 +25,7 @@ export class DeleteClubHandler
     // 1. Find club
     const club = await this.clubRepository.findById(command.clubId);
     if (!club) {
-      throw new NotFoundException(`Club with ID ${command.clubId} not found`);
+      throw new ClubNotFoundException(command.clubId);
     }
 
     // 2. Verify ownership (only owner can delete)

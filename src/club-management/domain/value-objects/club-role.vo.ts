@@ -1,3 +1,5 @@
+import { InvalidMemberRoleException } from '../exceptions';
+
 /**
  * ClubRole - Value Object
  *
@@ -22,7 +24,7 @@ export class ClubRoleVO {
    */
   static create(role: ClubRole): ClubRoleVO {
     if (!Object.values(ClubRole).includes(role)) {
-      throw new Error(`Invalid club role: ${role}`);
+      throw new InvalidMemberRoleException(role);
     }
 
     return new ClubRoleVO(role);
@@ -35,7 +37,7 @@ export class ClubRoleVO {
     const role = roleString as ClubRole;
 
     if (!Object.values(ClubRole).includes(role)) {
-      throw new Error(`Invalid club role string: ${roleString}`);
+      throw new InvalidMemberRoleException(roleString);
     }
 
     return new ClubRoleVO(role);

@@ -192,7 +192,7 @@ describe('UpgradeSubscriptionHandler', () => {
       subscriptionRepository.findById.mockResolvedValue(mockSubscription);
 
       await expect(handler.execute(command)).rejects.toThrow(
-        'Cannot downgrade to BETA plan',
+        'Can only upgrade to a higher plan. Cannot downgrade to BETA',
       );
 
       expect(subscriptionRepository.update).not.toHaveBeenCalled();

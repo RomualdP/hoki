@@ -1,3 +1,13 @@
+import {
+  InvitationTokenEmptyException,
+  InvitationClubRequiredException,
+  InvitationCreatorRequiredException,
+  InvitationAlreadyUsedException,
+  InvitationExpiredException,
+  InvitationUserIdRequiredException,
+  CannotAcceptOwnInvitationException,
+} from '../exceptions';
+
 /**
  * Invitation - Domain Entity (Rich Domain Model)
  *
@@ -33,15 +43,15 @@ export class Invitation {
     expiresInDays?: number; // Default: 7 days
   }): Invitation {
     if (!props.token || props.token.trim().length === 0) {
-      throw new Error('Invitation token cannot be empty');
+      throw new InvitationTokenEmptyException();
     }
 
     if (!props.clubId) {
-      throw new Error('Invitation must be associated with a club');
+      throw new InvitationClubRequiredException();
     }
 
     if (!props.createdBy) {
-      throw new Error('Invitation must have a creator');
+      throw new InvitationCreatorRequiredException();
     }
 
     const now = new Date();
@@ -121,15 +131,15 @@ export class Invitation {
    */
   markAsUsed(userId: string): void {
     if (this.isUsed()) {
-      throw new Error('Invitation has already been used');
+      throw new InvitationAlreadyUsedException();
     }
 
     if (this.isExpired()) {
-      throw new Error('Invitation has expired');
+      throw new InvitationExpiredException();
     }
 
     if (!userId) {
-      throw new Error('User ID is required to mark invitation as used');
+      throw new InvitationUserIdRequiredException();
     }
 
     this.usedAt = new Date();
@@ -173,7 +183,7 @@ export class Invitation {
    */
   validateUserIsNotCreator(userId: string): void {
     if (this.createdBy === userId) {
-      throw new Error('Cannot accept your own invitation');
+      throw new CannotAcceptOwnInvitationException();
     }
   }
 

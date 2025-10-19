@@ -5,11 +5,21 @@ import {
   IClubRepository,
   CLUB_REPOSITORY,
 } from '../../../../domain/repositories/club.repository';
+import {
+  IMemberRepository,
+  MEMBER_REPOSITORY,
+} from '../../../../domain/repositories/member.repository';
+import {
+  ISubscriptionRepository,
+  SUBSCRIPTION_REPOSITORY,
+} from '../../../../domain/repositories/subscription.repository';
 import { Club } from '../../../../domain/entities/club.entity';
 
 describe('ListClubsHandler', () => {
   let handler: ListClubsHandler;
   let clubRepository: jest.Mocked<IClubRepository>;
+  let memberRepository: jest.Mocked<IMemberRepository>;
+  let subscriptionRepository: jest.Mocked<ISubscriptionRepository>;
 
   beforeEach(async () => {
     const mockClubRepository: jest.Mocked<IClubRepository> = {
@@ -24,6 +34,41 @@ describe('ListClubsHandler', () => {
       count: jest.fn(),
     };
 
+    const mockMemberRepository: jest.Mocked<IMemberRepository> = {
+      save: jest.fn(),
+      update: jest.fn(),
+      findById: jest.fn(),
+      findByUserIdAndClubId: jest.fn(),
+      findByClubId: jest.fn(),
+      findActiveByClubId: jest.fn(),
+      findByClubIdAndRole: jest.fn(),
+      findActiveByClubIdAndRole: jest.fn(),
+      findByUserId: jest.fn(),
+      findActiveByUserId: jest.fn(),
+      findByInviterId: jest.fn(),
+      existsByUserIdAndClubId: jest.fn(),
+      delete: jest.fn(),
+      countByClubId: jest.fn(),
+      countActiveByClubId: jest.fn(),
+      countByClubIdAndRole: jest.fn(),
+    };
+
+    const mockSubscriptionRepository: jest.Mocked<ISubscriptionRepository> = {
+      save: jest.fn(),
+      update: jest.fn(),
+      findById: jest.fn(),
+      findByClubId: jest.fn(),
+      findByStripeSubscriptionId: jest.fn(),
+      findByStripeCustomerId: jest.fn(),
+      findByPlanId: jest.fn(),
+      findAllActive: jest.fn(),
+      findExpiringSubscriptions: jest.fn(),
+      findCanceledButActive: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+      countByPlanId: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ListClubsHandler,
@@ -31,11 +76,21 @@ describe('ListClubsHandler', () => {
           provide: CLUB_REPOSITORY,
           useValue: mockClubRepository,
         },
+        {
+          provide: MEMBER_REPOSITORY,
+          useValue: mockMemberRepository,
+        },
+        {
+          provide: SUBSCRIPTION_REPOSITORY,
+          useValue: mockSubscriptionRepository,
+        },
       ],
     }).compile();
 
     handler = module.get<ListClubsHandler>(ListClubsHandler);
     clubRepository = module.get(CLUB_REPOSITORY);
+    memberRepository = module.get(MEMBER_REPOSITORY);
+    subscriptionRepository = module.get(SUBSCRIPTION_REPOSITORY);
   });
 
   describe('execute()', () => {
@@ -62,6 +117,8 @@ describe('ListClubsHandler', () => {
       ];
 
       clubRepository.findAll.mockResolvedValue(mockClubs);
+      memberRepository.countByClubId.mockResolvedValue(5);
+      subscriptionRepository.findByClubId.mockResolvedValue(null);
 
       const result = await handler.execute(query);
 
@@ -70,6 +127,8 @@ describe('ListClubsHandler', () => {
         take: undefined,
         searchTerm: undefined,
       });
+      expect(memberRepository.countByClubId).toHaveBeenCalledTimes(2);
+      expect(subscriptionRepository.findByClubId).toHaveBeenCalledTimes(2);
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
         id: 'club-1',
@@ -79,10 +138,10 @@ describe('ListClubsHandler', () => {
         location: 'Paris',
         ownerId: 'user-1',
         createdAt: expect.any(Date),
-        memberCount: 0,
+        memberCount: 5,
         teamCount: 0,
-        subscriptionPlanName: 'Unknown',
-        subscriptionStatus: 'Unknown',
+        subscriptionPlanName: 'Free',
+        subscriptionStatus: 'INACTIVE',
       });
       expect(result[1]).toEqual({
         id: 'club-2',
@@ -92,10 +151,10 @@ describe('ListClubsHandler', () => {
         location: 'Lyon',
         ownerId: 'user-2',
         createdAt: expect.any(Date),
-        memberCount: 0,
+        memberCount: 5,
         teamCount: 0,
-        subscriptionPlanName: 'Unknown',
-        subscriptionStatus: 'Unknown',
+        subscriptionPlanName: 'Free',
+        subscriptionStatus: 'INACTIVE',
       });
     });
 
