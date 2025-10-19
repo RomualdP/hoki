@@ -14,7 +14,6 @@ import {
   AlreadySubscribedToPlanException,
   SubscriptionAlreadyCanceledException,
   SubscriptionAlreadyActiveException,
-  InvalidSubscriptionPlanException,
 } from '../exceptions';
 
 export enum SubscriptionStatus {

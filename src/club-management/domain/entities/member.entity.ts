@@ -2,7 +2,6 @@ import {
   MemberUserRequiredException,
   MemberClubRequiredException,
   MemberAlreadyInactiveException,
-  MemberLeftAtRequiredException,
   MemberInactiveException,
   MemberAlreadyHasRoleException,
   CannotChangeMemberRoleException,

@@ -103,7 +103,7 @@ export class ClubNameTooLongException extends BadRequestException {
 }
 
 export class ClubNameAlreadyExistsException extends ConflictException {
-  constructor(clubName: string) {
+  constructor() {
     super({
       code: ClubManagementErrorCode.CLUB_NAME_EXISTS,
       message: 'A club with this name already exists',
@@ -189,7 +189,7 @@ export class CannotUpgradeFromBETAPlanException extends BadRequestException {
 }
 
 export class AlreadySubscribedToPlanException extends BadRequestException {
-  constructor(planName: string) {
+  constructor() {
     super({
       code: ClubManagementErrorCode.SUBSCRIPTION_ALREADY_ON_PLAN,
       message: `Already subscribed to this plan`,

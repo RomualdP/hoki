@@ -4,12 +4,7 @@
 
 import { ClubNotFoundException } from '../../../domain/exceptions';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Inject, Injectable, ForbiddenException } from '@nestjs/common';
 import { DeleteClubCommand } from './delete-club.command';
 import {
   IClubRepository,
