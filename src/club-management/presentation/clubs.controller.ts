@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import {
   Controller,
   Get,
@@ -8,8 +7,17 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { CreateClubDto, UpdateClubDto } from './dtos';
 import {
   CreateClubCommand,
@@ -17,12 +25,19 @@ import {
   DeleteClubCommand,
 } from '../application/commands';
 import { GetClubQuery, ListClubsQuery } from '../application/queries';
+import {
+  ClubDetailReadModel,
+  ClubListReadModel,
+} from '../application/read-models';
+import { JwtAuthGuard } from '../../auth/guards';
+import { CurrentUserId } from '../../auth/decorators';
 
 /**
  * Clubs Controller - Presentation Layer
  * Handles HTTP requests for club management
  * Delegates to CQRS Command and Query handlers
  */
+@ApiTags('clubs')
 @Controller('clubs')
 export class ClubsController {
   constructor(
@@ -35,10 +50,36 @@ export class ClubsController {
    * Create a new club
    */
   @Post()
-  async createClub(@Body() dto: CreateClubDto) {
-    // TODO: Extract ownerId from JWT token via @CurrentUser() decorator
-    const ownerId = 'user-id-from-jwt'; // Placeholder
-
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Créer un nouveau club',
+    description:
+      "Permet à un utilisateur authentifié de créer un nouveau club. L'utilisateur devient automatiquement le propriétaire (owner) du club.",
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Club créé avec succès',
+    schema: {
+      example: {
+        success: true,
+        data: { clubId: 'club-uuid-123' },
+        message: 'Club created successfully',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non authentifié - Token JWT manquant ou invalide',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Données invalides - Validation échouée',
+  })
+  async createClub(
+    @Body() dto: CreateClubDto,
+    @CurrentUserId() ownerId: string,
+  ) {
     const command = new CreateClubCommand(
       dto.name,
       dto.description ?? null,
@@ -47,7 +88,7 @@ export class ClubsController {
       ownerId,
     );
 
-    const clubId = await this.commandBus.execute(command);
+    const clubId: string = await this.commandBus.execute(command);
 
     return {
       success: true,
@@ -61,9 +102,27 @@ export class ClubsController {
    * Get club details by ID
    */
   @Get(':id')
+  @ApiOperation({
+    summary: "Obtenir les détails d'un club",
+    description:
+      "Récupère les informations détaillées d'un club spécifique avec ses statistiques (nombre de membres, équipes, abonnement).",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID unique du club',
+    example: 'club-uuid-123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Détails du club récupérés avec succès',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Club non trouvé',
+  })
   async getClub(@Param('id') id: string) {
     const query = new GetClubQuery(id);
-    const club = await this.queryBus.execute(query);
+    const club: ClubDetailReadModel = await this.queryBus.execute(query);
 
     return {
       success: true,
@@ -76,6 +135,33 @@ export class ClubsController {
    * List all clubs with optional filters
    */
   @Get()
+  @ApiOperation({
+    summary: 'Lister tous les clubs',
+    description:
+      'Récupère la liste de tous les clubs avec pagination et recherche optionnelles. Inclut les statistiques de base (membres, équipes, abonnement).',
+  })
+  @ApiQuery({
+    name: 'skip',
+    required: false,
+    description: 'Nombre de résultats à sauter (pour pagination)',
+    example: 0,
+  })
+  @ApiQuery({
+    name: 'take',
+    required: false,
+    description: 'Nombre de résultats à retourner (pour pagination)',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Terme de recherche (nom, description, localisation)',
+    example: 'Paris',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste des clubs récupérée avec succès',
+  })
   async listClubs(
     @Query('skip') skip?: string,
     @Query('take') take?: string,
@@ -86,7 +172,7 @@ export class ClubsController {
       take ? parseInt(take, 10) : undefined,
       searchTerm,
     );
-    const clubs = await this.queryBus.execute(query);
+    const clubs: ClubListReadModel[] = await this.queryBus.execute(query);
 
     return {
       success: true,
@@ -104,6 +190,28 @@ export class ClubsController {
    * Update club details
    */
   @Put(':id')
+  @ApiOperation({
+    summary: 'Mettre à jour un club',
+    description:
+      "Permet de modifier les informations d'un club existant (nom, description, logo, localisation).",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID unique du club à modifier',
+    example: 'club-uuid-123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Club mis à jour avec succès',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Club non trouvé',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Données invalides - Validation échouée',
+  })
   async updateClub(@Param('id') id: string, @Body() dto: UpdateClubDto) {
     const command = new UpdateClubCommand(
       id,
@@ -126,10 +234,39 @@ export class ClubsController {
    * Delete a club
    */
   @Delete(':id')
-  async deleteClub(@Param('id') id: string) {
-    // TODO: Extract requesterId from JWT token
-    const requesterId = 'user-id-from-jwt'; // Placeholder
-
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Supprimer un club',
+    description:
+      "Permet au propriétaire d'un club de le supprimer définitivement. Cette action est irréversible.",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID unique du club à supprimer',
+    example: 'club-uuid-123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Club supprimé avec succès',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non authentifié - Token JWT manquant ou invalide',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Non autorisé - Seul le propriétaire du club peut le supprimer',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Club non trouvé',
+  })
+  async deleteClub(
+    @Param('id') id: string,
+    @CurrentUserId() requesterId: string,
+  ) {
     const command = new DeleteClubCommand(id, requesterId);
     await this.commandBus.execute(command);
 

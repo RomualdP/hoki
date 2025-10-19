@@ -7,9 +7,9 @@ import { Training, TrainingProps } from '../../domain/entities/training.entity';
 
 export class TrainingRepositoryMock implements ITrainingRepository {
   private trainings: Training[] = [];
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async findAll(): Promise<FindAllTrainingsResult> {
-    return {
+
+  findAll(): Promise<FindAllTrainingsResult> {
+    return Promise.resolve({
       data: this.trainings,
       meta: {
         total: this.trainings.length,
@@ -17,12 +17,12 @@ export class TrainingRepositoryMock implements ITrainingRepository {
         limit: 10,
         totalPages: 1,
       },
-    };
+    });
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async findById(id: string): Promise<Training | null> {
-    return this.trainings.find((t) => t.id === id) || null;
+  findById(id: string): Promise<Training | null> {
+    const training = this.trainings.find((t) => t.id === id) || null;
+    return Promise.resolve(training);
   }
 
   create(data: CreateTrainingData): Promise<Training> {

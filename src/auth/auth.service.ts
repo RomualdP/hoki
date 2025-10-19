@@ -19,15 +19,19 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  private excludePassword(user: User): UserWithoutPassword {
+    const userCopy = { ...user } as Record<string, unknown>;
+    delete userCopy.password;
+    return userCopy as UserWithoutPassword;
+  }
+
   async validateUser(
     email: string,
     password: string,
   ): Promise<UserWithoutPassword | null> {
     const user = await this.database.user.findUnique({ where: { email } });
     if (user?.password && (await bcrypt.compare(password, user.password))) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _, ...result } = user;
-      return result;
+      return this.excludePassword(user);
     }
     return null;
   }
@@ -42,13 +46,11 @@ export class AuthService {
   async validateGoogleUser(profile: GoogleProfile): Promise<User> {
     const { email, name, picture } = profile;
 
-    // Vérifier si l'utilisateur existe déjà
     const existingUser = await this.database.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
-      // Mise à jour de l'utilisateur existant
       return this.database.user.update({
         where: { email },
         data: {
@@ -60,7 +62,6 @@ export class AuthService {
       });
     }
 
-    // Création d'un nouvel utilisateur avec profil et attributs
     const user = await this.database.user.create({
       data: {
         email,
@@ -71,14 +72,12 @@ export class AuthService {
       },
     });
 
-    // Créer automatiquement un profil vide
     await this.database.userProfile.create({
       data: {
         userId: user.id,
       },
     });
 
-    // Créer automatiquement les attributs FITNESS et LEADERSHIP
     await this.database.userAttribute.createMany({
       data: [
         {
@@ -122,14 +121,12 @@ export class AuthService {
       },
     });
 
-    // Créer automatiquement un profil vide
     await this.database.userProfile.create({
       data: {
         userId: user.id,
       },
     });
 
-    // Créer automatiquement les attributs FITNESS et LEADERSHIP
     await this.database.userAttribute.createMany({
       data: [
         {
@@ -145,8 +142,6 @@ export class AuthService {
       ],
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...result } = user;
-    return result;
+    return this.excludePassword(user);
   }
 }

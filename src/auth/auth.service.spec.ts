@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { DatabaseService } from '../database/database.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from './types/user.type';
+import { User, UserWithoutPassword } from './types/user.type';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -24,7 +24,7 @@ describe('AuthService', () => {
     updatedAt: new Date(),
   };
 
-  const mockUserWithoutPassword = {
+  const mockUserWithoutPassword: UserWithoutPassword = {
     id: '1',
     email: 'test@example.com',
     firstName: 'Test',
@@ -112,7 +112,6 @@ describe('AuthService', () => {
       const signAsyncMock = jest.fn().mockResolvedValue('mock_token');
       jwtService.signAsync = signAsyncMock;
 
-      // @ts-expect-error mockUserWithoutPassword is not defined
       const result = await service.login(mockUserWithoutPassword);
       expect(result).toEqual({ access_token: 'mock_token' });
 
