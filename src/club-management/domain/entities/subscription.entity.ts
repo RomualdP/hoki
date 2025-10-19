@@ -179,7 +179,7 @@ export class Subscription {
 
     // Cannot "upgrade" to the same plan
     if (this.planId === newPlanConfig.id) {
-      throw new AlreadySubscribedToPlanException(newPlanConfig.name);
+      throw new AlreadySubscribedToPlanException();
     }
 
     // Validate upgrade direction (prevent downgrades)

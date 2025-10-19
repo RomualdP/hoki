@@ -142,7 +142,7 @@ export class Club {
     );
 
     if (isDuplicate) {
-      throw new ClubNameAlreadyExistsException(name);
+      throw new ClubNameAlreadyExistsException();
     }
   }
 }
