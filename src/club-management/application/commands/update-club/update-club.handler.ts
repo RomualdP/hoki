@@ -2,6 +2,7 @@
  * UpdateClubHandler - CQRS Command Handler
  */
 
+import { ClubNotFoundException } from '../../../domain/exceptions';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateClubCommand } from './update-club.command';
@@ -24,7 +25,7 @@ export class UpdateClubHandler
     // 1. Find club
     const club = await this.clubRepository.findById(command.clubId);
     if (!club) {
-      throw new NotFoundException(`Club with ID ${command.clubId} not found`);
+      throw new ClubNotFoundException(command.clubId);
     }
 
     // 2. Update club (domain logic handles validations)

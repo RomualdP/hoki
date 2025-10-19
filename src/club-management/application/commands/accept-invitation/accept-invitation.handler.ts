@@ -1,5 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  InvitationNotFoundException,
+  InvitationExpiredException,
+  InvitationAlreadyUsedException,
+} from '../../../domain/exceptions';
+import { Inject, Injectable } from '@nestjs/common';
 import { AcceptInvitationCommand } from './accept-invitation.command';
 import { Member } from '../../../domain/entities/member.entity';
 import { ClubRole } from '../../../domain/value-objects/club-role.vo';
@@ -32,17 +37,17 @@ export class AcceptInvitationHandler
       command.token,
     );
     if (!invitation) {
-      throw new NotFoundException('Invitation not found');
+      throw new InvitationNotFoundException();
     }
 
     // 2. Validate invitation
     invitation.validateUserIsNotCreator(command.userId);
     if (!invitation.isValid()) {
-      throw new Error(
-        invitation.isExpired()
-          ? 'Invitation has expired'
-          : 'Invitation has already been used',
-      );
+      if (invitation.isExpired()) {
+        throw new InvitationExpiredException();
+      } else {
+        throw new InvitationAlreadyUsedException();
+      }
     }
 
     // 3. Mark invitation as used

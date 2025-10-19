@@ -1,5 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { SubscriptionNotFoundException } from '../../../domain/exceptions';
+import { Inject, Injectable } from '@nestjs/common';
 import { UpgradeSubscriptionCommand } from './upgrade-subscription.command';
 import {
   ISubscriptionRepository,
@@ -22,7 +23,7 @@ export class UpgradeSubscriptionHandler
       command.subscriptionId,
     );
     if (!subscription) {
-      throw new NotFoundException('Subscription not found');
+      throw new SubscriptionNotFoundException();
     }
 
     const newPlan = SubscriptionPlans.getById(command.newPlanId);

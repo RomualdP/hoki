@@ -9,6 +9,7 @@ import {
   SubscriptionPlanId,
 } from '../../../domain/entities/subscription.entity';
 import { SubscriptionPlans } from '../../../domain/value-objects/subscription-plan.vo';
+import { InvalidSubscriptionPlanException } from '../../../domain/exceptions';
 
 /**
  * Mapper between Prisma Subscription model and Domain Subscription entity
@@ -24,8 +25,8 @@ export class SubscriptionMapper {
     );
 
     if (!planConfig) {
-      throw new Error(
-        `Invalid plan ID: ${prismaSubscription.planId} in subscription ${prismaSubscription.id}`,
+      throw new InvalidSubscriptionPlanException(
+        prismaSubscription.planId as string,
       );
     }
 

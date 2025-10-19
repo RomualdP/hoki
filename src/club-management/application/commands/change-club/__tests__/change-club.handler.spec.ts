@@ -156,7 +156,7 @@ describe('ChangeClubHandler', () => {
 
       await expect(handler.execute(command)).rejects.toThrow(NotFoundException);
       await expect(handler.execute(command)).rejects.toThrow(
-        'New club not found',
+        'Club with ID non-existent-club not found',
       );
 
       expect(clubRepository.findById).toHaveBeenCalledWith('non-existent-club');

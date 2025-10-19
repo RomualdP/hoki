@@ -13,6 +13,11 @@
 
 import { Subscription } from '../entities/subscription.entity';
 import { Injectable } from '@nestjs/common';
+import {
+  InvalidTeamsCountException,
+  SubscriptionLimitExceededException,
+  SubscriptionInactiveException,
+} from '../exceptions';
 
 @Injectable()
 export class SubscriptionLimitService {
@@ -55,7 +60,7 @@ export class SubscriptionLimitService {
     teamsToCreate: number,
   ): void {
     if (teamsToCreate < 1) {
-      throw new Error('Number of teams to create must be at least 1');
+      throw new InvalidTeamsCountException();
     }
 
     const remaining = subscription.getRemainingTeams(currentTeamCount);
@@ -67,9 +72,7 @@ export class SubscriptionLimitService {
 
     // Check if we have enough remaining slots
     if (teamsToCreate > remaining) {
-      throw new Error(
-        `Cannot create ${teamsToCreate} teams. Only ${remaining} team(s) remaining in your plan.`,
-      );
+      throw new SubscriptionLimitExceededException(teamsToCreate, remaining);
     }
   }
 
@@ -81,9 +84,7 @@ export class SubscriptionLimitService {
    */
   validateSubscriptionActive(subscription: Subscription): void {
     if (!subscription.isActive()) {
-      throw new Error(
-        'Your subscription is not active. Please renew or upgrade your subscription.',
-      );
+      throw new SubscriptionInactiveException();
     }
   }
 

@@ -1,5 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { MemberNotFoundException } from '../../../domain/exceptions';
+import { Inject, Injectable } from '@nestjs/common';
 import { RemoveMemberCommand } from './remove-member.command';
 import {
   IMemberRepository,
@@ -20,7 +21,7 @@ export class RemoveMemberHandler
     // 1. Find member to remove
     const member = await this.memberRepository.findById(command.memberId);
     if (!member) {
-      throw new NotFoundException('Member not found');
+      throw new MemberNotFoundException();
     }
 
     // 2. Find remover (to check permissions)
@@ -29,7 +30,7 @@ export class RemoveMemberHandler
       member.clubId,
     );
     if (!remover) {
-      throw new NotFoundException('Remover not found in club');
+      throw new MemberNotFoundException('Remover not found in club');
     }
 
     // 3. Validate removal permissions (domain logic)

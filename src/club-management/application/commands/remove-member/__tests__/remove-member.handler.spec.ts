@@ -175,7 +175,7 @@ describe('RemoveMemberHandler', () => {
       memberRepository.findByUserIdAndClubId.mockResolvedValue(mockRemover);
 
       await expect(handler.execute(command)).rejects.toThrow(
-        'Club owner cannot be removed. Delete club or transfer ownership.',
+        'Cannot remove yourself from the club',
       );
 
       expect(memberRepository.update).not.toHaveBeenCalled();

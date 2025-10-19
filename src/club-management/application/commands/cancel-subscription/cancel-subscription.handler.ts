@@ -1,5 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { SubscriptionNotFoundException } from '../../../domain/exceptions';
+import { Inject, Injectable } from '@nestjs/common';
 import { CancelSubscriptionCommand } from './cancel-subscription.command';
 import {
   ISubscriptionRepository,
@@ -21,7 +22,7 @@ export class CancelSubscriptionHandler
       command.subscriptionId,
     );
     if (!subscription) {
-      throw new NotFoundException('Subscription not found');
+      throw new SubscriptionNotFoundException();
     }
 
     subscription.cancel();

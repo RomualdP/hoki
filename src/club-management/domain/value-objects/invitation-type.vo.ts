@@ -1,3 +1,5 @@
+import { InvalidInvitationTypeException } from '../exceptions';
+
 /**
  * InvitationType - Value Object
  *
@@ -23,7 +25,7 @@ export class InvitationTypeVO {
    */
   static create(type: InvitationType): InvitationTypeVO {
     if (!Object.values(InvitationType).includes(type)) {
-      throw new Error(`Invalid invitation type: ${type}`);
+      throw new InvalidInvitationTypeException(type);
     }
 
     return new InvitationTypeVO(type);
@@ -36,7 +38,7 @@ export class InvitationTypeVO {
     const type = typeString as InvitationType;
 
     if (!Object.values(InvitationType).includes(type)) {
-      throw new Error(`Invalid invitation type string: ${typeString}`);
+      throw new InvalidInvitationTypeException(typeString);
     }
 
     return new InvitationTypeVO(type);
