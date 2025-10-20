@@ -168,7 +168,7 @@ async function main(): Promise<void> {
     },
   ];
 
-  const clubs = [];
+  const clubs: any[] = [];
   for (const clubData of clubsData) {
     const club = await prisma.club.create({
       data: {

@@ -17,6 +17,7 @@ import {
 } from '../exceptions';
 
 export enum SubscriptionStatus {
+  PENDING = 'PENDING', // Waiting for Stripe payment confirmation
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   CANCELED = 'CANCELED',
@@ -63,6 +64,7 @@ export class Subscription {
     planId: SubscriptionPlanId;
     maxTeams: number | null;
     price: number;
+    status?: SubscriptionStatus;
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
     currentPeriodStart?: Date;
@@ -88,7 +90,7 @@ export class Subscription {
       props.planId,
       props.maxTeams,
       props.price,
-      SubscriptionStatus.ACTIVE,
+      props.status || SubscriptionStatus.ACTIVE,
       props.stripeCustomerId || null,
       props.stripeSubscriptionId || null,
       props.currentPeriodStart || now,

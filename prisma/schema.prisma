@@ -393,6 +393,7 @@ enum SubscriptionPlanId {
 }
 
 enum SubscriptionStatus {
+  PENDING
   ACTIVE
   INACTIVE
   CANCELED

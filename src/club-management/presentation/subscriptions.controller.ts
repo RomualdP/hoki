@@ -31,6 +31,7 @@ import {
 } from '../application/read-models';
 import { SubscriptionPlanId } from '../domain/entities/subscription.entity';
 import { JwtAuthGuard } from '../../auth/guards';
+import { CurrentUserId } from '../../auth/decorators/current-user.decorator';
 
 /**
  * Subscriptions Controller - Presentation Layer
@@ -76,10 +77,14 @@ export class SubscriptionsController {
     status: 400,
     description: 'Données invalides ou club déjà abonné',
   })
-  async subscribeToPlan(@Body() dto: SubscribeToPlanDto) {
+  async subscribeToPlan(
+    @Body() dto: SubscribeToPlanDto,
+    @CurrentUserId() userId: string,
+  ) {
     const command = new SubscribeToPlanCommand(
       dto.clubId,
       dto.planId as SubscriptionPlanId,
+      userId,
       dto.stripeCustomerId,
       dto.stripeSubscriptionId,
     );

@@ -1,5 +1,5 @@
 import { TrainingTeamRepository } from './training-team.repository';
-import { TestDatabaseHelper } from '../../../tests/integration/test-database-helper';
+import { TestDatabaseHelper } from '../../../__tests__/integration/test-database-helper';
 import { PrismaUnitOfWork } from '../../../../database/unit-of-work';
 
 describe('TrainingTeamRepository (Integration)', () => {

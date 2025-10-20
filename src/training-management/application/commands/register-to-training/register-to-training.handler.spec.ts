@@ -6,7 +6,7 @@ import { ITrainingRegistrationRepository } from '../../../domain/repositories/tr
 import {
   createMockTraining,
   createMockTrainingRegistration,
-} from '../../../tests/factories';
+} from '../../../__tests__/factories';
 
 describe('RegisterToTrainingHandler', () => {
   let handler: RegisterToTrainingHandler;

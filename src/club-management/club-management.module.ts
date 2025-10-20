@@ -17,6 +17,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { ClubsController } from './presentation/clubs.controller';
 import { SubscriptionsController } from './presentation/subscriptions.controller';
 import { InvitationsController } from './presentation/invitations.controller';
+import { PaymentsController } from './presentation/payments.controller';
 
 // Application Layer - Command & Query Handlers
 import { CommandHandlers } from './application/commands';
@@ -24,17 +25,19 @@ import { QueryHandlers } from './application/queries';
 
 // Infrastructure Layer - Repository Implementations
 import { RepositoryProviders } from './infrastructure/persistence/repositories';
+import { PaymentsModule } from './infrastructure/payments/payments.module';
 
 // Domain Layer - Domain Services
 import { SubscriptionLimitService } from './domain/services/subscription-limit.service';
 import { ClubTransferService } from './domain/services/club-transfer.service';
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, PaymentsModule],
   controllers: [
     ClubsController,
     SubscriptionsController,
     InvitationsController,
+    PaymentsController,
   ],
   providers: [
     // CQRS Handlers
