@@ -3,7 +3,7 @@ import { GetTrainingTeamsQuery } from './get-training-teams.query';
 import { ITrainingTeamRepository } from '../../../domain/repositories/training-team.repository.interface';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { TrainingTeam } from '../../../domain/entities/training-team.entity';
-import { createMockUser } from '../../../tests/factories';
+import { createMockUser } from '../../../__tests__/factories';
 
 describe('GetTrainingTeamsHandler', () => {
   let handler: GetTrainingTeamsHandler;

@@ -11,6 +11,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { UserWithoutPassword } from './types/user.type';
+import { SignupCoachDto, SignupWithInvitationDto } from './dto';
 
 interface RequestWithUser extends Request {
   user: UserWithoutPassword;
@@ -95,6 +96,73 @@ export class AuthController {
     return {
       success: true,
       message: 'Déconnexion réussie',
+    };
+  }
+
+  /**
+   * Coach signup: Create user + club + subscription
+   * POST /auth/signup/coach
+   */
+  @Post('signup/coach')
+  async signupCoach(@Body() dto: SignupCoachDto) {
+    const result = await this.authService.signupCoach(dto);
+    return {
+      success: true,
+      data: {
+        user: result.user,
+        accessToken: result.access_token,
+        clubId: result.clubId,
+        checkoutUrl: result.checkoutUrl,
+      },
+      message: result.checkoutUrl
+        ? 'Inscription réussie. Veuillez compléter le paiement.'
+        : 'Inscription réussie. Bienvenue dans votre club !',
+    };
+  }
+
+  /**
+   * Player signup via invitation
+   * POST /auth/signup/player
+   */
+  @Post('signup/player')
+  async signupPlayer(@Body() dto: SignupWithInvitationDto) {
+    const result = await this.authService.signupPlayer(dto);
+    return {
+      success: true,
+      data: {
+        user: result.user,
+        accessToken: result.access_token,
+        clubId: result.clubId,
+      },
+      message: result.hadPreviousClub
+        ? 'Inscription réussie. Vous avez changé de club.'
+        : 'Inscription réussie. Bienvenue dans votre club !',
+      warning: result.hadPreviousClub
+        ? 'Vous avez quitté votre ancien club pour rejoindre ce nouveau club.'
+        : undefined,
+    };
+  }
+
+  /**
+   * Assistant coach signup via invitation
+   * POST /auth/signup/assistant
+   */
+  @Post('signup/assistant')
+  async signupAssistant(@Body() dto: SignupWithInvitationDto) {
+    const result = await this.authService.signupAssistant(dto);
+    return {
+      success: true,
+      data: {
+        user: result.user,
+        accessToken: result.access_token,
+        clubId: result.clubId,
+      },
+      message: result.hadPreviousClub
+        ? 'Inscription réussie. Vous avez changé de club.'
+        : 'Inscription réussie. Bienvenue dans votre club !',
+      warning: result.hadPreviousClub
+        ? 'Vous avez quitté votre ancien club pour rejoindre ce nouveau club.'
+        : undefined,
     };
   }
 }

@@ -11,6 +11,9 @@ export type UserWithoutPassword = Omit<User, 'password'>;
 export interface UserPayload {
   sub: string;
   email: string;
+  role: string;
+  clubId: string | null;
+  clubRole: string | null;
 }
 
 export interface GoogleProfile {

@@ -1,5 +1,5 @@
 import { TrainingRegistrationRepository } from './training-registration.repository';
-import { TestDatabaseHelper } from '../../../tests/integration/test-database-helper';
+import { TestDatabaseHelper } from '../../../__tests__/integration/test-database-helper';
 
 describe('TrainingRegistrationRepository (Integration)', () => {
   let testHelper: TestDatabaseHelper;

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AuthService } from './auth.service';
 import { DatabaseService } from '../database/database.service';
 import { JwtService } from '@nestjs/jwt';
@@ -17,6 +18,8 @@ describe('AuthService', () => {
     lastName: 'User',
     avatar: null,
     role: 'USER',
+    clubId: null,
+    clubRole: null,
     isActive: true,
     lastLoginAt: null,
     password: 'hashedPassword',
@@ -31,6 +34,8 @@ describe('AuthService', () => {
     lastName: 'User',
     avatar: null,
     role: 'USER',
+    clubId: null,
+    clubRole: null,
     isActive: true,
     lastLoginAt: null,
     createdAt: mockUser.createdAt,
@@ -62,6 +67,18 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: {
             signAsync: jest.fn().mockResolvedValue('mock_token'),
+          },
+        },
+        {
+          provide: CommandBus,
+          useValue: {
+            execute: jest.fn(),
+          },
+        },
+        {
+          provide: QueryBus,
+          useValue: {
+            execute: jest.fn(),
           },
         },
       ],
@@ -118,6 +135,9 @@ describe('AuthService', () => {
       const expectedPayload = {
         email: mockUserWithoutPassword.email,
         sub: mockUserWithoutPassword.id,
+        role: mockUserWithoutPassword.role,
+        clubId: mockUserWithoutPassword.clubId,
+        clubRole: mockUserWithoutPassword.clubRole,
       };
       expect(signAsyncMock).toHaveBeenCalledWith(expectedPayload);
     });

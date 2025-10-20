@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CancelRegistrationHandler } from './cancel-registration.handler';
 import { CancelRegistrationCommand } from './cancel-registration.command';
 import { ITrainingRegistrationRepository } from '../../../domain/repositories/training-registration.repository.interface';
-import { createMockTrainingRegistration } from '../../../tests/factories';
+import { createMockTrainingRegistration } from '../../../__tests__/factories';
 
 describe('CancelRegistrationHandler', () => {
   let handler: CancelRegistrationHandler;

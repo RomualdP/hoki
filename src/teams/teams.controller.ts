@@ -10,8 +10,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { TeamsService } from './teams.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateTeamDto, QueryTeamsDto, UpdateTeamDto } from './dto';
+import { JwtAuthGuard, ActiveSubscriptionGuard } from '../auth/guards';
+import { CurrentUserId } from '../auth/decorators';
+import {
+  CreateTeamDto,
+  QueryTeamsDto,
+  UpdateTeamDto,
+  AddTeamMemberDto,
+} from './dto';
 
 @Controller('teams')
 @UseGuards(JwtAuthGuard)
@@ -29,8 +35,12 @@ export class TeamsController {
   }
 
   @Post()
-  async create(@Body() createTeamDto: CreateTeamDto) {
-    return this.teamsService.create(createTeamDto);
+  @UseGuards(ActiveSubscriptionGuard)
+  async create(
+    @Body() createTeamDto: CreateTeamDto,
+    @CurrentUserId() userId: string,
+  ) {
+    return this.teamsService.create(createTeamDto, userId);
   }
 
   @Put(':id')
@@ -41,5 +51,31 @@ export class TeamsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.teamsService.remove(id);
+  }
+
+  /**
+   * Add a member to a team
+   * POST /teams/:teamId/members
+   */
+  @Post(':teamId/members')
+  async addMember(
+    @Param('teamId') teamId: string,
+    @CurrentUserId() userId: string,
+    @Body() memberData: AddTeamMemberDto,
+  ) {
+    return this.teamsService.addMember(teamId, userId, memberData);
+  }
+
+  /**
+   * Remove a member from a team
+   * DELETE /teams/:teamId/members/:memberId
+   */
+  @Delete(':teamId/members/:memberId')
+  async removeMember(
+    @Param('teamId') teamId: string,
+    @CurrentUserId() userId: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return this.teamsService.removeMember(teamId, userId, memberId);
   }
 }

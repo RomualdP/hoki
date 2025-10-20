@@ -1,4 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SubscribeToPlanHandler } from '../subscribe-to-plan.handler';
 import { SubscribeToPlanCommand } from '../subscribe-to-plan.command';
 import {
@@ -14,11 +15,33 @@ import { TestRepositoryFactory } from '../../../../__tests__/factories/repositor
 import { TestModuleFactory } from '../../../../__tests__/factories/test-module.factory';
 import { ClubBuilder } from '../../../../__tests__/builders/club.builder';
 import { SubscriptionBuilder } from '../../../../__tests__/builders/subscription.builder';
+import { StripeService } from '../../../../infrastructure/payments/stripe.service';
+import Stripe from 'stripe';
+
+/**
+ * Helper to create a mock Stripe Checkout Session
+ */
+function createMockStripeSession(
+  sessionId: string,
+  url: string,
+): Stripe.Checkout.Session {
+  return {
+    id: sessionId,
+    url,
+    object: 'checkout.session',
+    created: Date.now(),
+    livemode: false,
+    status: 'open',
+    mode: 'subscription',
+  } as Stripe.Checkout.Session;
+}
 
 describe('SubscribeToPlanHandler', () => {
   let handler: SubscribeToPlanHandler;
   let subscriptionRepository: jest.Mocked<ISubscriptionRepository>;
   let clubRepository: jest.Mocked<IClubRepository>;
+  let stripeService: jest.Mocked<StripeService>;
+  let configService: jest.Mocked<ConfigService>;
 
   beforeEach(async () => {
     // Create mock repositories using factories
@@ -26,12 +49,24 @@ describe('SubscribeToPlanHandler', () => {
       TestRepositoryFactory.createMockSubscriptionRepository();
     clubRepository = TestRepositoryFactory.createMockClubRepository();
 
+    // Create mock services
+    stripeService = {
+      createCheckoutSession: jest.fn(),
+      isBetaModeEnabled: jest.fn().mockReturnValue(false),
+    } as any;
+
+    configService = {
+      get: jest.fn(),
+    } as any;
+
     // Create test module using factory
     const setup = await TestModuleFactory.createForHandler(
       SubscribeToPlanHandler,
       [
         { provide: SUBSCRIPTION_REPOSITORY, useValue: subscriptionRepository },
         { provide: CLUB_REPOSITORY, useValue: clubRepository },
+        { provide: StripeService, useValue: stripeService },
+        { provide: ConfigService, useValue: configService },
       ],
     );
 
@@ -39,12 +74,11 @@ describe('SubscribeToPlanHandler', () => {
   });
 
   describe('execute()', () => {
-    it('should subscribe club to STARTER plan successfully', async () => {
+    it('should subscribe club to BETA plan successfully', async () => {
       const command = new SubscribeToPlanCommand(
         'club-1',
-        SubscriptionPlanId.STARTER,
-        'cus_123',
-        'sub_123',
+        SubscriptionPlanId.BETA,
+        'user-1',
       );
 
       // Use ClubBuilder for club creation
@@ -54,15 +88,15 @@ describe('SubscribeToPlanHandler', () => {
       subscriptionRepository.findByClubId.mockResolvedValue(null);
 
       // Use SubscriptionBuilder for subscription creation
-      const mockSubscription = new SubscriptionBuilder()
-        .withStarterPlan()
-        .build();
+      const mockSubscription = new SubscriptionBuilder().withBetaPlan().build();
 
       subscriptionRepository.save.mockResolvedValue(mockSubscription);
 
       const result = await handler.execute(command);
 
-      expect(result).toBe('subscription-1');
+      expect(result).toEqual({
+        subscriptionId: 'subscription-1',
+      });
       expect(clubRepository.findById).toHaveBeenCalledWith('club-1');
       expect(subscriptionRepository.findByClubId).toHaveBeenCalledWith(
         'club-1',
@@ -70,87 +104,7 @@ describe('SubscribeToPlanHandler', () => {
       expect(subscriptionRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           clubId: 'club-1',
-          planId: SubscriptionPlanId.STARTER,
-          maxTeams: 1,
-          price: 500,
-          stripeCustomerId: 'cus_123',
-          stripeSubscriptionId: 'sub_123',
-        }),
-      );
-    });
-
-    it('should subscribe club to PRO plan successfully', async () => {
-      const command = new SubscribeToPlanCommand(
-        'club-2',
-        SubscriptionPlanId.PRO,
-        'cus_456',
-        'sub_456',
-      );
-
-      const mockClub = new ClubBuilder()
-        .withId('club-2')
-        .withName('Pro Club')
-        .withOwnerId('user-2')
-        .build();
-
-      clubRepository.findById.mockResolvedValue(mockClub);
-      subscriptionRepository.findByClubId.mockResolvedValue(null);
-
-      // Use SubscriptionBuilder with PRO plan preset
-      const mockSubscription = new SubscriptionBuilder()
-        .withId('subscription-2')
-        .withClubId('club-2')
-        .withProPlan()
-        .build();
-
-      subscriptionRepository.save.mockResolvedValue(mockSubscription);
-
-      const result = await handler.execute(command);
-
-      expect(result).toBe('subscription-2');
-      expect(subscriptionRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          planId: SubscriptionPlanId.PRO,
-          maxTeams: 5,
-          price: 1500,
-        }),
-      );
-    });
-
-    it('should subscribe club to BETA plan without Stripe info', async () => {
-      const command = new SubscribeToPlanCommand(
-        'club-3',
-        SubscriptionPlanId.BETA,
-      );
-
-      const mockClub = new ClubBuilder()
-        .withId('club-3')
-        .withName('Beta Club')
-        .withOwnerId('user-3')
-        .build();
-
-      clubRepository.findById.mockResolvedValue(mockClub);
-      subscriptionRepository.findByClubId.mockResolvedValue(null);
-
-      // Use SubscriptionBuilder with BETA plan preset
-      const mockSubscription = new SubscriptionBuilder()
-        .withId('subscription-3')
-        .withClubId('club-3')
-        .withBetaPlan()
-        .build();
-
-      subscriptionRepository.save.mockResolvedValue(mockSubscription);
-
-      const result = await handler.execute(command);
-
-      expect(result).toBe('subscription-3');
-      expect(subscriptionRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
           planId: SubscriptionPlanId.BETA,
-          maxTeams: null,
-          price: 0,
-          stripeCustomerId: null,
-          stripeSubscriptionId: null,
         }),
       );
     });
@@ -159,6 +113,7 @@ describe('SubscribeToPlanHandler', () => {
       const command = new SubscribeToPlanCommand(
         'non-existent-club',
         SubscriptionPlanId.STARTER,
+        'user-1',
       );
 
       clubRepository.findById.mockResolvedValue(null);
@@ -177,6 +132,7 @@ describe('SubscribeToPlanHandler', () => {
       const command = new SubscribeToPlanCommand(
         'club-1',
         SubscriptionPlanId.STARTER,
+        'user-1',
       );
 
       const mockClub = new ClubBuilder().build();
@@ -206,6 +162,7 @@ describe('SubscribeToPlanHandler', () => {
       const command = new SubscribeToPlanCommand(
         'club-1',
         'INVALID_PLAN' as SubscriptionPlanId,
+        'user-1',
       );
 
       const mockClub = new ClubBuilder().build();
@@ -223,9 +180,8 @@ describe('SubscribeToPlanHandler', () => {
     it('should handle repository save errors', async () => {
       const command = new SubscribeToPlanCommand(
         'club-1',
-        SubscriptionPlanId.STARTER,
-        'cus_123',
-        'sub_123',
+        SubscriptionPlanId.BETA,
+        'user-1',
       );
 
       const mockClub = new ClubBuilder().build();
@@ -243,6 +199,236 @@ describe('SubscribeToPlanHandler', () => {
       expect(clubRepository.findById).toHaveBeenCalled();
       expect(subscriptionRepository.findByClubId).toHaveBeenCalled();
       expect(subscriptionRepository.save).toHaveBeenCalled();
+    });
+
+    describe('Stripe Integration', () => {
+      it('should create Stripe checkout session for STARTER plan', async () => {
+        const command = new SubscribeToPlanCommand(
+          'club-1',
+          SubscriptionPlanId.STARTER,
+          'user-1',
+        );
+
+        const mockClub = new ClubBuilder().build();
+        clubRepository.findById.mockResolvedValue(mockClub);
+        subscriptionRepository.findByClubId.mockResolvedValue(null);
+
+        // Mock config service
+        configService.get.mockImplementation((key: string) => {
+          if (key === 'STRIPE_PRICE_ID_STARTER') return 'price_starter_123';
+          if (key === 'FRONTEND_URL') return 'http://localhost:3001';
+          return undefined;
+        });
+
+        // Mock Stripe checkout session
+        stripeService.createCheckoutSession.mockResolvedValue(
+          createMockStripeSession(
+            'cs_test_123',
+            'https://checkout.stripe.com/pay/cs_test_123',
+          ),
+        );
+
+        const mockSubscription = new SubscriptionBuilder()
+          .withStarterPlan()
+          .build();
+        subscriptionRepository.save.mockResolvedValue(mockSubscription);
+
+        const result = await handler.execute(command);
+
+        expect(result).toEqual({
+          subscriptionId: 'subscription-1',
+          checkoutUrl: 'https://checkout.stripe.com/pay/cs_test_123',
+        });
+
+        expect(stripeService.createCheckoutSession).toHaveBeenCalledWith({
+          priceId: 'price_starter_123',
+          clubId: 'club-1',
+          userId: 'user-1',
+          successUrl:
+            'http://localhost:3001/signup/success?session_id={CHECKOUT_SESSION_ID}',
+          cancelUrl: 'http://localhost:3001/signup/cancel',
+        });
+
+        expect(subscriptionRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'PENDING',
+          }),
+        );
+      });
+
+      it('should create Stripe checkout session for PRO plan', async () => {
+        const command = new SubscribeToPlanCommand(
+          'club-2',
+          SubscriptionPlanId.PRO,
+          'user-2',
+        );
+
+        const mockClub = new ClubBuilder().withId('club-2').build();
+        clubRepository.findById.mockResolvedValue(mockClub);
+        subscriptionRepository.findByClubId.mockResolvedValue(null);
+
+        configService.get.mockImplementation((key: string) => {
+          if (key === 'STRIPE_PRICE_ID_PRO') return 'price_pro_456';
+          if (key === 'FRONTEND_URL') return 'http://localhost:3001';
+          return undefined;
+        });
+
+        stripeService.createCheckoutSession.mockResolvedValue(
+          createMockStripeSession(
+            'cs_test_456',
+            'https://checkout.stripe.com/pay/cs_test_456',
+          ),
+        );
+
+        const mockSubscription = new SubscriptionBuilder()
+          .withId('subscription-2')
+          .withProPlan()
+          .build();
+        subscriptionRepository.save.mockResolvedValue(mockSubscription);
+
+        const result = await handler.execute(command);
+
+        expect(result.checkoutUrl).toBe(
+          'https://checkout.stripe.com/pay/cs_test_456',
+        );
+        expect(stripeService.createCheckoutSession).toHaveBeenCalledWith(
+          expect.objectContaining({
+            priceId: 'price_pro_456',
+          }),
+        );
+      });
+
+      it('should throw error when Stripe price ID is missing', async () => {
+        const command = new SubscribeToPlanCommand(
+          'club-1',
+          SubscriptionPlanId.STARTER,
+          'user-1',
+        );
+
+        const mockClub = new ClubBuilder().build();
+        clubRepository.findById.mockResolvedValue(mockClub);
+        subscriptionRepository.findByClubId.mockResolvedValue(null);
+
+        // Config returns undefined for price ID
+        configService.get.mockReturnValue(undefined);
+
+        await expect(handler.execute(command)).rejects.toThrow(
+          'Missing Stripe price ID: STRIPE_PRICE_ID_STARTER',
+        );
+
+        expect(stripeService.createCheckoutSession).not.toHaveBeenCalled();
+        expect(subscriptionRepository.save).not.toHaveBeenCalled();
+      });
+
+      it('should handle Stripe checkout session creation errors', async () => {
+        const command = new SubscribeToPlanCommand(
+          'club-1',
+          SubscriptionPlanId.STARTER,
+          'user-1',
+        );
+
+        const mockClub = new ClubBuilder().build();
+        clubRepository.findById.mockResolvedValue(mockClub);
+        subscriptionRepository.findByClubId.mockResolvedValue(null);
+
+        configService.get.mockImplementation((key: string) => {
+          if (key === 'STRIPE_PRICE_ID_STARTER') return 'price_starter_123';
+          if (key === 'FRONTEND_URL') return 'http://localhost:3001';
+          return undefined;
+        });
+
+        // Stripe service throws error
+        stripeService.createCheckoutSession.mockRejectedValue(
+          new Error('Stripe API unavailable'),
+        );
+
+        await expect(handler.execute(command)).rejects.toThrow(
+          'Stripe API unavailable',
+        );
+
+        expect(stripeService.createCheckoutSession).toHaveBeenCalled();
+        expect(subscriptionRepository.save).not.toHaveBeenCalled();
+      });
+
+      it('should use default frontend URL when not configured', async () => {
+        const command = new SubscribeToPlanCommand(
+          'club-1',
+          SubscriptionPlanId.STARTER,
+          'user-1',
+        );
+
+        const mockClub = new ClubBuilder().build();
+        clubRepository.findById.mockResolvedValue(mockClub);
+        subscriptionRepository.findByClubId.mockResolvedValue(null);
+
+        configService.get.mockImplementation((key: string) => {
+          if (key === 'STRIPE_PRICE_ID_STARTER') return 'price_starter_123';
+          if (key === 'FRONTEND_URL') return undefined; // Not configured
+          return undefined;
+        });
+
+        stripeService.createCheckoutSession.mockResolvedValue(
+          createMockStripeSession(
+            'cs_test_123',
+            'https://checkout.stripe.com/pay/cs_test_123',
+          ),
+        );
+
+        const mockSubscription = new SubscriptionBuilder()
+          .withStarterPlan()
+          .build();
+        subscriptionRepository.save.mockResolvedValue(mockSubscription);
+
+        await handler.execute(command);
+
+        expect(stripeService.createCheckoutSession).toHaveBeenCalledWith(
+          expect.objectContaining({
+            successUrl:
+              'http://localhost:3001/signup/success?session_id={CHECKOUT_SESSION_ID}',
+            cancelUrl: 'http://localhost:3001/signup/cancel',
+          }),
+        );
+      });
+
+      it('should save subscription with PENDING status for Stripe plans', async () => {
+        const command = new SubscribeToPlanCommand(
+          'club-1',
+          SubscriptionPlanId.STARTER,
+          'user-1',
+        );
+
+        const mockClub = new ClubBuilder().build();
+        clubRepository.findById.mockResolvedValue(mockClub);
+        subscriptionRepository.findByClubId.mockResolvedValue(null);
+
+        configService.get.mockImplementation((key: string) => {
+          if (key === 'STRIPE_PRICE_ID_STARTER') return 'price_starter_123';
+          if (key === 'FRONTEND_URL') return 'http://localhost:3001';
+          return undefined;
+        });
+
+        stripeService.createCheckoutSession.mockResolvedValue(
+          createMockStripeSession(
+            'cs_test_123',
+            'https://checkout.stripe.com/pay/cs_test_123',
+          ),
+        );
+
+        const mockSubscription = new SubscriptionBuilder()
+          .withStarterPlan()
+          .build();
+        subscriptionRepository.save.mockResolvedValue(mockSubscription);
+
+        await handler.execute(command);
+
+        expect(subscriptionRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'PENDING',
+            stripeCustomerId: null,
+            stripeSubscriptionId: null,
+          }),
+        );
+      });
     });
   });
 });
