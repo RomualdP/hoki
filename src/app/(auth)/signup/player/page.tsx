@@ -5,6 +5,7 @@
  */
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { PlayerSignupForm } from "../../../../features/auth/components/signup/PlayerSignupForm";
 import { ROUTES } from "../../../../constants";
 
@@ -22,7 +23,9 @@ export default function SignupPlayerPage() {
       </div>
 
       {/* Form */}
-      <PlayerSignupForm />
+      <Suspense fallback={<div className="text-center">Chargement...</div>}>
+        <PlayerSignupForm />
+      </Suspense>
 
       {/* Back Link */}
       <div className="text-center">

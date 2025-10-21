@@ -5,6 +5,7 @@
  */
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { AssistantSignupForm } from "../../../../features/auth/components/signup/AssistantSignupForm";
 import { ROUTES } from "../../../../constants";
 
@@ -22,7 +23,9 @@ export default function SignupAssistantPage() {
       </div>
 
       {/* Form */}
-      <AssistantSignupForm />
+      <Suspense fallback={<div className="text-center">Chargement...</div>}>
+        <AssistantSignupForm />
+      </Suspense>
 
       {/* Back Link */}
       <div className="text-center">
