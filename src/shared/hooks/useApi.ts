@@ -35,15 +35,14 @@ export const useApi = <T = unknown>(options: UseApiOptions = {}) => {
 
       try {
         const url = `${baseUrl}${endpoint}`;
-        const token = localStorage.getItem("access_token");
         const defaultHeaders = {
           "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
           ...headers,
         };
 
         const response = await fetch(url, {
           ...requestOptions,
+          credentials: "include", // Include httpOnly cookies in requests
           headers: {
             ...defaultHeaders,
             ...requestOptions.headers,

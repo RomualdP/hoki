@@ -1,37 +1,41 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Layout } from '../../../components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../components/ui';
-import { Input } from '../../../components/forms';
-import { useUsersApi } from '../../../features/users/hooks/useUsersApi';
-import { formatDate } from '../../../utils';
-import Link from 'next/link';
-import type { User } from '../../../types';
+import { useState, useEffect, useMemo } from "react";
+import { Layout } from "../../../components/layout";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+} from "../../../components/ui";
+import { Input } from "../../../components/forms";
+import { useUsersApi } from "../../../features/users/hooks/useUsersApi";
+import { formatDate } from "../../../utils";
+import Link from "next/link";
+import type { User } from "../../../types";
 
 export default function AdminUsersPage() {
   const { users, fetchUsers, updateUser, isLoading } = useUsersApi();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchUsers();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchUsers]);
 
-  useEffect(() => {
-    // Filter users based on search term
+  // Derived state: compute filtered users from users and searchTerm
+  const filteredUsers = useMemo(() => {
     if (!searchTerm.trim()) {
-      setFilteredUsers(users);
-    } else {
-      const filtered = users.filter(user => {
-        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-        const email = user.email.toLowerCase();
-        const search = searchTerm.toLowerCase();
-        
-        return fullName.includes(search) || email.includes(search);
-      });
-      setFilteredUsers(filtered);
+      return users;
     }
+
+    return users.filter((user) => {
+      const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+      const email = user.email.toLowerCase();
+      const search = searchTerm.toLowerCase();
+
+      return fullName.includes(search) || email.includes(search);
+    });
   }, [users, searchTerm]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +43,7 @@ export default function AdminUsersPage() {
   };
 
   const toggleUserStatus = async (userId: string) => {
-    const user = users.find(u => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (user) {
       await updateUser(userId, { isActive: !user.isActive });
     }
@@ -50,7 +54,6 @@ export default function AdminUsersPage() {
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
         <div className="py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center justify-between">
@@ -63,9 +66,7 @@ export default function AdminUsersPage() {
                   </p>
                 </div>
                 <Link href="/admin">
-                  <Button variant="outline">
-                    Retour à l&apos;admin
-                  </Button>
+                  <Button variant="outline">Retour à l&apos;admin</Button>
                 </Link>
               </div>
             </div>
@@ -88,13 +89,14 @@ export default function AdminUsersPage() {
                       onChange={handleSearchChange}
                     />
                   </div>
-                  <Button variant="outline" onClick={() => setSearchTerm('')}>
+                  <Button variant="outline" onClick={() => setSearchTerm("")}>
                     Effacer
                   </Button>
                 </div>
                 {searchTerm && (
                   <p className="text-sm text-gray-600 mt-2">
-                    {filteredUsers.length} résultat(s) trouvé(s) pour &quot;{searchTerm}&quot;
+                    {filteredUsers.length} résultat(s) trouvé(s) pour &quot;
+                    {searchTerm}&quot;
                   </p>
                 )}
               </CardContent>
@@ -103,19 +105,21 @@ export default function AdminUsersPage() {
             {/* Users Table */}
             <Card>
               <CardHeader>
-                <CardTitle>
-                  Utilisateurs ({filteredUsers.length})
-                </CardTitle>
+                <CardTitle>Utilisateurs ({filteredUsers.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">Chargement des utilisateurs...</p>
+                    <p className="text-gray-500">
+                      Chargement des utilisateurs...
+                    </p>
                   </div>
                 ) : filteredUsers.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-gray-500">
-                      {searchTerm ? 'Aucun utilisateur trouvé' : 'Aucun utilisateur'}
+                      {searchTerm
+                        ? "Aucun utilisateur trouvé"
+                        : "Aucun utilisateur"}
                     </p>
                   </div>
                 ) : (
@@ -145,9 +149,9 @@ export default function AdminUsersPage() {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {filteredUsers.map((user) => (
-                          <UserRow 
-                            key={user.id} 
-                            user={user} 
+                          <UserRow
+                            key={user.id}
+                            user={user}
                             onToggleStatus={() => toggleUserStatus(user.id)}
                           />
                         ))}
@@ -157,7 +161,6 @@ export default function AdminUsersPage() {
                 )}
               </CardContent>
             </Card>
-
           </div>
         </div>
       </div>
@@ -174,9 +177,9 @@ function UserRow({ user, onToggleStatus }: UserRowProps) {
   const getRoleBadge = (role: string) => {
     const baseClasses = "px-2 py-1 text-xs font-medium rounded-full";
     switch (role) {
-      case 'ADMIN':
+      case "ADMIN":
         return `${baseClasses} bg-red-100 text-red-800`;
-      case 'USER':
+      case "USER":
         return `${baseClasses} bg-blue-100 text-blue-800`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
@@ -196,7 +199,8 @@ function UserRow({ user, onToggleStatus }: UserRowProps) {
         <div className="flex items-center">
           <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
             <span className="text-sm font-medium text-orange-800">
-              {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+              {user.firstName.charAt(0)}
+              {user.lastName.charAt(0)}
             </span>
           </div>
           <div className="ml-4">
@@ -213,35 +217,26 @@ function UserRow({ user, onToggleStatus }: UserRowProps) {
         <div className="text-sm text-gray-900">{user.email}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className={getRoleBadge(user.role)}>
-          {user.role}
-        </span>
+        <span className={getRoleBadge(user.role)}>{user.role}</span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <span className={getStatusBadge(user.isActive)}>
-          {user.isActive ? 'Actif' : 'Inactif'}
+          {user.isActive ? "Actif" : "Inactif"}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Jamais'}
+        {user.lastLoginAt ? formatDate(user.lastLoginAt) : "Jamais"}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onToggleStatus}
-        >
-          {user.isActive ? 'Désactiver' : 'Activer'}
+        <Button variant="outline" size="sm" onClick={onToggleStatus}>
+          {user.isActive ? "Désactiver" : "Activer"}
         </Button>
         <Link href={`/admin/users/${user.id}`}>
-          <Button
-            variant="ghost"
-            size="sm"
-          >
+          <Button variant="ghost" size="sm">
             Voir détail
           </Button>
         </Link>
       </td>
     </tr>
   );
-} 
+}

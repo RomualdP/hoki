@@ -75,30 +75,32 @@ export default function UserDetailPage() {
   const userSkills = getUserSkills(userId);
 
   // Load user data when userId changes
-
   useEffect(() => {
-    const foundUser = users.find((u) => u.id === userId);
-    if (foundUser) {
-      setUser(foundUser as User & { profile: UserProfile });
-      setProfileForm({
-        firstName: foundUser.firstName,
-        lastName: foundUser.lastName,
-        email: foundUser.email,
-        gender: "" as "" | Gender,
-      });
-      fetchUserProfile(foundUser.id)
-        .then((profile) => {
-          if (profile)
+    const loadUserData = async () => {
+      const foundUser = users.find((u) => u.id === userId);
+      if (foundUser) {
+        setUser(foundUser as User & { profile: UserProfile });
+        setProfileForm({
+          firstName: foundUser.firstName,
+          lastName: foundUser.lastName,
+          email: foundUser.email,
+          gender: "" as "" | Gender,
+        });
+        try {
+          const profile = await fetchUserProfile(foundUser.id);
+          if (profile) {
             setProfileForm((prev) => ({
               ...prev,
               gender: (profile.gender ?? "") as "" | Gender,
             }));
-        })
-        .catch(() => undefined);
-    } else if (userId) {
-      // If user not found in store, fetch from API
-      fetchUserById(userId)
-        .then((fetchedUser) => {
+          }
+        } catch {
+          // Ignore profile fetch errors
+        }
+      } else if (userId) {
+        // If user not found in store, fetch from API
+        try {
+          const fetchedUser = await fetchUserById(userId);
           if (fetchedUser) {
             setUser(fetchedUser as User & { profile: UserProfile });
             setProfileForm({
@@ -107,46 +109,47 @@ export default function UserDetailPage() {
               email: fetchedUser.email,
               gender: "" as "" | Gender,
             });
-            fetchUserProfile(fetchedUser.id)
-              .then((profile) => {
-                if (profile)
-                  setProfileForm((prev) => ({
-                    ...prev,
-                    gender: (profile.gender ?? "") as "" | Gender,
-                  }));
-              })
-              .catch(() => undefined);
+            try {
+              const profile = await fetchUserProfile(fetchedUser.id);
+              if (profile) {
+                setProfileForm((prev) => ({
+                  ...prev,
+                  gender: (profile.gender ?? "") as "" | Gender,
+                }));
+              }
+            } catch {
+              // Ignore profile fetch errors
+            }
           }
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("Failed to fetch user:", error);
-        });
-    }
-  }, [userId]);
+        }
+      }
+    };
+
+    loadUserData();
+  }, [userId, users, fetchUserById, fetchUserProfile]);
 
   // Load user skills when userId changes
   useEffect(() => {
     fetchUserSkills(userId).catch((error) => {
       console.error("Failed to fetch user skills:", error);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, fetchUserSkills]);
 
   // Load user attributes when userId changes
   useEffect(() => {
     fetchUserAttributes(userId).catch((error) => {
       console.error("Failed to fetch user attributes:", error);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, fetchUserAttributes]);
 
   // Load player level when userId changes
   useEffect(() => {
     fetchPlayerLevel(userId).catch((error) => {
       console.error("Failed to fetch player level:", error);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, fetchPlayerLevel]);
 
   const handleProfileSubmit = async () => {
     if (!user) return;

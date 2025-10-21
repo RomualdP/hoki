@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import { API_BASE_URL } from '../constants';
-import type { ApiResponse } from '../types';
+import { useState, useCallback } from "react";
+import { API_BASE_URL } from "../constants";
+import type { ApiResponse } from "../types";
 
 interface UseApiState<T> {
   readonly data: T | null;
@@ -25,7 +25,7 @@ export const useApi = <T = unknown>(options: UseApiOptions = {}) => {
   const request = useCallback(
     async (
       endpoint: string,
-      requestOptions: RequestInit = {}
+      requestOptions: RequestInit = {},
     ): Promise<T | null> => {
       setState((previousState) => ({
         ...previousState,
@@ -35,15 +35,14 @@ export const useApi = <T = unknown>(options: UseApiOptions = {}) => {
 
       try {
         const url = `${baseUrl}${endpoint}`;
-        const token = localStorage.getItem('access_token');
         const defaultHeaders = {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
+          "Content-Type": "application/json",
           ...headers,
         };
 
         const response = await fetch(url, {
           ...requestOptions,
+          credentials: "include", // Include httpOnly cookies in requests
           headers: {
             ...defaultHeaders,
             ...requestOptions.headers,
@@ -58,7 +57,7 @@ export const useApi = <T = unknown>(options: UseApiOptions = {}) => {
         const result: ApiResponse<T> = await response.json();
 
         if (!result.success) {
-          throw new Error(result.message || 'Une erreur est survenue');
+          throw new Error(result.message || "Une erreur est survenue");
         }
 
         setState({
@@ -69,8 +68,11 @@ export const useApi = <T = unknown>(options: UseApiOptions = {}) => {
 
         return result.data;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Une erreur inconnue est survenue';
-        
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Une erreur inconnue est survenue";
+
         setState({
           data: null,
           isLoading: false,
@@ -80,43 +82,43 @@ export const useApi = <T = unknown>(options: UseApiOptions = {}) => {
         return null;
       }
     },
-    [baseUrl, headers]
+    [baseUrl, headers],
   );
 
   const get = useCallback(
     (endpoint: string, options: RequestInit = {}) => {
-      return request(endpoint, { ...options, method: 'GET' });
+      return request(endpoint, { ...options, method: "GET" });
     },
-    [request]
+    [request],
   );
 
   const post = useCallback(
     (endpoint: string, data?: unknown, options: RequestInit = {}) => {
       return request(endpoint, {
         ...options,
-        method: 'POST',
+        method: "POST",
         body: data ? JSON.stringify(data) : undefined,
       });
     },
-    [request]
+    [request],
   );
 
   const put = useCallback(
     (endpoint: string, data?: unknown, options: RequestInit = {}) => {
       return request(endpoint, {
         ...options,
-        method: 'PUT',
+        method: "PUT",
         body: data ? JSON.stringify(data) : undefined,
       });
     },
-    [request]
+    [request],
   );
 
   const deleteRequest = useCallback(
     (endpoint: string, options: RequestInit = {}) => {
-      return request(endpoint, { ...options, method: 'DELETE' });
+      return request(endpoint, { ...options, method: "DELETE" });
     },
-    [request]
+    [request],
   );
 
   const clearError = useCallback(() => {
@@ -139,8 +141,10 @@ export const useApi = <T = unknown>(options: UseApiOptions = {}) => {
 const getErrorMessage = async (response: Response): Promise<string> => {
   try {
     const errorData = await response.json();
-    return errorData.message || `Erreur ${response.status}: ${response.statusText}`;
+    return (
+      errorData.message || `Erreur ${response.status}: ${response.statusText}`
+    );
   } catch {
     return `Erreur ${response.status}: ${response.statusText}`;
   }
-}; 
+};
