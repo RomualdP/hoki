@@ -1,7 +1,7 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { ReactNode } from 'react';
-import { ROUTES } from '../constants';
+import Link from "next/link";
+import Image from "next/image";
+import { ReactNode } from "react";
+import { ROUTES } from "../constants";
 
 interface LayoutProps {
   readonly children: ReactNode;
@@ -12,9 +12,7 @@ export const Layout = ({ children, showNavigation = true }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-neutral-50">
       {showNavigation && <Navigation />}
-      <main className={showNavigation ? 'pt-16' : ''}>
-        {children}
-      </main>
+      <main className={showNavigation ? "pt-16" : ""}>{children}</main>
     </div>
   );
 };
@@ -25,10 +23,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link
-              href={ROUTES.HOME}
-              className="flex items-center space-x-2"
-            >
+            <Link href={ROUTES.HOME} className="flex items-center space-x-2">
               <Image
                 src="/images/logo_volley_app.png"
                 alt="VolleyApp Logo"
@@ -36,7 +31,7 @@ const Navigation = () => {
                 height={40}
                 className="w-10 h-10"
               />
-              <span className="text-xl font-bold text-orange-600 font-heading">
+              <span className="text-xl font-bold text-orange-600">
                 VolleyApp
               </span>
             </Link>
@@ -47,26 +42,18 @@ const Navigation = () => {
               <NavigationLink href={ROUTES.DASHBOARD}>
                 Tableau de bord
               </NavigationLink>
-              <NavigationLink href={ROUTES.TEAMS}>
-                Équipes
-              </NavigationLink>
-              <NavigationLink href={ROUTES.MATCHES}>
-                Matchs
-              </NavigationLink>
+              <NavigationLink href={ROUTES.TEAMS}>Équipes</NavigationLink>
+              <NavigationLink href={ROUTES.MATCHES}>Matchs</NavigationLink>
               <NavigationLink href={ROUTES.TOURNAMENTS}>
                 Tournois
               </NavigationLink>
-              <NavigationLink href={ROUTES.PLAYERS}>
-                Joueurs
-              </NavigationLink>
+              <NavigationLink href={ROUTES.PLAYERS}>Joueurs</NavigationLink>
             </div>
           </div>
 
           <div className="hidden md:block">
             <div className="ml-4 flex items-center md:ml-6">
-              <NavigationLink href={ROUTES.PROFILE}>
-                Profil
-              </NavigationLink>
+              <NavigationLink href={ROUTES.PROFILE}>Profil</NavigationLink>
             </div>
           </div>
 
@@ -118,6 +105,4 @@ const NavigationLink = ({ href, children }: NavigationLinkProps) => {
   );
 };
 
-
-
-Layout.displayName = 'Layout'; 
+Layout.displayName = "Layout";

@@ -56,9 +56,9 @@ export default function CoachDashboardPage() {
       {/* Widgets Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ClubInfoWidget />
-        <SubscriptionWidget />
         <TeamsWidget />
         <InvitationsWidget />
+        <SubscriptionWidget />
       </div>
     </div>
   );

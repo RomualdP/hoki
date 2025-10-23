@@ -2,6 +2,15 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  UserCircle2,
+  Calendar,
+  CreditCard,
+  LogOut,
+} from "lucide-react";
 import { useAuthStore } from "../../store";
 import { useAuthApi } from "../../features/auth/hooks";
 import { ROUTES } from "../../constants";
@@ -45,37 +54,37 @@ export function AppHeader() {
           ? ROUTES.DASHBOARD.ASSISTANT
           : ROUTES.DASHBOARD.PLAYER,
       label: "Dashboard",
-      icon: "📊",
+      icon: LayoutDashboard,
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.CLUB,
       label: "Mon club",
-      icon: "🏛️",
+      icon: Building2,
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.TEAMS,
       label: "Mes équipes",
-      icon: "👥",
+      icon: Users,
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.PLAYERS,
       label: "Mes joueurs",
-      icon: "🏐",
+      icon: UserCircle2,
       roles: ["COACH"],
     },
     {
       href: ROUTES.MATCHES,
       label: "Matchs",
-      icon: "🎯",
+      icon: Calendar,
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.SUBSCRIPTION,
       label: "Mon abonnement",
-      icon: "💳",
+      icon: CreditCard,
       roles: ["COACH"],
     },
   ];
@@ -97,7 +106,7 @@ export function AppHeader() {
   };
 
   return (
-    <aside className="fixed top-0 left-0 h-screen w-64 bg-white border-r border-neutral-200 shadow-sm flex flex-col z-40">
+    <aside className="fixed top-0 left-0 h-screen w-64 bg-surface border-r-[12px] border-border-emphasis shadow-sm flex flex-col z-40">
       {/* Logo */}
       <div className="p-6 border-b border-neutral-200">
         <Link
@@ -108,7 +117,7 @@ export function AppHeader() {
                 ? ROUTES.DASHBOARD.ASSISTANT
                 : ROUTES.DASHBOARD.PLAYER
           }
-          className="text-2xl font-bold text-orange-600 font-heading hover:text-orange-700 transition-colors"
+          className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors"
         >
           VolleyApp
         </Link>
@@ -125,11 +134,11 @@ export function AppHeader() {
                   href={link.href}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-orange-100 text-orange-700"
+                      ? "bg-accent text-accent-foreground"
                       : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
                   }`}
                 >
-                  <span className="text-lg">{link.icon}</span>
+                  <link.icon size={20} strokeWidth={2} />
                   <span>{link.label}</span>
                 </Link>
               </li>
@@ -172,7 +181,7 @@ export function AppHeader() {
           disabled={isLoading}
           className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 hover:text-orange-600 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span>🚪</span>
+          <LogOut size={18} strokeWidth={2} />
           <span>{isLoading ? "Déconnexion..." : "Déconnexion"}</span>
         </button>
       </div>

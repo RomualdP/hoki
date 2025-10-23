@@ -54,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${roboto.variable} ${animeAce.variable} antialiased min-h-screen bg-neutral-50`}
+        className={`${roboto.variable} ${animeAce.variable} antialiased min-h-screen bg-background`}
       >
         <AuthProvider>
           <AppHeader />
