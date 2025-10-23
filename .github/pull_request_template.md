@@ -14,7 +14,7 @@ type(scope): short summary
 - Frontend: `yarn lint`, `yarn build`
 
 ## Checklist
-- [ ] Follows `AI_RULES.md` and project conventions
+- [ ] Follows project Skills (`.claude/skills/`) and conventions
 - [ ] No ESLint or TypeScript errors
 - [ ] Tests added or updated
 - [ ] Docs updated if needed

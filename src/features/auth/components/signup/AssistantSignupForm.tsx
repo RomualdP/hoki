@@ -202,7 +202,7 @@ export function AssistantSignupForm() {
 
       // Redirection
       startTransition(() => {
-        router.push(ROUTES.MATCHES); // TODO: Changer pour dashboard assistant
+        router.push(ROUTES.DASHBOARD.ASSISTANT);
       });
     } catch (error) {
       setErrors({
@@ -248,7 +248,7 @@ export function AssistantSignupForm() {
       );
 
       startTransition(() => {
-        router.push(ROUTES.MATCHES);
+        router.push(ROUTES.DASHBOARD.ASSISTANT);
       });
     } catch (error) {
       setErrors({

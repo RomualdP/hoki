@@ -1,12 +1,6 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import type { User } from "../types";
-
-/**
- * Types pour les rôles
- */
-export type UserRole = "USER" | "ADMIN";
-export type ClubRole = "COACH" | "ASSISTANT_COACH" | "PLAYER" | null;
+import type { User, UserRole, ClubRole } from "../types";
 
 interface AuthState {
   readonly user: User | null;
@@ -64,9 +58,10 @@ export const useAuthStore = create<AuthStore>()(
               isAuthenticated: true,
               isLoading: false,
               error: null,
-              role: role || "USER",
-              clubId: clubId || null,
-              clubRole: clubRole || null,
+              role: role || user.role || "USER",
+              // Extract clubId and clubRole from user object if not provided
+              clubId: clubId ?? user.clubId ?? null,
+              clubRole: clubRole ?? user.clubRole ?? null,
             }),
             false,
             "auth/loginUser",

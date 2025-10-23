@@ -9,10 +9,21 @@ export const ROUTES = {
     COACH: "/signup/coach",
     PLAYER: "/signup/player",
     ASSISTANT: "/signup/assistant",
+    SUCCESS: {
+      COACH: "/signup/coach/success",
+    },
+  },
+  DASHBOARD: {
+    COACH: "/coach",
+    ASSISTANT: "/assistant",
+    PLAYER: "/player",
   },
   PROFILE: "/profile",
   MATCHES: "/matches",
+  CLUB: "/club",
   TEAMS: "/teams",
+  SUBSCRIPTION: "/subscription",
+  UPGRADE: "/upgrade",
   ADMIN: {
     BASE: "/admin",
     USERS: "/admin/users",

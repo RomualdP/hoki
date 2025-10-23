@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Layout } from "../../../../components/layout";
 import {
   Card,
   CardHeader,
@@ -231,7 +230,7 @@ export default function UserDetailPage() {
   // Show loading state
   if (isLoadingSkills) {
     return (
-      <Layout>
+      
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
           <Card>
             <CardContent className="text-center py-12">
@@ -239,14 +238,14 @@ export default function UserDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </Layout>
+      
     );
   }
 
   // Show error state only for critical errors, but continue with empty skills for non-critical ones
   if (skillsError && skillsError.includes("UNAUTHORIZED")) {
     return (
-      <Layout>
+      
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
           <Card>
             <CardContent className="text-center py-12">
@@ -265,13 +264,13 @@ export default function UserDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </Layout>
+      
     );
   }
 
   if (!user) {
     return (
-      <Layout>
+      
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
           <Card>
             <CardContent className="text-center py-12">
@@ -284,12 +283,12 @@ export default function UserDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </Layout>
+      
     );
   }
 
   return (
-    <Layout>
+    
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
         <div className="py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
@@ -441,7 +440,7 @@ export default function UserDetailPage() {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 }
 

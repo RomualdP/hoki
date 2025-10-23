@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Layout } from "../../components/layout";
 import {
   Card,
   CardHeader,
@@ -203,7 +202,7 @@ export default function ProfilePage() {
   // Affichage de chargement
   if (!isAuthenticated || !user) {
     return (
-      <Layout>
+      
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 font-heading">
@@ -212,12 +211,12 @@ export default function ProfilePage() {
             <p className="mt-2 text-gray-600">Chargement de votre profil...</p>
           </div>
         </div>
-      </Layout>
+      
     );
   }
 
   return (
-    <Layout>
+    
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <h1 className="text-3xl font-bold text-gray-900 mb-8 font-heading">
           Mon Profil
@@ -418,6 +417,6 @@ export default function ProfilePage() {
           </Card>
         </div>
       </div>
-    </Layout>
+    
   );
 }

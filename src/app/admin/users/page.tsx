@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Layout } from "../../../components/layout";
 import {
   Card,
   CardHeader,
@@ -50,7 +49,7 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <Layout>
+    
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
         <div className="py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
@@ -164,7 +163,7 @@ export default function AdminUsersPage() {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 }
 

@@ -187,9 +187,9 @@ export function CoachSignupForm() {
         // Plan payant : redirection vers Stripe
         window.location.href = response.checkoutUrl;
       } else {
-        // Plan gratuit : redirection vers dashboard
+        // Plan gratuit : redirection vers page de succès
         startTransition(() => {
-          router.push(ROUTES.MATCHES); // TODO: Changer pour dashboard coach
+          router.push(`${ROUTES.SIGNUP.SUCCESS.COACH}?plan=${formData.planId}`);
         });
       }
     } catch (error) {

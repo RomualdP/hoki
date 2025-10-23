@@ -202,7 +202,7 @@ export function PlayerSignupForm() {
 
       // Redirection
       startTransition(() => {
-        router.push(ROUTES.MATCHES); // TODO: Changer pour dashboard player
+        router.push(ROUTES.DASHBOARD.PLAYER);
       });
     } catch (error) {
       setErrors({
@@ -248,7 +248,7 @@ export function PlayerSignupForm() {
       );
 
       startTransition(() => {
-        router.push(ROUTES.MATCHES);
+        router.push(ROUTES.DASHBOARD.PLAYER);
       });
     } catch (error) {
       setErrors({
