@@ -1,21 +1,26 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Layout } from '../../components/layout';
-import { Card, CardHeader, CardTitle, CardContent, LogoutButton } from '../../components/ui';
-import { Input, Button } from '../../components';
-import { Select } from '../../components/forms/Select';
-import type { Gender } from '../../types';
-import { useUserProfileApi } from '../../features/users/hooks/useUserProfileApi';
-import { useAuthStore } from '../../store';
-import { ROUTES } from '../../constants';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  LogoutButton,
+} from "../../components/ui";
+import { Input, Button } from "../../components";
+import { Select } from "../../components/forms/Select";
+import type { Gender } from "../../types";
+import { useUserProfileApi } from "../../features/users/hooks/useUserProfileApi";
+import { useAuthStore } from "../../store";
+import { ROUTES } from "../../constants";
 
 interface ProfileFormData {
   firstName: string;
   lastName: string;
   email: string;
-  gender: '' | Gender;
+  gender: "" | Gender;
 }
 
 interface PasswordFormData {
@@ -28,81 +33,99 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const { fetchUserProfile, updateUserProfile } = useUserProfileApi();
-  
+  const isInitialized = useRef(false);
+
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  
+
   const [profileData, setProfileData] = useState<ProfileFormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    gender: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    gender: "",
   });
 
-  // Initialiser les données du profil quand l'utilisateur est chargé
+  // Initialize profile data when user is loaded (only once)
   useEffect(() => {
-    if (user) {
-      // Extraire firstName et lastName du nom complet si nécessaire
-      const nameParts = user.firstName?.includes(' ') 
-        ? user.firstName.split(' ')
-        : [user.firstName || '', user.lastName || ''];
-      
-      setProfileData({
-        firstName: nameParts[0] || '',
-        lastName: nameParts.slice(1).join(' ') || '',
-        email: user.email || '',
-        gender: '',
-      });
+    const initializeProfileData = async () => {
+      if (user && !isInitialized.current) {
+        isInitialized.current = true;
 
-      fetchUserProfile(user.id).then((profile) => {
-        if (profile) {
-          setProfileData(prev => ({ ...prev, gender: (profile.gender ?? '') as '' | Gender }));
+        // Extract firstName and lastName from full name if necessary
+        const nameParts = user.firstName?.includes(" ")
+          ? user.firstName.split(" ")
+          : [user.firstName || "", user.lastName || ""];
+
+        setProfileData({
+          firstName: nameParts[0] || "",
+          lastName: nameParts.slice(1).join(" ") || "",
+          email: user.email || "",
+          gender: "",
+        });
+
+        try {
+          const profile = await fetchUserProfile(user.id);
+          if (profile) {
+            setProfileData((prev) => ({
+              ...prev,
+              gender: (profile.gender ?? "") as "" | Gender,
+            }));
+          }
+        } catch {
+          // Ignore profile fetch errors
         }
-      }).catch(() => undefined);
-    }
-  }, [user]);
+      }
+    };
 
-  // Note: checkAuthStatus est déjà appelé par l'AuthProvider global
+    initializeProfileData();
+  }, [user, fetchUserProfile]);
 
-  // Rediriger si non authentifié
+  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated && user === null) {
       router.push(ROUTES.LOGIN);
     }
   }, [isAuthenticated, user, router]);
-  
+
   const [passwordData, setPasswordData] = useState<PasswordFormData>({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
-  const [profileErrors, setProfileErrors] = useState<Partial<ProfileFormData>>({});
-  const [passwordErrors, setPasswordErrors] = useState<Partial<PasswordFormData>>({});
+  const [profileErrors, setProfileErrors] = useState<Partial<ProfileFormData>>(
+    {},
+  );
+  const [passwordErrors, setPasswordErrors] = useState<
+    Partial<PasswordFormData>
+  >({});
 
   const handleProfileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setProfileData(prev => ({ ...prev, [name]: value }));
-    
+    setProfileData((prev) => ({ ...prev, [name]: value }));
+
     if (profileErrors[name as keyof ProfileFormData]) {
-      setProfileErrors(prev => ({ ...prev, [name]: undefined }));
+      setProfileErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
   const handleGenderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = event.target;
-    setProfileData(prev => ({ ...prev, gender: (value || '') as '' | Gender }));
+    setProfileData((prev) => ({
+      ...prev,
+      gender: (value || "") as "" | Gender,
+    }));
     if (profileErrors.gender) {
-      setProfileErrors(prev => ({ ...prev, gender: undefined }));
+      setProfileErrors((prev) => ({ ...prev, gender: undefined }));
     }
   };
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setPasswordData(prev => ({ ...prev, [name]: value }));
-    
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+
     if (passwordErrors[name as keyof PasswordFormData]) {
-      setPasswordErrors(prev => ({ ...prev, [name]: undefined }));
+      setPasswordErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
@@ -110,17 +133,17 @@ export default function ProfilePage() {
     const errors: Partial<ProfileFormData> = {};
 
     if (!profileData.firstName.trim()) {
-      errors.firstName = 'Prénom requis';
+      errors.firstName = "Prénom requis";
     }
 
     if (!profileData.lastName.trim()) {
-      errors.lastName = 'Nom requis';
+      errors.lastName = "Nom requis";
     }
 
     if (!profileData.email.trim()) {
-      errors.email = 'Email requis';
+      errors.email = "Email requis";
     } else if (!/\S+@\S+\.\S+/.test(profileData.email)) {
-      errors.email = 'Format email invalide';
+      errors.email = "Format email invalide";
     }
 
     setProfileErrors(errors);
@@ -131,17 +154,18 @@ export default function ProfilePage() {
     const errors: Partial<PasswordFormData> = {};
 
     if (!passwordData.currentPassword) {
-      errors.currentPassword = 'Mot de passe actuel requis';
+      errors.currentPassword = "Mot de passe actuel requis";
     }
 
     if (!passwordData.newPassword) {
-      errors.newPassword = 'Nouveau mot de passe requis';
+      errors.newPassword = "Nouveau mot de passe requis";
     } else if (passwordData.newPassword.length < 6) {
-      errors.newPassword = 'Le mot de passe doit contenir au moins 6 caractères';
+      errors.newPassword =
+        "Le mot de passe doit contenir au moins 6 caractères";
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      errors.confirmPassword = 'Les mots de passe ne correspondent pas';
+      errors.confirmPassword = "Les mots de passe ne correspondent pas";
     }
 
     setPasswordErrors(errors);
@@ -150,7 +174,7 @@ export default function ProfilePage() {
 
   const handleProfileSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!validateProfileForm()) return;
 
     if (user) {
@@ -163,14 +187,14 @@ export default function ProfilePage() {
 
   const handlePasswordSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!validatePasswordForm()) return;
 
     // Simulate password change
     setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     });
     setIsChangingPassword(false);
   };
@@ -178,23 +202,21 @@ export default function ProfilePage() {
   // Affichage de chargement
   if (!isAuthenticated || !user) {
     return (
-      <Layout>
+      
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 font-heading">
               Chargement...
             </h1>
-            <p className="mt-2 text-gray-600">
-              Chargement de votre profil...
-            </p>
+            <p className="mt-2 text-gray-600">Chargement de votre profil...</p>
           </div>
         </div>
-      </Layout>
+      
     );
   }
 
   return (
-    <Layout>
+    
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <h1 className="text-3xl font-bold text-gray-900 mb-8 font-heading">
           Mon Profil
@@ -246,11 +268,11 @@ export default function ProfilePage() {
                   id="gender"
                   name="gender"
                   label="Genre"
-                  value={profileData.gender || ''}
+                  value={profileData.gender || ""}
                   onChange={handleGenderChange}
                   options={[
-                    { value: 'MALE', label: 'Homme' },
-                    { value: 'FEMALE', label: 'Femme' },
+                    { value: "MALE", label: "Homme" },
+                    { value: "FEMALE", label: "Femme" },
                   ]}
                   placeholder="Sélectionner..."
                   disabled={!isEditingProfile}
@@ -279,7 +301,7 @@ export default function ProfilePage() {
                             firstName: user.firstName,
                             lastName: user.lastName,
                             email: user.email,
-                            gender: '',
+                            gender: "",
                           });
                           setProfileErrors({});
                         }}
@@ -356,9 +378,9 @@ export default function ProfilePage() {
                       onClick={() => {
                         setIsChangingPassword(false);
                         setPasswordData({
-                          currentPassword: '',
-                          newPassword: '',
-                          confirmPassword: '',
+                          currentPassword: "",
+                          newPassword: "",
+                          confirmPassword: "",
                         });
                         setPasswordErrors({});
                       }}
@@ -383,13 +405,11 @@ export default function ProfilePage() {
                     Déconnexion
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">
-                    Déconnectez-vous de votre session actuelle. Vous devrez vous reconnecter pour accéder à votre compte.
+                    Déconnectez-vous de votre session actuelle. Vous devrez vous
+                    reconnecter pour accéder à votre compte.
                   </p>
                 </div>
-                <LogoutButton 
-                  variant="danger"
-                  className="shrink-0"
-                >
+                <LogoutButton variant="danger" className="shrink-0">
                   Se déconnecter
                 </LogoutButton>
               </div>
@@ -397,6 +417,6 @@ export default function ProfilePage() {
           </Card>
         </div>
       </div>
-    </Layout>
+    
   );
-} 
+}

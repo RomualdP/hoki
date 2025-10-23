@@ -59,7 +59,7 @@ export const useUserAttributesApi = () => {
         setAttributes(transformed);
         return transformed;
       }
-      return attributes;
+      return undefined;
     },
     [attributesApi],
   );
@@ -75,9 +75,9 @@ export const useUserAttributesApi = () => {
         setAttributes(transformed);
         return transformed;
       }
-      return attributes;
+      return undefined;
     },
-    [attributesApi, attributes],
+    [attributesApi],
   );
 
   return {

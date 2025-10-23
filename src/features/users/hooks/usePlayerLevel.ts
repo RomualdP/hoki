@@ -16,7 +16,7 @@ export const usePlayerLevel = () => {
         setLevel(data.level);
         return data.level;
       }
-      return level;
+      return undefined;
     },
     [playerLevelApi],
   );

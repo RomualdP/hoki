@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, ReactNode } from 'react';
-import { useAuthApi } from '../../features/auth/hooks';
+import { useEffect, ReactNode } from "react";
+import { useAuthApi } from "../../features/auth/hooks";
 
 interface AuthProviderProps {
   readonly children: ReactNode;
@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     // Vérifier le statut d'authentification au chargement de l'app
     checkAuthStatus();
-  }, []);
+  }, [checkAuthStatus]);
 
   return <>{children}</>;
-}; 
+};

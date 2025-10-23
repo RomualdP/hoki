@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Layout } from "../../../../components/layout";
 import {
   Card,
   CardHeader,
@@ -75,30 +74,32 @@ export default function UserDetailPage() {
   const userSkills = getUserSkills(userId);
 
   // Load user data when userId changes
-
   useEffect(() => {
-    const foundUser = users.find((u) => u.id === userId);
-    if (foundUser) {
-      setUser(foundUser as User & { profile: UserProfile });
-      setProfileForm({
-        firstName: foundUser.firstName,
-        lastName: foundUser.lastName,
-        email: foundUser.email,
-        gender: "" as "" | Gender,
-      });
-      fetchUserProfile(foundUser.id)
-        .then((profile) => {
-          if (profile)
+    const loadUserData = async () => {
+      const foundUser = users.find((u) => u.id === userId);
+      if (foundUser) {
+        setUser(foundUser as User & { profile: UserProfile });
+        setProfileForm({
+          firstName: foundUser.firstName,
+          lastName: foundUser.lastName,
+          email: foundUser.email,
+          gender: "" as "" | Gender,
+        });
+        try {
+          const profile = await fetchUserProfile(foundUser.id);
+          if (profile) {
             setProfileForm((prev) => ({
               ...prev,
               gender: (profile.gender ?? "") as "" | Gender,
             }));
-        })
-        .catch(() => undefined);
-    } else if (userId) {
-      // If user not found in store, fetch from API
-      fetchUserById(userId)
-        .then((fetchedUser) => {
+          }
+        } catch {
+          // Ignore profile fetch errors
+        }
+      } else if (userId) {
+        // If user not found in store, fetch from API
+        try {
+          const fetchedUser = await fetchUserById(userId);
           if (fetchedUser) {
             setUser(fetchedUser as User & { profile: UserProfile });
             setProfileForm({
@@ -107,46 +108,47 @@ export default function UserDetailPage() {
               email: fetchedUser.email,
               gender: "" as "" | Gender,
             });
-            fetchUserProfile(fetchedUser.id)
-              .then((profile) => {
-                if (profile)
-                  setProfileForm((prev) => ({
-                    ...prev,
-                    gender: (profile.gender ?? "") as "" | Gender,
-                  }));
-              })
-              .catch(() => undefined);
+            try {
+              const profile = await fetchUserProfile(fetchedUser.id);
+              if (profile) {
+                setProfileForm((prev) => ({
+                  ...prev,
+                  gender: (profile.gender ?? "") as "" | Gender,
+                }));
+              }
+            } catch {
+              // Ignore profile fetch errors
+            }
           }
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("Failed to fetch user:", error);
-        });
-    }
-  }, [userId]);
+        }
+      }
+    };
+
+    loadUserData();
+  }, [userId, users, fetchUserById, fetchUserProfile]);
 
   // Load user skills when userId changes
   useEffect(() => {
     fetchUserSkills(userId).catch((error) => {
       console.error("Failed to fetch user skills:", error);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, fetchUserSkills]);
 
   // Load user attributes when userId changes
   useEffect(() => {
     fetchUserAttributes(userId).catch((error) => {
       console.error("Failed to fetch user attributes:", error);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, fetchUserAttributes]);
 
   // Load player level when userId changes
   useEffect(() => {
     fetchPlayerLevel(userId).catch((error) => {
       console.error("Failed to fetch player level:", error);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, fetchPlayerLevel]);
 
   const handleProfileSubmit = async () => {
     if (!user) return;
@@ -228,7 +230,7 @@ export default function UserDetailPage() {
   // Show loading state
   if (isLoadingSkills) {
     return (
-      <Layout>
+      
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
           <Card>
             <CardContent className="text-center py-12">
@@ -236,14 +238,14 @@ export default function UserDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </Layout>
+      
     );
   }
 
   // Show error state only for critical errors, but continue with empty skills for non-critical ones
   if (skillsError && skillsError.includes("UNAUTHORIZED")) {
     return (
-      <Layout>
+      
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
           <Card>
             <CardContent className="text-center py-12">
@@ -262,13 +264,13 @@ export default function UserDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </Layout>
+      
     );
   }
 
   if (!user) {
     return (
-      <Layout>
+      
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
           <Card>
             <CardContent className="text-center py-12">
@@ -281,12 +283,12 @@ export default function UserDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </Layout>
+      
     );
   }
 
   return (
-    <Layout>
+    
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
         <div className="py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
@@ -438,7 +440,7 @@ export default function UserDetailPage() {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 }
 

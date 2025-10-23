@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Layout } from '../../../components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../components/ui';
 import { Input } from '../../../components/forms';
 import { useNewsApi } from '../../../features/news/hooks/useNewsApi';
@@ -104,7 +103,7 @@ export default function AdminNewsPage() {
   };
 
   return (
-    <Layout>
+    
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
         <div className="py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
@@ -247,7 +246,7 @@ export default function AdminNewsPage() {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 }
 

@@ -1,20 +1,30 @@
-import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
-import type { User } from '../types';
+import { create } from "zustand";
+import { devtools, persist } from "zustand/middleware";
+import type { User, UserRole, ClubRole } from "../types";
 
 interface AuthState {
   readonly user: User | null;
   readonly isAuthenticated: boolean;
   readonly isLoading: boolean;
   readonly error: string | null;
+  readonly role: UserRole | null;
+  readonly clubId: string | null;
+  readonly clubRole: ClubRole;
 }
 
 interface AuthActions {
-  readonly loginUser: (user: User) => void;
+  readonly loginUser: (
+    user: User,
+    role?: UserRole,
+    clubId?: string,
+    clubRole?: ClubRole,
+  ) => void;
   readonly logoutUser: () => void;
   readonly setLoading: (loading: boolean) => void;
   readonly setError: (error: string | null) => void;
   readonly clearError: () => void;
+  readonly setRole: (role: UserRole) => void;
+  readonly setClubInfo: (clubId: string | null, clubRole: ClubRole) => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -24,6 +34,9 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  role: null,
+  clubId: null,
+  clubRole: null,
 };
 
 export const useAuthStore = create<AuthStore>()(
@@ -32,7 +45,12 @@ export const useAuthStore = create<AuthStore>()(
       (set) => ({
         ...initialState,
 
-        loginUser: (user: User) => {
+        loginUser: (
+          user: User,
+          role?: UserRole,
+          clubId?: string,
+          clubRole?: ClubRole,
+        ) => {
           set(
             (state) => ({
               ...state,
@@ -40,9 +58,13 @@ export const useAuthStore = create<AuthStore>()(
               isAuthenticated: true,
               isLoading: false,
               error: null,
+              role: role || user.role || "USER",
+              // Extract clubId and clubRole from user object if not provided
+              clubId: clubId ?? user.clubId ?? null,
+              clubRole: clubRole ?? user.clubRole ?? null,
             }),
             false,
-            'auth/loginUser'
+            "auth/loginUser",
           );
         },
 
@@ -54,9 +76,12 @@ export const useAuthStore = create<AuthStore>()(
               isAuthenticated: false,
               isLoading: false,
               error: null,
+              role: null,
+              clubId: null,
+              clubRole: null,
             }),
             false,
-            'auth/logoutUser'
+            "auth/logoutUser",
           );
         },
 
@@ -67,7 +92,7 @@ export const useAuthStore = create<AuthStore>()(
               isLoading,
             }),
             false,
-            'auth/setLoading'
+            "auth/setLoading",
           );
         },
 
@@ -79,7 +104,7 @@ export const useAuthStore = create<AuthStore>()(
               isLoading: false,
             }),
             false,
-            'auth/setError'
+            "auth/setError",
           );
         },
 
@@ -90,20 +115,46 @@ export const useAuthStore = create<AuthStore>()(
               error: null,
             }),
             false,
-            'auth/clearError'
+            "auth/clearError",
+          );
+        },
+
+        setRole: (role: UserRole) => {
+          set(
+            (state) => ({
+              ...state,
+              role,
+            }),
+            false,
+            "auth/setRole",
+          );
+        },
+
+        setClubInfo: (clubId: string | null, clubRole: ClubRole) => {
+          set(
+            (state) => ({
+              ...state,
+              clubId,
+              clubRole,
+            }),
+            false,
+            "auth/setClubInfo",
           );
         },
       }),
       {
-        name: 'auth-storage',
+        name: "auth-storage",
         partialize: (state) => ({
           user: state.user,
           isAuthenticated: state.isAuthenticated,
+          role: state.role,
+          clubId: state.clubId,
+          clubRole: state.clubRole,
         }),
-      }
+      },
     ),
     {
-      name: 'auth-store',
-    }
-  )
-); 
+      name: "auth-store",
+    },
+  ),
+);

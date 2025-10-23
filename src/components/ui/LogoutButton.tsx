@@ -1,3 +1,4 @@
+'use client'
 import { useRouter } from 'next/navigation';
 import { useAuthApi } from '../../features/auth/hooks';
 import { ROUTES } from '../../constants';
