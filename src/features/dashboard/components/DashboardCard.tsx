@@ -23,10 +23,10 @@ export function DashboardCard({
 }: DashboardCardProps) {
   return (
     <div
-      className={`bg-white rounded-lg border border-neutral-200 shadow-sm ${className}`}
+      className={`bg-white rounded-lg border-2 border-neutral-900 shadow-vintage-sm ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 sm:px-6 border-b border-neutral-200">
+      <div className="flex items-center justify-between px-4 py-3 sm:px-6 border-b-2 border-neutral-900">
         <h2 className="text-base sm:text-lg font-semibold text-neutral-900">
           {title}
         </h2>

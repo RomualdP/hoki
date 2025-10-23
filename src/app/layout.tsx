@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Roboto, Poppins } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider, AppHeader } from "../components/layout";
@@ -10,35 +10,31 @@ const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
 });
 
-const animeAce = localFont({
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const bangers = localFont({
   src: [
     {
-      path: "../assets/fonts/animeace2_reg.ttf",
+      path: "../assets/fonts/Bangers.ttf",
       weight: "400",
       style: "normal",
-    },
-    {
-      path: "../assets/fonts/animeace2_bld.ttf",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../assets/fonts/animeace2_ital.ttf",
-      weight: "400",
-      style: "italic",
     },
   ],
-  variable: "--font-anime-ace",
+  variable: "--font-manga",
   display: "swap",
   fallback: ["cursive", "sans-serif"],
 });
 
 export const metadata: Metadata = {
-  title: "VolleyApp - Gestion d'équipes de volleyball",
+  title: "Hoki - Gestion d'équipes de volleyball",
   description:
     "La plateforme complète pour gérer vos équipes, matchs et tournois de volleyball",
   keywords: ["volleyball", "sport", "équipe", "tournoi", "match", "gestion"],
-  authors: [{ name: "VolleyApp Team" }],
+  authors: [{ name: "Hoki Team" }],
 };
 
 export const viewport = {
@@ -54,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${roboto.variable} ${animeAce.variable} antialiased min-h-screen bg-background`}
+        className={`${roboto.variable} ${poppins.variable} ${bangers.variable} antialiased min-h-screen bg-background`}
       >
         <AuthProvider>
           <AppHeader />

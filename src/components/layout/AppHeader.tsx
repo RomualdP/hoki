@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut } from "lucide-react";
+import { IconLogout } from "@tabler/icons-react";
 import { useAuthStore } from "../../store";
 import { useAuthApi } from "../../features/auth/hooks";
 import { ROUTES } from "../../constants";
@@ -60,7 +60,7 @@ export function AppHeader() {
   return (
     <aside className="fixed top-0 left-0 h-screen w-64 bg-surface border-r-[12px] border-border-emphasis shadow-sm flex flex-col z-40">
       {/* Logo */}
-      <div className="p-6 border-b border-neutral-200">
+      <div className="p-6 border-b-6 border-white">
         <Link
           href={
             isCoach
@@ -73,14 +73,12 @@ export function AppHeader() {
         >
           <Image
             src="/images/logo_volley_app.png"
-            alt="VolleyApp Logo"
+            alt="Hoki Logo"
             width={40}
             height={40}
             className="rounded-full"
           />
-          <span className="text-2xl font-heading text-orange-600">
-            VolleyApp
-          </span>
+          <span className="text-2xl font-heading text-orange-600">Hoki</span>
         </Link>
       </div>
 
@@ -99,7 +97,7 @@ export function AppHeader() {
                       : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
                   }`}
                 >
-                  <link.icon size={20} strokeWidth={2} />
+                  <link.icon size={20} stroke={2} />
                   <span>{link.label}</span>
                 </Link>
               </li>
@@ -109,7 +107,7 @@ export function AppHeader() {
       </nav>
 
       {/* User Info & Logout */}
-      <div className="p-4 border-t border-neutral-200">
+      <div className="p-4 border-t-6 border-white">
         <Link
           href="/profile"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-100 transition-colors mb-2"
@@ -142,7 +140,7 @@ export function AppHeader() {
           disabled={isLoading}
           className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 hover:text-orange-600 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogOut size={18} strokeWidth={2} />
+          <IconLogout size={18} stroke={2} />
           <span>{isLoading ? "Déconnexion..." : "Déconnexion"}</span>
         </button>
       </div>

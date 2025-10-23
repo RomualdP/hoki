@@ -1,11 +1,11 @@
-import type { LucideIcon } from "lucide-react";
+import type { Icon } from "@tabler/icons-react";
 import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  UserCircle2,
-  Calendar,
-} from "lucide-react";
+  IconLayoutDashboard,
+  IconPlayVolleyball,
+  IconUsers,
+  IconBallVolleyball,
+  IconCalendar,
+} from "@tabler/icons-react";
 import { ROUTES } from "../constants";
 
 export type ClubRole = "COACH" | "ASSISTANT_COACH" | "PLAYER";
@@ -13,7 +13,7 @@ export type ClubRole = "COACH" | "ASSISTANT_COACH" | "PLAYER";
 export interface NavLink {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: Icon;
   roles: ClubRole[];
 }
 
@@ -35,31 +35,31 @@ export function getNavLinks(clubRole: ClubRole | null): NavLink[] {
           ? ROUTES.DASHBOARD.ASSISTANT
           : ROUTES.DASHBOARD.PLAYER,
       label: "Dashboard",
-      icon: LayoutDashboard,
+      icon: IconLayoutDashboard,
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.CLUB,
       label: "Mon club",
-      icon: Building2,
+      icon: IconBallVolleyball,
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.TEAMS,
       label: "Mes équipes",
-      icon: Users,
+      icon: IconUsers,
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.PLAYERS,
       label: "Mes joueurs",
-      icon: UserCircle2,
+      icon: IconPlayVolleyball,
       roles: ["COACH"],
     },
     {
       href: ROUTES.MATCHES,
       label: "Matchs",
-      icon: Calendar,
+      icon: IconCalendar,
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
   ];

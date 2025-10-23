@@ -106,7 +106,8 @@
 
   /* Fonts */
   --font-sans: var(--font-roboto);
-  --font-heading: var(--font-anime-ace);
+  --font-heading: var(--font-manga);
+  --font-titles: var(--font-poppins);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -126,17 +127,21 @@ body {
 
 /* Typography */
 h1 {
-  font-family: var(--font-anime-ace), cursive;
+  font-family: var(--font-manga), cursive;
   font-weight: 400;
 }
 
 h2, h3, h4, h5, h6 {
-  font-family: var(--font-roboto), sans-serif;
-  font-weight: 700;
+  font-family: var(--font-poppins), sans-serif;
+  font-weight: 600;
 }
 
 .font-heading {
-  font-family: var(--font-anime-ace), cursive;
+  font-family: var(--font-manga), cursive;
+}
+
+.font-titles {
+  font-family: var(--font-poppins), sans-serif;
 }
 
 /* Base styles */
@@ -152,4 +157,30 @@ html {
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+/* Vintage hard shadows */
+.shadow-vintage {
+  box-shadow: 4px 4px 0px 0px rgba(38, 38, 38, 0.2);
+}
+
+.shadow-vintage-sm {
+  box-shadow: 6px 6px 0px 0px rgba(38, 38, 38, 0.15);
+}
+
+.shadow-vintage-lg {
+  box-shadow: 8px 8px 0px 0px rgba(38, 38, 38, 0.25);
+}
+
+.shadow-vintage-xl {
+  box-shadow: 10px 10px 0px 0px rgba(38, 38, 38, 0.3);
+}
+
+/* Hover effect for vintage shadows */
+.hover\:shadow-vintage:hover {
+  box-shadow: 4px 4px 0px 0px rgba(38, 38, 38, 0.2);
+}
+
+.hover\:shadow-vintage-lg:hover {
+  box-shadow: 8px 8px 0px 0px rgba(38, 38, 38, 0.25);
 }

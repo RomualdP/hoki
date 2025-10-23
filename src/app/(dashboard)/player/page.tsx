@@ -22,7 +22,7 @@ export default function PlayerDashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">
-          Bienvenue, {user?.firstName} 👋
+          Bienvenue, {user?.firstName} 🏐
         </h1>
         <p className="mt-2 text-neutral-600">
           Consultez vos équipes et les informations de votre club
