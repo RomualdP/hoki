@@ -22,6 +22,7 @@ export const ROUTES = {
   MATCHES: "/matches",
   CLUB: "/club",
   TEAMS: "/teams",
+  PLAYERS: "/players",
   SUBSCRIPTION: "/subscription",
   UPGRADE: "/upgrade",
   ADMIN: {

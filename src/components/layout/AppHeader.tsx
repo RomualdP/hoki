@@ -7,9 +7,9 @@ import { useAuthApi } from "../../features/auth/hooks";
 import { ROUTES } from "../../constants";
 
 /**
- * AppHeader Component
+ * AppHeader Component (Sidebar)
  *
- * Header global avec navigation adaptative selon le rôle utilisateur
+ * Sidebar de navigation vertical avec navigation adaptative selon le rôle utilisateur
  * Affiché sur toutes les pages sauf auth (login, signup)
  */
 export function AppHeader() {
@@ -18,7 +18,7 @@ export function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Don't show header on auth pages
+  // Don't show sidebar on auth pages
   if (
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/signup") ||
@@ -27,7 +27,7 @@ export function AppHeader() {
     return null;
   }
 
-  // Don't show header if not authenticated
+  // Don't show sidebar if not authenticated
   if (!isAuthenticated) {
     return null;
   }
@@ -45,26 +45,37 @@ export function AppHeader() {
           ? ROUTES.DASHBOARD.ASSISTANT
           : ROUTES.DASHBOARD.PLAYER,
       label: "Dashboard",
+      icon: "📊",
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.CLUB,
       label: "Mon club",
+      icon: "🏛️",
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.TEAMS,
       label: "Mes équipes",
+      icon: "👥",
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
+    },
+    {
+      href: ROUTES.PLAYERS,
+      label: "Mes joueurs",
+      icon: "🏐",
+      roles: ["COACH"],
     },
     {
       href: ROUTES.MATCHES,
       label: "Matchs",
+      icon: "🎯",
       roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
     },
     {
       href: ROUTES.SUBSCRIPTION,
       label: "Mon abonnement",
+      icon: "💳",
       roles: ["COACH"],
     },
   ];
@@ -86,75 +97,85 @@ export function AppHeader() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-neutral-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <Link
-              href={
-                isCoach
-                  ? ROUTES.DASHBOARD.COACH
-                  : isAssistant
-                    ? ROUTES.DASHBOARD.ASSISTANT
-                    : ROUTES.DASHBOARD.PLAYER
-              }
-              className="text-xl font-bold text-orange-600 font-heading hover:text-orange-700 transition-colors"
-            >
-              VolleyApp
-            </Link>
-          </div>
+    <aside className="fixed top-0 left-0 h-screen w-64 bg-white border-r border-neutral-200 shadow-sm flex flex-col z-40">
+      {/* Logo */}
+      <div className="p-6 border-b border-neutral-200">
+        <Link
+          href={
+            isCoach
+              ? ROUTES.DASHBOARD.COACH
+              : isAssistant
+                ? ROUTES.DASHBOARD.ASSISTANT
+                : ROUTES.DASHBOARD.PLAYER
+          }
+          className="text-2xl font-bold text-orange-600 font-heading hover:text-orange-700 transition-colors"
+        >
+          VolleyApp
+        </Link>
+      </div>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-6">
-            {visibleLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
+      {/* Navigation Links */}
+      <nav className="flex-1 overflow-y-auto py-4">
+        <ul className="space-y-1 px-3">
+          {visibleLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <li key={link.href}>
                 <Link
-                  key={link.href}
                   href={link.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-orange-100 text-orange-700"
                       : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
                   }`}
                 >
-                  {link.label}
+                  <span className="text-lg">{link.icon}</span>
+                  <span>{link.label}</span>
                 </Link>
-              );
-            })}
-          </nav>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
-          {/* User Info */}
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/profile"
-              className="text-sm text-neutral-700 hidden sm:block hover:text-orange-600 transition-colors"
-            >
+      {/* User Info & Logout */}
+      <div className="p-4 border-t border-neutral-200">
+        <Link
+          href="/profile"
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-100 transition-colors mb-2"
+        >
+          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+            <span className="text-orange-600 font-semibold">
+              {user?.firstName?.charAt(0)}
+              {user?.lastName?.charAt(0)}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-neutral-900 truncate">
               {user?.firstName} {user?.lastName}
-            </Link>
-            <span
-              className={`px-2 py-1 rounded text-xs font-medium ${
+            </p>
+            <p
+              className={`text-xs truncate ${
                 isCoach
-                  ? "bg-orange-100 text-orange-700"
+                  ? "text-orange-600"
                   : isAssistant
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-green-100 text-green-700"
+                    ? "text-blue-600"
+                    : "text-green-600"
               }`}
             >
               {isCoach ? "Coach" : isAssistant ? "Assistant" : "Joueur"}
-            </span>
-            <button
-              onClick={handleLogout}
-              disabled={isLoading}
-              className="text-sm text-neutral-700 hover:text-orange-600 hover:bg-neutral-100 px-3 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Se déconnecter"
-            >
-              {isLoading ? "..." : "Déconnexion"}
-            </button>
+            </p>
           </div>
-        </div>
+        </Link>
+        <button
+          onClick={handleLogout}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 hover:text-orange-600 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span>🚪</span>
+          <span>{isLoading ? "Déconnexion..." : "Déconnexion"}</span>
+        </button>
       </div>
-    </header>
+    </aside>
   );
 }

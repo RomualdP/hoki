@@ -58,7 +58,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <AppHeader />
-          <main className="pt-16">{children}</main>
+          <main className="pl-64">{children}</main>
         </AuthProvider>
       </body>
     </html>
