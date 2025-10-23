@@ -3,6 +3,7 @@ export { StatsWidget } from "./StatsWidget";
 export { ClubInfoWidget } from "./ClubInfoWidget";
 export { SubscriptionWidget } from "./SubscriptionWidget";
 export { TeamsWidget } from "./TeamsWidget";
+export { MatchesWidget } from "./MatchesWidget";
 export { InvitationsWidget } from "./InvitationsWidget";
 export { MembersWidget } from "./MembersWidget";
 export { MyTeamsWidget } from "./MyTeamsWidget";

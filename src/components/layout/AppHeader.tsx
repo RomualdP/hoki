@@ -2,18 +2,15 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  UserCircle2,
-  Calendar,
-  CreditCard,
-  LogOut,
-} from "lucide-react";
+import Image from "next/image";
+import { LogOut } from "lucide-react";
 import { useAuthStore } from "../../store";
 import { useAuthApi } from "../../features/auth/hooks";
 import { ROUTES } from "../../constants";
+import {
+  getNavLinks,
+  getVisibleNavLinks,
+} from "../../config/navigation.config";
 
 /**
  * AppHeader Component (Sidebar)
@@ -43,55 +40,10 @@ export function AppHeader() {
 
   const isCoach = clubRole === "COACH";
   const isAssistant = clubRole === "ASSISTANT_COACH";
-  const isPlayer = clubRole === "PLAYER";
 
-  // Navigation links based on role
-  const navLinks = [
-    {
-      href: isCoach
-        ? ROUTES.DASHBOARD.COACH
-        : isAssistant
-          ? ROUTES.DASHBOARD.ASSISTANT
-          : ROUTES.DASHBOARD.PLAYER,
-      label: "Dashboard",
-      icon: LayoutDashboard,
-      roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
-    },
-    {
-      href: ROUTES.CLUB,
-      label: "Mon club",
-      icon: Building2,
-      roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
-    },
-    {
-      href: ROUTES.TEAMS,
-      label: "Mes équipes",
-      icon: Users,
-      roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
-    },
-    {
-      href: ROUTES.PLAYERS,
-      label: "Mes joueurs",
-      icon: UserCircle2,
-      roles: ["COACH"],
-    },
-    {
-      href: ROUTES.MATCHES,
-      label: "Matchs",
-      icon: Calendar,
-      roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
-    },
-    {
-      href: ROUTES.SUBSCRIPTION,
-      label: "Mon abonnement",
-      icon: CreditCard,
-      roles: ["COACH"],
-    },
-  ];
-
-  const visibleLinks = navLinks.filter((link) =>
-    link.roles.includes(clubRole || ""),
-  );
+  // Get navigation links based on role
+  const navLinks = getNavLinks(clubRole);
+  const visibleLinks = getVisibleNavLinks(navLinks, clubRole);
 
   const handleLogout = async () => {
     try {
@@ -117,9 +69,18 @@ export function AppHeader() {
                 ? ROUTES.DASHBOARD.ASSISTANT
                 : ROUTES.DASHBOARD.PLAYER
           }
-          className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors"
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
-          VolleyApp
+          <Image
+            src="/images/logo_volley_app.png"
+            alt="VolleyApp Logo"
+            width={40}
+            height={40}
+            className="rounded-full"
+          />
+          <span className="text-2xl font-heading text-orange-600">
+            VolleyApp
+          </span>
         </Link>
       </div>
 

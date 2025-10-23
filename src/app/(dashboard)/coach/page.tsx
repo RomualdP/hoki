@@ -5,9 +5,9 @@ import { useAuthStore } from "../../../store";
 import { useTeamsApi } from "../../../features/teams/hooks";
 import {
   ClubInfoWidget,
-  SubscriptionWidget,
   TeamsWidget,
   InvitationsWidget,
+  MatchesWidget,
   StatsWidget,
 } from "../../../features/dashboard/components";
 
@@ -15,7 +15,7 @@ import {
  * Dashboard Coach Page
  *
  * Page principale pour les coachs après connexion
- * Affiche 5 widgets: stats, club info, abonnement, équipes, invitations
+ * Affiche 5 widgets: stats, club info, équipes, matchs, invitations
  *
  * Mobile-first, responsive grid, max 50 lignes (composition)
  */
@@ -57,8 +57,8 @@ export default function CoachDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ClubInfoWidget />
         <TeamsWidget />
+        <MatchesWidget />
         <InvitationsWidget />
-        <SubscriptionWidget />
       </div>
     </div>
   );
