@@ -102,7 +102,7 @@ export function InvitationLinkGenerator({
             disabled={isLoading}
             className="w-full min-h-[44px]"
           >
-            {isLoading ? "Génération..." : "Générer le lien d&apos;invitation"}
+            {isLoading ? "Génération..." : "Générer le lien d'invitation"}
           </Button>
         )}
 
@@ -111,7 +111,7 @@ export function InvitationLinkGenerator({
           <div className="space-y-3">
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm text-green-800 font-medium">
-                Lien d&apos;invitation généré !
+                {`Lien d'invitation généré !`}
               </p>
               <p className="text-xs text-green-600 mt-1">
                 Ce lien expire dans 7 jours

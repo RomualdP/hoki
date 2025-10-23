@@ -2,9 +2,15 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { IconLogout } from "@tabler/icons-react";
 import { useAuthStore } from "../../store";
 import { useAuthApi } from "../../features/auth/hooks";
 import { ROUTES } from "../../constants";
+import {
+  getNavLinks,
+  getVisibleNavLinks,
+} from "../../config/navigation.config";
 
 /**
  * AppHeader Component (Sidebar)
@@ -34,55 +40,10 @@ export function AppHeader() {
 
   const isCoach = clubRole === "COACH";
   const isAssistant = clubRole === "ASSISTANT_COACH";
-  const isPlayer = clubRole === "PLAYER";
 
-  // Navigation links based on role
-  const navLinks = [
-    {
-      href: isCoach
-        ? ROUTES.DASHBOARD.COACH
-        : isAssistant
-          ? ROUTES.DASHBOARD.ASSISTANT
-          : ROUTES.DASHBOARD.PLAYER,
-      label: "Dashboard",
-      icon: "📊",
-      roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
-    },
-    {
-      href: ROUTES.CLUB,
-      label: "Mon club",
-      icon: "🏛️",
-      roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
-    },
-    {
-      href: ROUTES.TEAMS,
-      label: "Mes équipes",
-      icon: "👥",
-      roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
-    },
-    {
-      href: ROUTES.PLAYERS,
-      label: "Mes joueurs",
-      icon: "🏐",
-      roles: ["COACH"],
-    },
-    {
-      href: ROUTES.MATCHES,
-      label: "Matchs",
-      icon: "🎯",
-      roles: ["COACH", "ASSISTANT_COACH", "PLAYER"],
-    },
-    {
-      href: ROUTES.SUBSCRIPTION,
-      label: "Mon abonnement",
-      icon: "💳",
-      roles: ["COACH"],
-    },
-  ];
-
-  const visibleLinks = navLinks.filter((link) =>
-    link.roles.includes(clubRole || ""),
-  );
+  // Get navigation links based on role
+  const navLinks = getNavLinks(clubRole);
+  const visibleLinks = getVisibleNavLinks(navLinks, clubRole);
 
   const handleLogout = async () => {
     try {
@@ -97,9 +58,9 @@ export function AppHeader() {
   };
 
   return (
-    <aside className="fixed top-0 left-0 h-screen w-64 bg-white border-r border-neutral-200 shadow-sm flex flex-col z-40">
+    <aside className="fixed top-0 left-0 h-screen w-64 bg-surface border-r-[12px] border-border-emphasis shadow-sm flex flex-col z-40">
       {/* Logo */}
-      <div className="p-6 border-b border-neutral-200">
+      <div className="p-6 border-b-6 border-white">
         <Link
           href={
             isCoach
@@ -108,9 +69,16 @@ export function AppHeader() {
                 ? ROUTES.DASHBOARD.ASSISTANT
                 : ROUTES.DASHBOARD.PLAYER
           }
-          className="text-2xl font-bold text-orange-600 font-heading hover:text-orange-700 transition-colors"
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
-          VolleyApp
+          <Image
+            src="/images/logo_volley_app.png"
+            alt="Hoki Logo"
+            width={40}
+            height={40}
+            className="rounded-full"
+          />
+          <span className="text-2xl font-heading text-orange-600">Hoki</span>
         </Link>
       </div>
 
@@ -125,11 +93,11 @@ export function AppHeader() {
                   href={link.href}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-orange-100 text-orange-700"
+                      ? "bg-accent text-accent-foreground"
                       : "text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
                   }`}
                 >
-                  <span className="text-lg">{link.icon}</span>
+                  <link.icon size={20} stroke={2} />
                   <span>{link.label}</span>
                 </Link>
               </li>
@@ -139,7 +107,7 @@ export function AppHeader() {
       </nav>
 
       {/* User Info & Logout */}
-      <div className="p-4 border-t border-neutral-200">
+      <div className="p-4 border-t-6 border-white">
         <Link
           href="/profile"
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-100 transition-colors mb-2"
@@ -172,7 +140,7 @@ export function AppHeader() {
           disabled={isLoading}
           className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 hover:text-orange-600 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span>🚪</span>
+          <IconLogout size={18} stroke={2} />
           <span>{isLoading ? "Déconnexion..." : "Déconnexion"}</span>
         </button>
       </div>

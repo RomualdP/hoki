@@ -1,4 +1,4 @@
-import { HTMLAttributes } from 'react';
+import { HTMLAttributes } from "react";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   readonly children: React.ReactNode;
@@ -10,7 +10,7 @@ export const Card = ({
   children,
   hasPadding = true,
   hasShadow = true,
-  className = '',
+  className = "",
   ...props
 }: CardProps) => {
   if (!children) {
@@ -20,9 +20,9 @@ export const Card = ({
   return (
     <div
       className={`
-        bg-white rounded-lg border border-neutral-200
-        ${hasPadding ? 'p-6' : ''}
-        ${hasShadow ? 'shadow-sm hover:shadow-md transition-shadow duration-200' : ''}
+        bg-white rounded-lg border-2 border-neutral-900
+        ${hasPadding ? "p-6" : ""}
+        ${hasShadow ? "shadow-vintage-sm hover:shadow-vintage-lg transition-all duration-200" : ""}
         ${className}
       `}
       {...props}
@@ -38,7 +38,7 @@ interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
 
 export const CardHeader = ({
   children,
-  className = '',
+  className = "",
   ...props
 }: CardHeaderProps) => {
   if (!children) {
@@ -46,10 +46,7 @@ export const CardHeader = ({
   }
 
   return (
-    <div
-      className={`pb-4 border-b border-neutral-200 ${className}`}
-      {...props}
-    >
+    <div className={`pb-4 border-b border-neutral-200 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -63,7 +60,7 @@ interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
 export const CardTitle = ({
   children,
   level = 3,
-  className = '',
+  className = "",
   ...props
 }: CardTitleProps) => {
   if (!children) {
@@ -74,19 +71,47 @@ export const CardTitle = ({
 
   switch (level) {
     case 1:
-      return <h1 className={headingClass} {...props}>{children}</h1>;
+      return (
+        <h1 className={headingClass} {...props}>
+          {children}
+        </h1>
+      );
     case 2:
-      return <h2 className={headingClass} {...props}>{children}</h2>;
+      return (
+        <h2 className={headingClass} {...props}>
+          {children}
+        </h2>
+      );
     case 3:
-      return <h3 className={headingClass} {...props}>{children}</h3>;
+      return (
+        <h3 className={headingClass} {...props}>
+          {children}
+        </h3>
+      );
     case 4:
-      return <h4 className={headingClass} {...props}>{children}</h4>;
+      return (
+        <h4 className={headingClass} {...props}>
+          {children}
+        </h4>
+      );
     case 5:
-      return <h5 className={headingClass} {...props}>{children}</h5>;
+      return (
+        <h5 className={headingClass} {...props}>
+          {children}
+        </h5>
+      );
     case 6:
-      return <h6 className={headingClass} {...props}>{children}</h6>;
+      return (
+        <h6 className={headingClass} {...props}>
+          {children}
+        </h6>
+      );
     default:
-      return <h3 className={headingClass} {...props}>{children}</h3>;
+      return (
+        <h3 className={headingClass} {...props}>
+          {children}
+        </h3>
+      );
   }
 };
 
@@ -96,7 +121,7 @@ interface CardContentProps extends HTMLAttributes<HTMLDivElement> {
 
 export const CardContent = ({
   children,
-  className = '',
+  className = "",
   ...props
 }: CardContentProps) => {
   if (!children) {
@@ -116,7 +141,7 @@ interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
 
 export const CardFooter = ({
   children,
-  className = '',
+  className = "",
   ...props
 }: CardFooterProps) => {
   if (!children) {
@@ -124,17 +149,14 @@ export const CardFooter = ({
   }
 
   return (
-    <div
-      className={`pt-4 border-t border-neutral-200 ${className}`}
-      {...props}
-    >
+    <div className={`pt-4 border-t border-neutral-200 ${className}`} {...props}>
       {children}
     </div>
   );
 };
 
-Card.displayName = 'Card';
-CardHeader.displayName = 'CardHeader';
-CardTitle.displayName = 'CardTitle';
-CardContent.displayName = 'CardContent';
-CardFooter.displayName = 'CardFooter'; 
+Card.displayName = "Card";
+CardHeader.displayName = "CardHeader";
+CardTitle.displayName = "CardTitle";
+CardContent.displayName = "CardContent";
+CardFooter.displayName = "CardFooter";
