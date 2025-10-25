@@ -1,28 +1,29 @@
-"use client";
-
-import { useAuthStore } from "../../../store";
+import { Suspense } from "react";
+import { requireAuth } from "@/lib/auth";
 import {
-  ClubInfoWidget,
-  MyTeamsWidget,
-} from "../../../features/dashboard/components";
+  ClubInfoWidgetServer,
+  MyTeamsWidgetServer,
+} from "@/features/dashboard/components/server";
+import { DashboardWidgetSkeleton } from "@/features/dashboard/components/skeletons";
 
 /**
- * Dashboard Player Page
+ * Player Dashboard Page - Server Component
  *
- * Page principale pour les joueurs après connexion
- * Affiche 2 widgets: club info (read-only), mes équipes
+ * Main dashboard for players after login
+ * Shows 2 widgets: club info (read-only), my teams
  *
- * Mobile-first, responsive grid, max 50 lignes (composition)
+ * Pattern: Server Component + Suspense + Streaming
+ * Mobile-first, responsive grid, max 50 lines (composition)
  */
-export default function PlayerDashboardPage() {
-  const { user } = useAuthStore();
+export default async function PlayerDashboardPage() {
+  const user = await requireAuth();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">
-          Bienvenue, {user?.firstName} 🏐
+          Bienvenue, {user.firstName} 🏐
         </h1>
         <p className="mt-2 text-neutral-600">
           Consultez vos équipes et les informations de votre club
@@ -31,8 +32,12 @@ export default function PlayerDashboardPage() {
 
       {/* Widgets Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ClubInfoWidget />
-        <MyTeamsWidget />
+        <Suspense fallback={<DashboardWidgetSkeleton />}>
+          <ClubInfoWidgetServer />
+        </Suspense>
+        <Suspense fallback={<DashboardWidgetSkeleton />}>
+          <MyTeamsWidgetServer />
+        </Suspense>
       </div>
     </div>
   );
