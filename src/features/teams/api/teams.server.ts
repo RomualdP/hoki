@@ -1,4 +1,5 @@
 import { serverFetch } from "@/lib/server-fetch";
+import { REVALIDATE_MEDIUM } from "@/lib/cache-config";
 import type { Team } from "@/shared/types";
 
 /**
@@ -6,6 +7,11 @@ import type { Team } from "@/shared/types";
  *
  * Functions to fetch team data from Server Components
  * Uses serverFetch with httpOnly cookies for auth
+ *
+ * Cache Strategy: REVALIDATE_MEDIUM (5 minutes)
+ * - Team data is cached for 5 minutes
+ * - Pages remain dynamic (cookies() forces dynamic rendering)
+ * - But data is served from cache during revalidation window
  */
 
 interface TeamsResponse {
@@ -23,7 +29,7 @@ interface TeamResponse {
  */
 export async function getTeams(): Promise<Team[]> {
   const response = await serverFetch<TeamsResponse>("/teams", {
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_MEDIUM },
   });
 
   return response?.data || [];
@@ -34,7 +40,7 @@ export async function getTeams(): Promise<Team[]> {
  */
 export async function getTeam(teamId: string): Promise<Team | null> {
   const response = await serverFetch<TeamResponse>(`/teams/${teamId}`, {
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_MEDIUM },
   });
 
   return response?.data || null;

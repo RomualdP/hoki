@@ -1,4 +1,5 @@
 import { serverFetch } from "@/lib/server-fetch";
+import { REVALIDATE_SHORT } from "@/lib/cache-config";
 import type { User, UserSkill, UserProfile } from "@/types";
 import type { UserAttribute } from "../../users/hooks/useUserAttributesApi";
 
@@ -10,6 +11,11 @@ import type { UserAttribute } from "../../users/hooks/useUserAttributesApi";
  *
  * SECURITY: Backend automatically filters by clubId
  * Users can only see members from their own club
+ *
+ * Cache Strategy: REVALIDATE_SHORT (1 minute)
+ * - User data is cached for 1 minute (user-specific, changes moderately)
+ * - Pages remain dynamic (cookies() forces dynamic rendering)
+ * - But data is served from cache during revalidation window
  */
 
 interface UsersResponse {
@@ -34,7 +40,7 @@ interface UserResponse {
  */
 export async function getClubUsers(): Promise<User[]> {
   const response = await serverFetch<UsersResponse>("/users", {
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_SHORT },
   });
 
   return response?.data || [];
@@ -45,7 +51,7 @@ export async function getClubUsers(): Promise<User[]> {
  */
 export async function getUser(userId: string): Promise<User | null> {
   const response = await serverFetch<UserResponse>(`/users/${userId}`, {
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_SHORT },
   });
 
   return response?.data || null;
@@ -81,7 +87,7 @@ export async function getUserSkills(userId: string): Promise<UserSkill[]> {
   const response = await serverFetch<UserSkillsResponse>(
     `/users/${userId}/skills`,
     {
-      cache: "no-store",
+      next: { revalidate: REVALIDATE_SHORT },
     },
   );
 
@@ -102,7 +108,7 @@ export async function getUserAttributes(
   const response = await serverFetch<UserAttributesResponse>(
     `/users/${userId}/attributes`,
     {
-      cache: "no-store",
+      next: { revalidate: REVALIDATE_SHORT },
     },
   );
 
@@ -123,7 +129,7 @@ export async function getUserLevel(userId: string): Promise<number> {
   const response = await serverFetch<UserLevelResponse>(
     `/users/${userId}/level`,
     {
-      cache: "no-store",
+      next: { revalidate: REVALIDATE_SHORT },
     },
   );
 
@@ -144,7 +150,7 @@ export async function getUserProfile(
   const response = await serverFetch<UserProfileResponse>(
     `/users/${userId}/profile`,
     {
-      cache: "no-store",
+      next: { revalidate: REVALIDATE_SHORT },
     },
   );
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent, Button } from "@/components/ui";
 import { formatDate } from "@/utils";
 import { getStatusColor, getStatusLabel } from "../utils/match-status";
-import type { Match } from "@/types";
+import type { Match } from "@/shared/types";
 
 /**
  * MatchCard - Dumb Component

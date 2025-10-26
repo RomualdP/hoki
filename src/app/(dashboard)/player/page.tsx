@@ -14,7 +14,14 @@ import { DashboardWidgetSkeleton } from "@/features/dashboard/components/skeleto
  *
  * Pattern: Server Component + Suspense + Streaming
  * Mobile-first, responsive grid, max 50 lines (composition)
+ *
+ * Dynamic Rendering Strategy:
+ * - Page: force-dynamic (due to requireAuth and user-specific data)
+ * - Data: cached with revalidation (see *.server.ts files)
+ * - Result: Page renders dynamically but data is served from cache
  */
+export const dynamic = "force-dynamic";
+
 export default async function PlayerDashboardPage() {
   const user = await requireAuth();
 

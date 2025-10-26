@@ -9,6 +9,7 @@ import {
  * Displays statistics cards for club members
  * Fetches user data server-side and calculates stats
  */
+
 export async function PlayersStatsGrid() {
   const clubPlayers = await getClubUsers();
   const players = await getUsersByRole("PLAYER");

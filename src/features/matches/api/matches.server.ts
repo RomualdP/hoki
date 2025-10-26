@@ -1,4 +1,5 @@
 import { serverFetch } from "@/lib/server-fetch";
+import { REVALIDATE_MEDIUM } from "@/lib/cache-config";
 import type { Match } from "@/shared/types";
 
 /**
@@ -6,6 +7,11 @@ import type { Match } from "@/shared/types";
  *
  * Functions to fetch match data from Server Components
  * Uses serverFetch with httpOnly cookies for auth
+ *
+ * Cache Strategy: REVALIDATE_MEDIUM (5 minutes)
+ * - Match data is cached for 5 minutes
+ * - Pages remain dynamic (cookies() forces dynamic rendering)
+ * - But data is served from cache during revalidation window
  */
 
 interface MatchesResponse {
@@ -23,7 +29,7 @@ interface MatchResponse {
  */
 export async function getMatches(): Promise<Match[]> {
   const response = await serverFetch<MatchesResponse>("/matches", {
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_MEDIUM },
   });
 
   return response?.data || [];
@@ -53,7 +59,7 @@ export async function getUpcomingMatches(limit = 3): Promise<Match[]> {
  */
 export async function getMatch(matchId: string): Promise<Match | null> {
   const response = await serverFetch<MatchResponse>(`/matches/${matchId}`, {
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_MEDIUM },
   });
 
   return response?.data || null;

@@ -12,7 +12,14 @@ import { MatchesListSkeleton } from "@/features/matches/components/MatchesListSk
  * Admin users can add new matches
  *
  * Pattern: Server Component + URL searchParams + Suspense
+ *
+ * Dynamic Rendering Strategy:
+ * - Page: force-dynamic (due to searchParams for filters)
+ * - Data: cached with revalidation (see matches.server.ts)
+ * - Result: Page renders dynamically but data is served from cache
  */
+export const dynamic = "force-dynamic";
+
 interface MatchesPageProps {
   searchParams: Promise<{
     search?: string;

@@ -22,7 +22,14 @@ import {
  * ✅ Parallel data loading with Suspense
  * ✅ Progressive rendering
  * ✅ Zero client-side JavaScript for data fetching
+ *
+ * Dynamic Rendering Strategy:
+ * - Page: force-dynamic (due to getUser and user-specific data)
+ * - Data: cached with revalidation (see *.server.ts files)
+ * - Result: Page renders dynamically but data is served from cache
  */
+export const dynamic = "force-dynamic";
+
 export default async function CoachDashboardPage() {
   // Fetch user server-side
   const user = await getUser();

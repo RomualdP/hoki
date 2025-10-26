@@ -1,7 +1,7 @@
 import { getUserSkills } from "@/features/users/api/users.server";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { getAllSkillDefinitions } from "@/constants/volleyball-skills";
-import type { UserSkill, VolleyballSkill } from "@/types";
+import type { VolleyballSkill } from "@/types";
 
 /**
  * PlayerSkillsServer - Server Component

@@ -1,4 +1,4 @@
-import type { MatchStatus } from "@/types";
+import type { MatchStatus } from "@/shared/types";
 
 /**
  * Match Status Utilities

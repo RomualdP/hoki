@@ -37,7 +37,7 @@ export async function serverFetch<T>(
         ...headers,
       },
       credentials: "include",
-      cache: fetchOptions.cache || "no-store",
+      // cache: fetchOptions.cache || "no-store",
     });
 
     if (!response.ok) {

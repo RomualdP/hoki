@@ -1,4 +1,5 @@
 import { serverFetch } from "@/lib/server-fetch";
+import { REVALIDATE_MEDIUM } from "@/lib/cache-config";
 import type { Club } from "../types/club.types";
 
 /**
@@ -6,6 +7,11 @@ import type { Club } from "../types/club.types";
  *
  * Functions to fetch club data from Server Components
  * Uses serverFetch with httpOnly cookies for auth
+ *
+ * Cache Strategy: REVALIDATE_MEDIUM (5 minutes)
+ * - Club data is cached for 5 minutes
+ * - Pages remain dynamic (cookies() forces dynamic rendering)
+ * - But data is served from cache during revalidation window
  */
 
 interface ClubResponse {
@@ -18,7 +24,7 @@ interface ClubResponse {
  */
 export async function getClub(clubId: string): Promise<Club | null> {
   const response = await serverFetch<ClubResponse>(`/clubs/${clubId}`, {
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_MEDIUM },
   });
 
   return response?.data || null;
@@ -32,7 +38,7 @@ export async function getClub(clubId: string): Promise<Club | null> {
  */
 export async function getCurrentClub(): Promise<Club | null> {
   const response = await serverFetch<ClubResponse>("/clubs/me", {
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_MEDIUM },
   });
 
   return response?.data || null;
