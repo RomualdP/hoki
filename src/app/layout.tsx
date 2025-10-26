@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import { AuthProvider, AppHeader } from "../components/layout";
+import { AuthProvider, AppHeader, MainWrapper } from "../components/layout";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -58,7 +58,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <AppHeader />
-          <main className="pl-64">{children}</main>
+          <MainWrapper>{children}</MainWrapper>
         </AuthProvider>
       </body>
     </html>
