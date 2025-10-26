@@ -1,32 +1,38 @@
-"use client";
-
-import { useEffect } from "react";
-import { IconUsersGroup } from "@tabler/icons-react";
-import { useAuthStore } from "../../../store";
-import { useTeamsApi } from "../../../features/teams/hooks";
+import { Suspense } from "react";
+import { getUser } from "@/lib/auth";
 import {
-  ClubInfoWidget,
-  TeamsWidget,
-  InvitationsWidget,
-  MatchesWidget,
-  StatsWidget,
-} from "../../../features/dashboard/components";
+  StatsGridServer,
+  ClubInfoWidgetServer,
+  TeamsWidgetServer,
+  MatchesWidgetServer,
+  InvitationsWidgetServer,
+} from "@/features/dashboard/components/server";
+import {
+  DashboardWidgetSkeleton,
+  StatsWidgetSkeleton,
+} from "@/features/dashboard/components/skeletons";
 
 /**
- * Dashboard Coach Page
+ * Dashboard Coach Page - Server Component
  *
  * Page principale pour les coachs après connexion
- * Affiche 5 widgets: stats, club info, équipes, matchs, invitations
+ * Pattern: Server Component with Suspense streaming
  *
- * Mobile-first, responsive grid, max 50 lignes (composition)
+ * ✅ Server-first data fetching
+ * ✅ Parallel data loading with Suspense
+ * ✅ Progressive rendering
+ * ✅ Zero client-side JavaScript for data fetching
+ *
+ * Dynamic Rendering Strategy:
+ * - Page: force-dynamic (due to getUser and user-specific data)
+ * - Data: cached with revalidation (see *.server.ts files)
+ * - Result: Page renders dynamically but data is served from cache
  */
-export default function CoachDashboardPage() {
-  const { user } = useAuthStore();
-  const { teams, fetchTeams } = useTeamsApi();
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    void fetchTeams();
-  }, [fetchTeams]);
+export default async function CoachDashboardPage() {
+  // Fetch user server-side
+  const user = await getUser();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -40,22 +46,28 @@ export default function CoachDashboardPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <StatsWidget
-          label="Total équipes"
-          value={teams.length}
-          color="orange"
-          icon={<IconUsersGroup className="w-6 h-6" />}
-        />
-      </div>
+      {/* Stats Grid - Suspense for streaming */}
+      <Suspense fallback={<StatsWidgetSkeleton />}>
+        <StatsGridServer />
+      </Suspense>
 
-      {/* Widgets Grid */}
+      {/* Widgets Grid - Each widget streams independently */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ClubInfoWidget />
-        <TeamsWidget />
-        <MatchesWidget />
-        <InvitationsWidget />
+        <Suspense fallback={<DashboardWidgetSkeleton />}>
+          <ClubInfoWidgetServer />
+        </Suspense>
+
+        <Suspense fallback={<DashboardWidgetSkeleton />}>
+          <TeamsWidgetServer />
+        </Suspense>
+
+        <Suspense fallback={<DashboardWidgetSkeleton />}>
+          <MatchesWidgetServer />
+        </Suspense>
+
+        <Suspense fallback={<DashboardWidgetSkeleton />}>
+          <InvitationsWidgetServer />
+        </Suspense>
       </div>
     </div>
   );
