@@ -1,0 +1,161 @@
+name: 🚀 DDD/CQRS Feature
+description: Créer une nouvelle fonctionnalité suivant l'architecture DDD/CQRS
+title: "[Bounded Context] Brief description"
+labels: ["ddd", "cqrs", "feature"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Nouvelle Feature DDD/CQRS
+        Utilisez ce template pour créer une fonctionnalité suivant les patterns Domain-Driven Design et CQRS.
+
+  - type: dropdown
+    id: bounded-context
+    attributes:
+      label: Bounded Context
+      description: Quel bounded context est concerné ?
+      options:
+        - club-management
+        - training-management
+        - match-management
+        - tournament-management
+        - user-management
+        - shared
+        - autre (préciser dans la description)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Couche Architecture
+      description: Quelle couche est principalement concernée ?
+      options:
+        - domain (Entities, Value Objects, Repository Interfaces)
+        - application (Commands, Queries, Handlers, Read Models)
+        - infrastructure (Repositories, Mappers, External Services)
+        - presentation (Controllers, DTOs)
+        - transversal (plusieurs couches)
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte Métier
+      description: Pourquoi cette fonctionnalité est-elle nécessaire ? Quel problème résout-elle ?
+      placeholder: |
+        Exemple : Nous devons permettre aux clubs d'inviter des membres par email.
+        Actuellement, les membres doivent créer manuellement leur compte et chercher le club.
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-requirements
+    attributes:
+      label: Exigences Techniques
+      description: Détaillez les composants à créer pour chaque couche
+      placeholder: |
+        - **Domain** : Invitation entity avec règles métier (expiration, validation email)
+        - **Application** : InviteUserCommand, AcceptInvitationCommand, GetPendingInvitationsQuery
+        - **Infrastructure** : InvitationRepository, InvitationMapper (Domain ↔ Prisma)
+        - **Presentation** : InvitationsController avec Swagger documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Critères d'Acceptation
+      description: Liste des critères pour considérer la feature comme terminée
+      placeholder: |
+        - [ ] Invitation entity créée avec validation d'expiration
+        - [ ] Command handlers implémentés avec gestion d'erreurs
+        - [ ] Repository avec mapper Prisma
+        - [ ] Tests unitaires (Domain 100%, Application 95%)
+        - [ ] Tests d'intégration pour le flow complet
+        - [ ] Documentation API (Swagger)
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: skills
+    attributes:
+      label: Skills Claude Code à Utiliser
+      description: Quels Skills de `.claude/skills/` doivent être utilisés ?
+      placeholder: |
+        - `.claude/skills/ddd-bounded-context/`
+        - `.claude/skills/cqrs-command-query/`
+        - `.claude/skills/prisma-mapper/`
+        - `.claude/skills/ddd-testing/`
+        - `.claude/skills/api-contracts/`
+      value: |
+        - `.claude/skills/ddd-bounded-context/`
+        - `.claude/skills/cqrs-command-query/`
+    validations:
+      required: true
+
+  - type: textarea
+    id: prisma-schema
+    attributes:
+      label: Modifications Prisma Schema (si nécessaire)
+      description: Y a-t-il des changements à faire dans le schéma Prisma ?
+      placeholder: |
+        ```prisma
+        model Invitation {
+          id        String   @id @default(uuid())
+          email     String
+          clubId    String
+          expiresAt DateTime
+          // ...
+        }
+        ```
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dépendances
+      description: Cette issue dépend-elle d'autres issues ou features ?
+      placeholder: |
+        - #123 : Email service doit être implémenté
+        - FRONT-001 : Interface d'invitation côté frontend
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité
+      options:
+        - low
+        - medium
+        - high
+        - critical
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort Estimé
+      options:
+        - small (1-2 heures)
+        - medium (3-6 heures)
+        - large (1-2 jours)
+        - extra-large (3+ jours)
+
+  - type: checkboxes
+    id: quality-checklist
+    attributes:
+      label: Quality Checklist (à cocher lors de l'implémentation)
+      description: Standards de qualité obligatoires (voir `.claude/skills/zero-warnings/`)
+      options:
+        - label: "Code autodocumenté (pas de commentaires inutiles)"
+        - label: "Fonctions < 30 lignes, < 5 paramètres"
+        - label: "Typage strict (pas de `any`, pas de `unknown`)"
+        - label: "Tests Domain 100%, Application 95%"
+        - label: "Zéro warnings ESLint/TypeScript (pas de `@ts-ignore`, pas de `eslint-disable`)"
+        - label: "Swagger documentation complète"

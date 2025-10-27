@@ -1,0 +1,161 @@
+name: 🐛 Bug Report
+description: Signaler un bug dans le backend
+title: "[Bug] Brief description"
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        Utilisez le workflow Bug Finder (`.claude/skills/bug-finder/`) pour identifier la cause avant de corriger.
+
+  - type: dropdown
+    id: bounded-context
+    attributes:
+      label: Bounded Context Affecté
+      options:
+        - club-management
+        - training-management
+        - match-management
+        - tournament-management
+        - user-management
+        - shared
+        - infrastructure
+        - autre
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Sévérité
+      options:
+        - critical (blocker, perte de données, crash)
+        - high (fonctionnalité majeure cassée)
+        - medium (fonctionnalité mineure cassée)
+        - low (cosmétique, edge case)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du Bug
+      description: Décrivez clairement le problème observé
+      placeholder: |
+        La suppression d'un club échoue avec une erreur 500 au lieu de supprimer le club.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Comportement Actuel
+      description: Que se passe-t-il actuellement ?
+      placeholder: |
+        - API retourne 500 Internal Server Error
+        - Message d'erreur : "Foreign key constraint failed"
+        - Club non supprimé en base de données
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Comportement Attendu
+      description: Que devrait-il se passer ?
+      placeholder: |
+        - API retourne 204 No Content
+        - Club supprimé en base de données
+        - Relations associées supprimées (cascade) ou nettoyées
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Étapes pour Reproduire
+      description: Comment reproduire le bug de manière fiable ?
+      placeholder: |
+        1. Créer un club avec `POST /clubs`
+        2. Créer une équipe associée au club avec `POST /teams`
+        3. Appeler `DELETE /clubs/{clubId}`
+        4. Observer l'erreur 500
+      value: |
+        1.
+        2.
+        3.
+        4.
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Analyse de Cause Racine (si connue)
+      description: |
+        Utilisez `.claude/skills/bug-finder/` pour identifier la cause.
+        Méthodologie : Résumé → Flow → Examiner → Top 3 Causes → Confirmation → Plan
+      placeholder: |
+        **Flow** :
+        1. Controller reçoit DELETE /clubs/{id}
+        2. DeleteClubHandler exécute command
+        3. ClubRepository.delete() appelle Prisma
+        4. Prisma échoue à cause de foreign key constraint
+
+        **Cause Racine** :
+        Prisma schema ne définit pas `onDelete: Cascade` pour la relation Club → Team
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Solution Proposée
+      description: Comment corriger le bug ? (si vous avez des idées)
+      placeholder: |
+        1. Mettre à jour Prisma schema avec `onDelete: Cascade`
+        2. Créer migration Prisma
+        3. Tester la suppression en cascade
+        4. Ajouter test d'intégration pour cas de suppression avec relations
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environnement
+      description: Où le bug se produit-il ?
+      value: |
+        - **Node version** :
+        - **NestJS version** :
+        - **Database** : PostgreSQL
+        - **Environment** : dev / staging / production
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Stack Trace
+      description: Incluez les logs ou stack trace pertinents
+      placeholder: |
+        ```
+        [Nest] ERROR [ExceptionsHandler] Foreign key constraint failed
+        PrismaClientKnownRequestError: Invalid `prisma.club.delete()` invocation
+        ```
+      render: shell
+
+  - type: checkboxes
+    id: debugging-checklist
+    attributes:
+      label: Debugging Checklist (à suivre lors de la correction)
+      description: Utiliser `.claude/skills/debugger/` pour le processus systématique
+      options:
+        - label: "Define : Bug clairement défini et reproductible"
+        - label: "Reproduce : Bug reproductible de manière fiable"
+        - label: "Formulate : Hypothèses formulées (top 3 causes possibles)"
+        - label: "Prioritize : Cause la plus probable identifiée"
+        - label: "Log : Points de logging ajoutés pour confirmation"
+        - label: "Binary Search : Cause localisée précisément"
+        - label: "Test : Tests ajoutés pour reproduire le bug"
+        - label: "Fix : Correction implémentée"
+        - label: "Verify : Fix vérifié en dev + tests"
+        - label: "Protect : Tests de régression ajoutés"
