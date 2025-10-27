@@ -1,0 +1,172 @@
+name: 🐛 Bug Report
+description: Signaler un bug dans le frontend
+title: "[Bug] Brief description"
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report Frontend
+        Utilisez `.claude/skills/bug-finder/` pour identifier la cause systématiquement.
+
+  - type: dropdown
+    id: feature-module
+    attributes:
+      label: Feature Module Affecté
+      options:
+        - club-management
+        - training-management
+        - match-management
+        - tournament-management
+        - players
+        - teams
+        - profile
+        - shared
+        - autre
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Sévérité
+      options:
+        - critical (app crash, data loss, unusable)
+        - high (fonctionnalité majeure cassée)
+        - medium (fonctionnalité mineure cassée)
+        - low (cosmétique, edge case)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: bug-type
+    attributes:
+      label: Type de Bug
+      options:
+        - ui (affichage, layout, responsive)
+        - logic (comportement, state management)
+        - performance (lenteur, memory leak)
+        - a11y (accessibilité)
+        - ssr (hydration mismatch, server components)
+        - api (erreur fetch, server action)
+        - autre
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du Bug
+      placeholder: |
+        Le bouton "Accepter l'invitation" ne fonctionne pas sur mobile.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Comportement Actuel
+      placeholder: |
+        - Sur mobile, le bouton est cliquable mais rien ne se passe
+        - Pas d'erreur visible dans l'UI
+        - Console browser montre : "Failed to execute 'startViewTransition'"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Comportement Attendu
+      placeholder: |
+        - Clic sur le bouton lance l'action acceptInvitation
+        - Transition fluide vers la page de confirmation
+        - Invitation marquée comme acceptée
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Étapes pour Reproduire
+      value: |
+        1.
+        2.
+        3.
+        4.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environnement
+      value: |
+        - **Browser** : Chrome / Safari / Firefox
+        - **Device** : Desktop / Tablet / Mobile (préciser modèle si mobile)
+        - **OS** : macOS / Windows / iOS / Android
+        - **Screen size** :
+        - **Next.js version** : 16.x
+        - **Environment** : dev / staging / production
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Analyse de Cause Racine (si connue)
+      description: Utilisez `.claude/skills/bug-finder/` pour l'analyse systématique
+      placeholder: |
+        **Flow** :
+        1. User clique sur bouton
+        2. handleAccept() appelle acceptInvitationAction()
+        3. View Transition démarre via startViewTransition()
+        4. ERREUR : startViewTransition not supported sur ce browser
+
+        **Cause Racine** :
+        View Transitions API pas supportée sur Safari iOS < 18
+        Code ne fait pas de feature detection
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Solution Proposée
+      placeholder: |
+        1. Ajouter feature detection pour View Transitions API
+        2. Fallback : navigation normale sans transition si non supporté
+        3. Utiliser progressive enhancement pattern
+        4. Tester sur Safari iOS et autres browsers
+
+  - type: textarea
+    id: console-errors
+    attributes:
+      label: Console Errors / Stack Trace
+      placeholder: |
+        ```
+        TypeError: document.startViewTransition is not a function
+        at handleAccept (InvitationAcceptCard.tsx:42)
+        ```
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Screen Recording
+      description: Ajoutez des captures d'écran ou vidéo si pertinent
+
+  - type: checkboxes
+    id: debugging-checklist
+    attributes:
+      label: Debugging Checklist
+      description: Suivre `.claude/skills/debugger/`
+      options:
+        - label: "Define : Bug clairement défini"
+        - label: "Reproduce : Reproductible de manière fiable"
+        - label: "Formulate : Top 3 causes possibles identifiées"
+        - label: "Prioritize : Cause la plus probable choisie"
+        - label: "Log : Console.log / debugger ajoutés"
+        - label: "Binary Search : Localisation précise du problème"
+        - label: "Test : Test ajouté pour reproduire"
+        - label: "Fix : Correction implémentée"
+        - label: "Verify : Vérifié sur tous navigateurs/devices"
+        - label: "Protect : Test de régression ajouté"
