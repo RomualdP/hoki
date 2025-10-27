@@ -1,0 +1,163 @@
+name: ✨ Enhancement
+description: Amélioration technique ou optimisation (non fonctionnelle)
+title: "[Enhancement] Brief description"
+labels: ["enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Enhancement
+        Pour les améliorations techniques : performance, architecture, infrastructure, refactoring
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Catégorie
+      options:
+        - performance
+        - architecture
+        - infrastructure
+        - refactoring
+        - documentation
+        - testing
+        - security
+        - devops
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Portée
+      options:
+        - specific-bounded-context
+        - multiple-contexts
+        - infrastructure-global
+        - project-wide
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte
+      description: Pourquoi cette amélioration est-elle nécessaire ?
+      placeholder: |
+        Les requêtes de lecture des clubs sont lentes (500ms+) car elles fetchent
+        toutes les relations à chaque fois. Un système de cache améliorerait les perfs.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-situation
+    attributes:
+      label: Situation Actuelle
+      description: Comment ça fonctionne aujourd'hui ?
+      placeholder: |
+        - Toutes les queries frappent la DB directement
+        - Pas de stratégie de cache
+        - Temps de réponse moyen : 500ms pour GET /clubs
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-improvement
+    attributes:
+      label: Amélioration Proposée
+      description: Quelle est votre proposition ?
+      placeholder: |
+        Ajouter Redis comme couche de cache :
+        1. Installer @nestjs/cache-manager avec adapter Redis
+        2. Créer CacheService dans shared/infrastructure
+        3. Wrapper les query handlers avec cache decorator
+        4. Définir TTL et stratégie d'invalidation
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Bénéfices Attendus
+      description: Quels sont les gains espérés ?
+      placeholder: |
+        - Réduction temps de réponse : 500ms → 50ms
+        - Réduction charge DB : -70% requêtes
+        - Meilleure expérience utilisateur
+        - Scalabilité améliorée
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-approach
+    attributes:
+      label: Approche Technique
+      description: Comment implémenter cette amélioration ?
+      placeholder: |
+        **Phase 1 : Setup**
+        - Installer dépendances Redis
+        - Configurer CacheModule dans AppModule
+        - Créer CacheService
+
+        **Phase 2 : Implementation**
+        - Appliquer @UseInterceptors(CacheInterceptor) aux query handlers
+        - Définir cache keys stratégiques
+        - Implémenter invalidation sur commands
+
+        **Phase 3 : Monitoring**
+        - Ajouter métriques cache hit/miss
+        - Logger les performances
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Critères d'Acceptation
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: skills
+    attributes:
+      label: Skills Claude Code Pertinents
+      placeholder: |
+        - `.claude/skills/ddd-bounded-context/` (Infrastructure layer)
+        - `.claude/skills/refactoring/` (si refactoring nécessaire)
+      value: |
+        - `.claude/skills/`
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité
+      options:
+        - low
+        - medium
+        - high
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort Estimé
+      options:
+        - small (1-2 heures)
+        - medium (3-6 heures)
+        - large (1-2 jours)
+        - extra-large (3+ jours)
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risques et Considérations
+      description: Y a-t-il des risques ou points d'attention ?
+      placeholder: |
+        - Risque : Cache stale si invalidation mal gérée
+        - Mitigation : Tests d'intégration pour vérifier invalidation
+        - Considération : Nécessite Redis en production
