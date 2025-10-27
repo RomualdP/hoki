@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/RomualdP/volley_app_front/blob/main/README.md
+    about: Consultez la documentation du projet
+  - name: 💬 Discussion
+    url: https://github.com/RomualdP/volley_app_front/discussions
+    about: Posez vos questions ou discutez des idées
+  - name: 🔗 Backend Issues
+    url: https://github.com/RomualdP/volley_app_back/issues
+    about: Issues liées au backend NestJS
