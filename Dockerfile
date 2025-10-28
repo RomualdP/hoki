@@ -1,5 +1,6 @@
 FROM node:22-alpine AS builder
 
+# Cache busting: Updated 2025-10-28 to fix Railway build errors
 RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
@@ -17,9 +18,22 @@ RUN echo "=== Checking configuration files ===" && \
 
 RUN npx prisma generate
 
+# Verify Prisma client was generated successfully
+RUN echo "=== Verifying Prisma Client Generation ===" && \
+    ls -la node_modules/.prisma/ && \
+    ls -la node_modules/.prisma/client/ && \
+    echo "✓ Prisma client generated successfully"
+
 # Verify NestJS CLI is available
 RUN echo "=== Checking NestJS CLI ===" && \
-    npx nest --version
+    npx nest --version && \
+    echo "=== Checking TypeScript version ===" && \
+    npx tsc --version
+
+# Run TypeScript compiler check to see detailed errors if any
+RUN echo "=== Running TypeScript type checking ===" && \
+    npx tsc --noEmit && \
+    echo "✓ TypeScript check passed"
 
 # Build with verbose output to debug
 RUN echo "=== Starting NestJS build ===" && \
