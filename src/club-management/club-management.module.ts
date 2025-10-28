@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { ConfigModule } from '@nestjs/config';
 
 /**
  * ClubManagementModule - Bounded Context for Club & Subscription Management
@@ -32,7 +33,7 @@ import { SubscriptionLimitService } from './domain/services/subscription-limit.s
 import { ClubTransferService } from './domain/services/club-transfer.service';
 
 @Module({
-  imports: [CqrsModule, PaymentsModule],
+  imports: [CqrsModule, ConfigModule, PaymentsModule],
   controllers: [
     ClubsController,
     SubscriptionsController,

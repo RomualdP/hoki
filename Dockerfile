@@ -1,6 +1,6 @@
 FROM node:22-alpine AS builder
 
-# Cache busting: Updated 2025-10-28 to fix Railway build errors
+# Cache busting: Updated 2025-10-28 15:30 - Fix ConfigModule injection in ClubManagementModule
 RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
