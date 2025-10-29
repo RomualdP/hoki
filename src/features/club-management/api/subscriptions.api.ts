@@ -23,11 +23,7 @@ export async function getSubscription(clubId: string): Promise<Subscription> {
  * List all available subscription plans
  */
 export async function listSubscriptionPlans(): Promise<SubscriptionPlan[]> {
-  console.log("[listSubscriptionPlans] Starting request...");
   const result = await get<SubscriptionPlan[]>("/subscriptions/plans");
-  console.log("[listSubscriptionPlans] Result received:", result);
-  console.log("[listSubscriptionPlans] Is array?", Array.isArray(result));
-  console.log("[listSubscriptionPlans] Type:", typeof result);
   return result;
 }
 

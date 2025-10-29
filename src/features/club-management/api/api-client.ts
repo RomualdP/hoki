@@ -82,19 +82,8 @@ export async function apiRequest<T>(
     "success" in responseData
   ) {
     const apiResponse = responseData as ApiResponse<T>;
-    console.log("[API Client] Extracting data from standard format:", {
-      endpoint,
-      fullResponse: responseData,
-      extractedData: apiResponse.data,
-    });
     return apiResponse.data;
   }
-
-  // Fallback for responses that don't follow the standard format
-  console.log("[API Client] Using fallback (non-standard format):", {
-    endpoint,
-    responseData,
-  });
   return responseData as T;
 }
 

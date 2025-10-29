@@ -57,20 +57,14 @@ export function useSubscription() {
    * Fetch available subscription plans
    */
   const fetchPlans = useCallback(async () => {
-    console.log("[useSubscription] fetchPlans called");
     setLoading(true);
     clearError();
 
     try {
-      console.log("[useSubscription] Calling listSubscriptionPlans...");
       const plans = await subscriptionsApi.listSubscriptionPlans();
-      console.log("[useSubscription] Plans received:", plans);
-      console.log("[useSubscription] Is array?", Array.isArray(plans));
-      console.log("[useSubscription] Calling setAvailablePlans with:", plans);
       setAvailablePlans(plans);
       return plans;
     } catch (error) {
-      console.error("[useSubscription] Error fetching plans:", error);
       const message =
         error instanceof Error ? error.message : "Failed to fetch plans";
       setError(message);
@@ -90,7 +84,6 @@ export function useSubscription() {
 
       try {
         const result = await subscriptionsApi.subscribeToPlan(data);
-        // Refresh subscription after subscribing
         await fetchSubscription(data.clubId);
         return result;
       } catch (error) {
@@ -113,7 +106,6 @@ export function useSubscription() {
 
       try {
         const result = await subscriptionsApi.upgradeSubscription(data);
-        // Refresh subscription after upgrading
         await fetchSubscription(data.clubId);
         return result;
       } catch (error) {
@@ -138,7 +130,6 @@ export function useSubscription() {
 
       try {
         await subscriptionsApi.cancelSubscription(clubId);
-        // Refresh subscription after canceling
         await fetchSubscription(clubId);
       } catch (error) {
         const message =

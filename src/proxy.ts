@@ -25,7 +25,7 @@ function isPublicRoute(pathname: string): boolean {
  */
 function isAuthenticated(request: NextRequest): boolean {
   // Vérifier la présence du token d'authentification (httpOnly cookie)
-  const token = request.cookies.get("accessToken")?.value;
+  const token = request.cookies.get("access_token")?.value;
   return !!token;
 }
 
