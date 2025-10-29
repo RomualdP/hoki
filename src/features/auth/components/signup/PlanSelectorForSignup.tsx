@@ -24,22 +24,8 @@ export function PlanSelectorForSignup({
   const { availablePlans, isLoading, error, fetchPlans } = useSubscription();
 
   useEffect(() => {
-    console.log("[PlanSelectorForSignup] Mounting, calling fetchPlans");
     fetchPlans();
   }, [fetchPlans]);
-
-  console.log(
-    "[PlanSelectorForSignup] Rendering with availablePlans:",
-    availablePlans,
-  );
-  console.log(
-    "[PlanSelectorForSignup] availablePlans type:",
-    typeof availablePlans,
-  );
-  console.log(
-    "[PlanSelectorForSignup] Is array?",
-    Array.isArray(availablePlans),
-  );
 
   if (isLoading) {
     return (

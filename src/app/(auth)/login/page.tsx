@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -10,7 +9,7 @@ import {
   CardContent,
 } from "../../../components/ui";
 import { Input, Button } from "../../../components";
-import { useAuthApi } from "../../../features/auth/hooks/useAuthApi";
+import { loginAction } from "../../../features/auth/actions/login.action";
 import { ROUTES } from "../../../constants";
 
 interface LoginFormData {
@@ -25,8 +24,7 @@ interface LoginFormErrors {
 }
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { login, isLoading, error, clearError } = useAuthApi();
+  const [isPending, startTransition] = useTransition();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
@@ -64,9 +62,9 @@ export default function LoginPage() {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
 
-    // Clear API error when user starts typing
-    if (error) {
-      clearError();
+    // Clear general error when user starts typing
+    if (errors.general) {
+      setErrors((prev) => ({ ...prev, general: undefined }));
     }
   };
 
@@ -75,19 +73,31 @@ export default function LoginPage() {
 
     if (!validateForm()) return;
 
-    try {
-      const response = await login({
-        email: formData.email,
-        password: formData.password,
-      });
+    startTransition(async () => {
+      try {
+        const result = await loginAction({
+          email: formData.email,
+          password: formData.password,
+        });
 
-      if (response) {
-        router.push(ROUTES.MATCHES);
+        if (!result.success) {
+          setErrors({ general: result.error || "Erreur lors de la connexion" });
+        }
+      } catch (error) {
+        // If redirect() was called, Next.js throws a special error
+        // We need to let it propagate
+        if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
+          throw error;
+        }
+
+        setErrors({
+          general:
+            error instanceof Error
+              ? error.message
+              : "Erreur lors de la connexion",
+        });
       }
-    } catch (error) {
-      // Error is handled by the useAuthApi hook
-      console.error("Login failed:", error);
-    }
+    });
   };
 
   return (
@@ -117,7 +127,7 @@ export default function LoginPage() {
               placeholder="votre@email.com"
               required
               error={errors.email}
-              disabled={isLoading}
+              disabled={isPending}
             />
 
             <Input
@@ -130,12 +140,12 @@ export default function LoginPage() {
               placeholder="••••••••"
               required
               error={errors.password}
-              disabled={isLoading}
+              disabled={isPending}
             />
 
-            {(errors.general || error) && (
+            {errors.general && (
               <div className="text-sm text-red-600 text-center">
-                {errors.general || error}
+                {errors.general}
               </div>
             )}
 
@@ -144,9 +154,9 @@ export default function LoginPage() {
               variant="primary"
               size="lg"
               className="w-full"
-              disabled={isLoading}
+              disabled={isPending}
             >
-              {isLoading ? "Connexion..." : "Se connecter"}
+              {isPending ? "Connexion..." : "Se connecter"}
             </Button>
           </form>
 

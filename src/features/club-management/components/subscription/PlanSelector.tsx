@@ -58,7 +58,7 @@ export function PlanSelector({
       // Redirect to Stripe checkout
       window.location.href = url;
     } catch (err) {
-      console.error("Failed to select plan:", err);
+        console.error("Failed to select plan:", err);
     }
   };
 

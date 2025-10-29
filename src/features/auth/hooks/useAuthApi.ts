@@ -26,8 +26,8 @@ export const useAuthApi = () => {
 
     try {
       const response = await loginApi.post("/auth/login", credentials);
+
       if (response) {
-        // Adapter les données utilisateur du backend vers le format frontend
         const userWithDefaults = {
           ...response.user,
           role: "USER" as const,
@@ -36,7 +36,6 @@ export const useAuthApi = () => {
         };
 
         store.loginUser(userWithDefaults);
-        // Token is now in httpOnly cookie, no manual storage needed
         return response;
       }
     } catch (error) {
@@ -57,7 +56,6 @@ export const useAuthApi = () => {
     try {
       const response = await registerApi.post("/auth/register", registerData);
       if (response) {
-        // Adapter les données utilisateur du backend vers le format frontend
         const userWithDefaults = {
           ...response.user,
           role: "USER" as const,
@@ -66,7 +64,6 @@ export const useAuthApi = () => {
         };
 
         store.loginUser(userWithDefaults);
-        // Token is now in httpOnly cookie, no manual storage needed
         return response;
       }
     } catch (error) {
@@ -89,14 +86,9 @@ export const useAuthApi = () => {
       await authApi.post("/auth/logout");
       store.logoutUser();
       return true;
-    } catch (error) {
+    } catch {
       // Even if API call fails, logout client-side
       store.logoutUser();
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Erreur lors de la déconnexion";
-      console.error("Logout error:", errorMessage);
       return false;
     } finally {
       store.setLoading(false);

@@ -56,8 +56,6 @@ export async function serverFetch<T>(
     // Return the full response object so consumers can access success, data, meta, etc.
     return result;
   } catch (error) {
-    console.error(`[serverFetch] Error fetching ${endpoint}:`, error);
-
     if (requireAuth) {
       return null;
     }
