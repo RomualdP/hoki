@@ -6,7 +6,9 @@ import {
   Get,
   Body,
   UnauthorizedException,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
@@ -27,6 +29,7 @@ export class AuthController {
     @Body('password') password: string,
     @Body('firstName') firstName: string,
     @Body('lastName') lastName: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const user = await this.authService.register(
       email,
@@ -34,6 +37,15 @@ export class AuthController {
       `${firstName} ${lastName}`,
     );
     const { access_token } = await this.authService.login(user);
+
+    // Set httpOnly cookie
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     return {
       success: true,
       data: {
@@ -48,12 +60,22 @@ export class AuthController {
   async login(
     @Body('email') email: string,
     @Body('password') password: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const user = await this.authService.validateUser(email, password);
     if (!user) {
       throw new UnauthorizedException('Identifiants invalides');
     }
     const { access_token } = await this.authService.login(user);
+
+    // Set httpOnly cookie
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     return {
       success: true,
       data: {
@@ -90,9 +112,14 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  logout() {
-    // Avec JWT, le logout est côté client (suppression du token)
-    // On peut optionnellement blacklister le token ici
+  logout(@Res({ passthrough: true }) res: Response) {
+    // Clear httpOnly cookie
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
     return {
       success: true,
       message: 'Déconnexion réussie',
@@ -104,8 +131,20 @@ export class AuthController {
    * POST /auth/signup/coach
    */
   @Post('signup/coach')
-  async signupCoach(@Body() dto: SignupCoachDto) {
+  async signupCoach(
+    @Body() dto: SignupCoachDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.authService.signupCoach(dto);
+
+    // Set httpOnly cookie
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     return {
       success: true,
       data: {
@@ -125,8 +164,20 @@ export class AuthController {
    * POST /auth/signup/player
    */
   @Post('signup/player')
-  async signupPlayer(@Body() dto: SignupWithInvitationDto) {
+  async signupPlayer(
+    @Body() dto: SignupWithInvitationDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.authService.signupPlayer(dto);
+
+    // Set httpOnly cookie
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     return {
       success: true,
       data: {
@@ -148,8 +199,20 @@ export class AuthController {
    * POST /auth/signup/assistant
    */
   @Post('signup/assistant')
-  async signupAssistant(@Body() dto: SignupWithInvitationDto) {
+  async signupAssistant(
+    @Body() dto: SignupWithInvitationDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.authService.signupAssistant(dto);
+
+    // Set httpOnly cookie
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     return {
       success: true,
       data: {

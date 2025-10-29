@@ -4,21 +4,29 @@ import {
   IClubRepository,
   CLUB_REPOSITORY,
 } from '../../../../domain/repositories/club.repository';
+import {
+  IMemberRepository,
+  MEMBER_REPOSITORY,
+} from '../../../../domain/repositories/member.repository';
 import { TestRepositoryFactory } from '../../../../__tests__/factories/repository.factory';
 import { TestModuleFactory } from '../../../../__tests__/factories/test-module.factory';
 import { ClubBuilder } from '../../../../__tests__/builders/club.builder';
+import { ClubRole } from '../../../../domain/value-objects/club-role.vo';
 
 describe('CreateClubHandler', () => {
   let handler: CreateClubHandler;
   let clubRepository: jest.Mocked<IClubRepository>;
+  let memberRepository: jest.Mocked<IMemberRepository>;
 
   beforeEach(async () => {
-    // Create mock repository using factory
+    // Create mock repositories using factory
     clubRepository = TestRepositoryFactory.createMockClubRepository();
+    memberRepository = TestRepositoryFactory.createMockMemberRepository();
 
     // Create test module using factory
     const setup = await TestModuleFactory.createForHandler(CreateClubHandler, [
       { provide: CLUB_REPOSITORY, useValue: clubRepository },
+      { provide: MEMBER_REPOSITORY, useValue: memberRepository },
     ]);
 
     handler = setup.handler;
@@ -59,6 +67,17 @@ describe('CreateClubHandler', () => {
           logo: 'https://example.com/logo.png',
           location: 'Paris, France',
           ownerId: 'user-1',
+        }),
+      );
+
+      // Verify that a Member COACH is created for the owner
+      expect(memberRepository.save).toHaveBeenCalledTimes(1);
+      expect(memberRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-1',
+          clubId: 'club-1',
+          role: ClubRole.COACH,
+          invitedBy: null,
         }),
       );
     });
