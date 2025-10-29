@@ -24,7 +24,11 @@ import {
   UpdateClubCommand,
   DeleteClubCommand,
 } from '../application/commands';
-import { GetClubQuery, ListClubsQuery } from '../application/queries';
+import {
+  GetClubQuery,
+  GetMyClubQuery,
+  ListClubsQuery,
+} from '../application/queries';
 import {
   ClubDetailReadModel,
   ClubListReadModel,
@@ -94,6 +98,40 @@ export class ClubsController {
       success: true,
       data: { clubId },
       message: 'Club created successfully',
+    };
+  }
+
+  /**
+   * GET /clubs/me
+   * Get the current user's active club
+   */
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: "Obtenir le club actif de l'utilisateur actuel",
+    description:
+      "Récupère les informations détaillées du club auquel l'utilisateur connecté appartient actuellement.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Club actif récupéré avec succès',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non authentifié - Token JWT manquant ou invalide',
+  })
+  @ApiResponse({
+    status: 404,
+    description: "L'utilisateur n'a pas de club actif",
+  })
+  async getMyClub(@CurrentUserId() userId: string) {
+    const query = new GetMyClubQuery(userId);
+    const club: ClubDetailReadModel = await this.queryBus.execute(query);
+
+    return {
+      success: true,
+      data: club,
     };
   }
 

@@ -28,6 +28,16 @@ import {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('me')
+  async getCurrentUser(@CurrentUser() currentUser: { id: string }) {
+    const user = await this.usersService.findOne(currentUser.id);
+    return {
+      success: true,
+      data: user,
+      message: 'Utilisateur actuel récupéré avec succès',
+    };
+  }
+
   @Get()
   async findAll(@Query() query: QueryUsersDto) {
     const result = await this.usersService.findAll(query);
