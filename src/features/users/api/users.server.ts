@@ -37,6 +37,8 @@ interface UserResponse {
 /**
  * Get all users from authenticated user's club
  * Backend automatically filters by user's clubId
+ * @deprecated Use getClubMembers() from @/features/club-management/api/members.server instead
+ * This function uses User.clubRole which may be out of sync with Member.role
  */
 export async function getClubUsers(): Promise<User[]> {
   const response = await serverFetch<UsersResponse>("/users", {
@@ -59,6 +61,7 @@ export async function getUser(userId: string): Promise<User | null> {
 
 /**
  * Get count of users in the club
+ * @deprecated Use getClubMembersCount() from @/features/club-management/api/members.server instead
  */
 export async function getClubUsersCount(): Promise<number> {
   const users = await getClubUsers();
@@ -67,6 +70,7 @@ export async function getClubUsersCount(): Promise<number> {
 
 /**
  * Get users filtered by club role
+ * @deprecated Use getMembersByRole() from @/features/club-management/api/members.server instead
  */
 export async function getUsersByRole(
   role: "COACH" | "ASSISTANT_COACH" | "PLAYER",

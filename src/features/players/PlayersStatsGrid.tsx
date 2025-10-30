@@ -1,21 +1,19 @@
-import {
-  getClubUsers,
-  getUsersByRole,
-} from "@/features/users/api/users.server";
+import { getClubMembers, getMembersByRole } from "@/features/club-management/api/members.server";
 
 /**
  * PlayersStatsGrid - Server Component
  *
  * Displays statistics cards for club members
- * Fetches user data server-side and calculates stats
+ * Fetches member data server-side and calculates stats
+ * Uses Members table as source of truth (not User.clubRole)
  */
 
 export async function PlayersStatsGrid() {
-  const clubPlayers = await getClubUsers();
-  const players = await getUsersByRole("PLAYER");
-  const coaches = clubPlayers.filter(
-    (player) =>
-      player.clubRole === "COACH" || player.clubRole === "ASSISTANT_COACH",
+  const clubMembers = await getClubMembers();
+  const players = await getMembersByRole("PLAYER");
+  const coaches = clubMembers.filter(
+    (member) =>
+      member.clubRole === "COACH" || member.clubRole === "ASSISTANT_COACH",
   );
 
   return (
@@ -37,7 +35,7 @@ export async function PlayersStatsGrid() {
               Total membres
             </p>
             <p className="text-2xl font-bold text-neutral-900">
-              {clubPlayers.length}
+              {clubMembers.length}
             </p>
           </div>
         </div>

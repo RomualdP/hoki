@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getClubUsers } from "@/features/users/api/users.server";
+import { getClubMembers } from "@/features/club-management/api/members.server";
 import { ROUTES } from "@/constants";
 import { DashboardCard } from "../DashboardCard";
 
@@ -12,7 +12,7 @@ import { DashboardCard } from "../DashboardCard";
  * Pattern: Server Component with async data fetching
  */
 export async function MembersWidgetServer() {
-  const members = await getClubUsers();
+  const members = await getClubMembers();
 
   return (
     <DashboardCard
