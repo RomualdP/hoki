@@ -78,4 +78,9 @@ next-env.d.ts
 # Certificates
 certificates/
 
+# AI 
+.cursor/
+.claude/
+.mcp/
+
 .mcp.json
