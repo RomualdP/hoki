@@ -1,0 +1,218 @@
+name: ♻️ Refactoring
+description: Refactoring ou amélioration technique (dette technique)
+title: "[Refactor] Brief description"
+labels: ["refactoring", "technical-debt"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Refactoring Frontend
+        Utilisez `.claude/skills/refactoring/` pour un refactoring safe avec TDD/BDD.
+
+  - type: dropdown
+    id: refactor-type
+    attributes:
+      label: Type de Refactoring
+      options:
+        - architecture (migration patterns, structure)
+        - performance (optimisation rendering, bundle size)
+        - code-quality (DRY, simplification, readability)
+        - migration (upgrade library, Next.js patterns)
+        - accessibility (a11y improvements)
+        - testing (add missing tests, improve coverage)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: feature-module
+    attributes:
+      label: Feature Module Concerné
+      options:
+        - club-management
+        - training-management
+        - match-management
+        - tournament-management
+        - players
+        - teams
+        - profile
+        - shared
+        - global (multiple features)
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte
+      description: Pourquoi ce refactoring est-il nécessaire ?
+      placeholder: |
+        La page players utilise encore l'ancien pattern client-side data fetching
+        avec useEffect, ce qui impacte les perfs et SEO. Migration vers Server Components
+        nécessaire pour aligner avec les standards du projet.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-implementation
+    attributes:
+      label: Implémentation Actuelle
+      description: Comment le code fonctionne aujourd'hui ?
+      placeholder: |
+        ```tsx
+        'use client'
+
+        export default function PlayersPage() {
+          const [players, setPlayers] = useState([])
+          const [loading, setLoading] = useState(true)
+
+          useEffect(() => {
+            fetchPlayers().then(data => {
+              setPlayers(data)
+              setLoading(false)
+            })
+          }, [])
+
+          if (loading) return <Spinner />
+          return <PlayersList players={players} />
+        }
+        ```
+
+        **Problèmes** :
+        - Client-side fetching (SEO, perfs)
+        - Loading state manual
+        - useEffect anti-pattern pour initial data fetch
+        - Pas de streaming
+    validations:
+      required: true
+
+  - type: textarea
+    id: target-implementation
+    attributes:
+      label: Implémentation Cible
+      description: Comment devrait être le code après refactoring ?
+      placeholder: |
+        ```tsx
+        // Server Component (no 'use client')
+        export default async function PlayersPage() {
+          const players = await getPlayers() // Server-side fetch
+
+          return (
+            <Suspense fallback={<PlayersListSkeleton />}>
+              <PlayersList players={players} />
+            </Suspense>
+          )
+        }
+        ```
+
+        **Améliorations** :
+        - Server Component par défaut
+        - Data fetching server-side
+        - Suspense pour loading automatique
+        - SEO et perfs améliorés
+        - Aligned avec `.claude/skills/server-components/`
+    validations:
+      required: true
+
+  - type: textarea
+    id: refactoring-steps
+    attributes:
+      label: Étapes de Refactoring
+      description: Plan step-by-step (suivre TDD/BDD de `.claude/skills/refactoring/`)
+      placeholder: |
+        **Phase 1 : Tests (RED)**
+        1. Ajouter tests pour comportement actuel
+        2. Vérifier que tests passent (baseline)
+
+        **Phase 2 : Refactor (GREEN)**
+        3. Retirer 'use client' de page.tsx
+        4. Migrer fetchPlayers vers Server Component
+        5. Créer PlayersListSkeleton pour Suspense
+        6. Wrapper avec Suspense boundary
+        7. Vérifier que tests passent toujours
+
+        **Phase 3 : Amélioration (REFACTOR)**
+        8. Optimiser avec streaming si nécessaire
+        9. Cleanup ancien code inutilisé
+        10. Update documentation
+      value: |
+        **Phase 1 : Tests (RED)**
+        1.
+        2.
+
+        **Phase 2 : Refactor (GREEN)**
+        3.
+        4.
+
+        **Phase 3 : Amélioration (REFACTOR)**
+        5.
+        6.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Critères d'Acceptation
+      value: |
+        - [ ] Tests existants passent (pas de régression)
+        - [ ] Comportement fonctionnel identique
+        - [ ] Code suit les standards du projet (Skills)
+        - [ ] Performance améliorée (Lighthouse score)
+        - [ ] Zéro warnings ESLint/TypeScript
+        - [ ] Documentation mise à jour
+    validations:
+      required: true
+
+  - type: textarea
+    id: skills
+    attributes:
+      label: Skills Claude Code à Utiliser
+      value: |
+        - `.claude/skills/refactoring/` (MANDATORY - TDD/BDD approach)
+      placeholder: |
+        Ajoutez les Skills pertinents selon le refactoring :
+        - `.claude/skills/server-components/` (si migration Server Components)
+        - `.claude/skills/atomic-component/` (si refactor composants)
+        - `.claude/skills/react-state-management/` (si refactor state)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité
+      options:
+        - low
+        - medium
+        - high
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort Estimé
+      options:
+        - small (1-2 heures)
+        - medium (3-6 heures)
+        - large (1-2 jours)
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Bénéfices Attendus
+      placeholder: |
+        - Performance : Réduction Time to Interactive de 2s → 0.5s
+        - SEO : Contenu rendu côté serveur
+        - DX : Code plus simple et maintenable
+        - Architecture : Aligned avec standards projet
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risques et Considérations
+      placeholder: |
+        - Risque : Breaking change si API publique modifiée
+        - Mitigation : Tests de non-régression complets
+        - Considération : Vérifier compatibility avec autres features

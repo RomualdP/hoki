@@ -1,0 +1,39 @@
+---
+description: Apply DDD testing standards with strict coverage requirements (Domain 100%, Application 95%+) for backend bounded contexts
+globs: volley-app-backend/**/*.ts
+alwaysApply: false
+---
+
+Title: DDD Testing Standard
+
+Scope: Backend (NestJS, Prisma) bounded contexts and modules.
+
+Principles:
+- Domain layer must reach 100% coverage; application ≥95%; integration on critical workflows.
+- Tests document behavior; prefer AAA for backend, Given-When-Then for UX-level.
+
+Structure:
+- Unit: domain/entities, value-objects, services; application/commands, application/queries.
+- Integration: handlers through repositories to real DB where needed (with cleanup).
+
+Commands:
+- yarn --cwd volley-app-backend test
+- yarn --cwd volley-app-backend test:watch
+- yarn --cwd volley-app-backend test:cov
+
+Guidelines:
+- No mocks in pure domain tests; mock repositories in application tests.
+- Clean database before integration tests; verify transactions and constraints.
+- Enforce coverage thresholds; maintain green tests during refactors.
+
+Naming:
+- describe('UnitUnderTest') → describe('method/feature') → it('should ... when ...').
+
+Do:
+- Test edge cases, invariants, and state transitions.
+- Use factories/builders to reduce duplication.
+- Keep tests independent and deterministic.
+
+Avoid:
+- Testing implementation details; testing order dependency; leaving DB dirty.
+

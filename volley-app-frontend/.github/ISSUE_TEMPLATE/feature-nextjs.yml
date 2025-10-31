@@ -1,0 +1,213 @@
+name: 🚀 Next.js Feature
+description: Créer une nouvelle fonctionnalité frontend (Next.js 16 + React 19)
+title: "[Feature] Brief description"
+labels: ["feature", "nextjs"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Nouvelle Feature Frontend
+        Suivez l'architecture Feature-Based et les patterns modernes Next.js 16.
+
+        ⚠️ **RAPPEL CRITIQUE** : Composants vont dans `features/`, PAS dans `app/` !
+
+  - type: dropdown
+    id: feature-module
+    attributes:
+      label: Feature Module
+      description: Quel module feature est concerné ?
+      options:
+        - club-management
+        - training-management
+        - match-management
+        - tournament-management
+        - players
+        - teams
+        - profile
+        - shared
+        - autre (préciser dans la description)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component-type
+    attributes:
+      label: Type de Composant Principal
+      options:
+        - page (Route complète avec Server Component)
+        - modal (Parallel Route avec @modal slot)
+        - widget (Section réutilisable d'une page)
+        - form (Formulaire avec Server Action)
+        - data-display (Affichage de données)
+        - autre
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte Utilisateur
+      description: Pourquoi cette feature est-elle nécessaire ? Quel besoin utilisateur ?
+      placeholder: |
+        En tant qu'admin de club, je veux inviter des membres par email
+        pour simplifier l'onboarding et éviter qu'ils cherchent le club manuellement.
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-requirements
+    attributes:
+      label: Exigences Techniques
+      description: Architecture et composants nécessaires
+      placeholder: |
+        **Route** : `app/clubs/invitations/[token]/accept/page.tsx`
+
+        **Feature Structure** : `features/club-management/`
+        - `components/InvitationAcceptCard.tsx` (Dumb component)
+        - `components/InvitationDetails.tsx` (Dumb component)
+        - `actions/acceptInvitation.ts` (Server Action)
+        - `api/getInvitationByToken.server.ts` (Server-side fetch)
+        - `types/invitation.types.ts` (Types synced with backend)
+
+        **Patterns** :
+        - Server Component pour data fetching
+        - Suspense avec loading skeleton
+        - View Transitions pour navigation
+        - Mobile-first responsive design
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Critères d'Acceptation
+      value: |
+        - [ ] Page Server Component créée dans `app/`
+        - [ ] Composants atomiques créés dans `features/[feature]/components/`
+        - [ ] Server Action pour mutation créée dans `features/[feature]/actions/`
+        - [ ] Suspense boundary avec loading.tsx ou Suspense wrapper
+        - [ ] View Transitions implémentées pour navigation
+        - [ ] Mobile-first : responsive sur mobile/tablet/desktop
+        - [ ] Types TypeScript synchronisés avec backend DTOs
+        - [ ] Error boundary (error.tsx) pour gestion d'erreurs
+        - [ ] Tests (si applicable)
+    validations:
+      required: true
+
+  - type: textarea
+    id: skills
+    attributes:
+      label: Skills Claude Code à Utiliser
+      description: MANDATORY Skills pour cette feature
+      value: |
+        - `.claude/skills/server-components/` (MANDATORY - lire en premier !)
+        - `.claude/skills/atomic-component/`
+        - `.claude/skills/server-actions/`
+        - `.claude/skills/view-transitions/`
+        - `.claude/skills/suspense-streaming/`
+        - `.claude/skills/mobile-first/`
+        - `.claude/skills/api-contracts/` (Types sync)
+    validations:
+      required: true
+
+  - type: textarea
+    id: architecture-compliance
+    attributes:
+      label: ⚠️ Architecture Compliance Check
+      description: Vérifiez que vous respectez bien l'architecture
+      value: |
+        **✅ Structure Correcte** :
+        ```
+        app/[route]/page.tsx              # Max 50 lignes, orchestration only
+        features/[feature]/
+          ├── components/                 # Tous les composants métier ICI
+          │   ├── SmartComponent.tsx      # Max 100 lignes
+          │   └── DumbComponent.tsx       # Max 80 lignes
+          ├── actions/                    # Server Actions
+          ├── api/                        # Server-side API (*.server.ts)
+          ├── hooks/                      # Custom hooks
+          ├── stores/                     # Zustand stores (CLIENT state only)
+          └── types/                      # TypeScript types
+        ```
+
+        **❌ JAMAIS** :
+        ```
+        app/[route]/components/           # INTERDIT !
+        app/[route]/actions/              # INTERDIT !
+        ```
+
+        **Pourquoi ?**
+        - `app/` est pour le ROUTING uniquement (Next.js App Router)
+        - `features/` est pour la LOGIQUE MÉTIER et COMPOSANTS
+        - Permet la réutilisation entre routes
+
+  - type: textarea
+    id: ui-design
+    attributes:
+      label: Design UI / Figma
+      description: Lien Figma ou description du design (si applicable)
+      placeholder: |
+        Figma URL : https://figma.com/design/...
+        ou
+        Description textuelle du design attendu
+
+  - type: textarea
+    id: backend-dependencies
+    attributes:
+      label: Dépendances Backend
+      description: Cette feature dépend-elle d'APIs backend ?
+      placeholder: |
+        - Nécessite BACK-123 : API POST /invitations/accept
+        - DTOs attendus : AcceptInvitationDto, InvitationResponseDto
+        - Endpoint : POST /api/invitations/:token/accept
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité
+      options:
+        - low
+        - medium
+        - high
+        - critical
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort Estimé
+      options:
+        - small (1-2 heures)
+        - medium (3-6 heures)
+        - large (1-2 jours)
+        - extra-large (3+ jours)
+
+  - type: checkboxes
+    id: nextjs-patterns
+    attributes:
+      label: Next.js 16 Modern Patterns (à utiliser)
+      description: Patterns obligatoires selon le contexte
+      options:
+        - label: "Server Components (par défaut pour toutes les pages)"
+        - label: "Suspense & Streaming (pour async data)"
+        - label: "View Transitions API (pour navigation)"
+        - label: "Server Actions (pour mutations)"
+        - label: "Parallel Routes (si modal)"
+        - label: "useOptimistic (si delete operation)"
+        - label: "Mobile-First Tailwind (toujours)"
+
+  - type: checkboxes
+    id: quality-checklist
+    attributes:
+      label: Quality Checklist
+      options:
+        - label: "Page < 50 lignes (orchestration only)"
+        - label: "Smart components < 100 lignes"
+        - label: "Dumb components < 80 lignes"
+        - label: "Décomposition maximale (Atomic Design)"
+        - label: "Typage strict (pas de `any`)"
+        - label: "Zéro warnings ESLint/TypeScript"
+        - label: "Mobile-first responsive vérifié"
+        - label: "Accessibility (a11y) vérifié"

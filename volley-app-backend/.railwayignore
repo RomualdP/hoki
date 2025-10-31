@@ -1,0 +1,47 @@
+# Railway Ignore - Files to exclude from deployment
+
+# Node modules (will be installed during build)
+node_modules/
+
+# Development files
+*.md
+!README.md
+.env*
+!.env.example
+
+# Testing
+coverage/
+test/
+*.spec.ts
+*.test.ts
+jest.config.js
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+.claude/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Build artifacts (will be generated during build)
+dist/
+
+# Documentation
+DEPLOYMENT.md
+AI_RULES.md
+AGENTS.md
+MEMORY_BANK.md

@@ -1,0 +1,406 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+// ============================================
+// USERS & PROFILES
+// ============================================
+
+model User {
+  id                    String                 @id @default(cuid())
+  email                 String                 @unique
+  firstName             String
+  lastName              String
+  avatar                String?
+  password              String?
+  role                  UserRole               @default(USER)
+  clubId                String?
+  clubRole              ClubRole?
+  isActive              Boolean                @default(true)
+  lastLoginAt           DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  newsArticles          News[]
+  teamMemberships       TeamMember[]
+  profile               UserProfile?
+  skills                UserSkill[]
+  attributes            UserAttribute[]
+  trainingRegistrations TrainingRegistration[]
+  club                  Club?                  @relation(fields: [clubId], references: [id], onDelete: SetNull)
+
+  @@index([clubId])
+  @@map("users")
+}
+
+model UserProfile {
+  id            String          @id @default(cuid())
+  userId        String          @unique
+  biography     String?
+  birthDate     DateTime?
+  gender        Gender?
+  position      PlayerPosition?
+  height        Int?
+  weight        Int?
+  phoneNumber   String?
+  city          String?
+  country       String?
+  preferredHand PreferredHand   @default(RIGHT)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model UserSkill {
+  id              String          @id @default(cuid())
+  userId          String
+  experienceYears Int?
+  notes           String?
+  assessedBy      String?
+  assessedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  skill           VolleyballSkill
+  level           Int             @default(5)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skill])
+  @@map("user_skills")
+}
+
+model UserAttribute {
+  id         String        @id @default(cuid())
+  userId     String
+  attribute  AttributeType
+  value      Float         @default(1.0) @db.DoublePrecision
+  assessedBy String?
+  assessedAt DateTime?
+  notes      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, attribute])
+  @@map("user_attributes")
+}
+
+// ============================================
+// TEAMS
+// ============================================
+
+model Team {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  logo        String?
+  description String?
+  foundedYear Int?
+  clubId      String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  awayMatches Match[]      @relation("AwayTeam")
+  homeMatches Match[]      @relation("HomeTeam")
+  members     TeamMember[]
+  club        Club?        @relation(fields: [clubId], references: [id], onDelete: SetNull)
+
+  @@index([clubId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  userId   String
+  teamId   String
+  role     TeamRole
+  joinedAt DateTime @default(now())
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+  @@map("team_members")
+}
+
+// ============================================
+// MATCHES
+// ============================================
+
+model Match {
+  id              String      @id @default(cuid())
+  homeTeamId      String
+  awayTeamId      String
+  scheduledAt     DateTime
+  location        String?
+  status          MatchStatus @default(SCHEDULED)
+  homeScore       Int?
+  awayScore       Int?
+  maxParticipants Int?
+  referee         String?
+  duration        Int?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  awayTeam        Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  homeTeam        Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+
+  @@map("matches")
+}
+
+// ============================================
+// NEWS
+// ============================================
+
+model News {
+  id            String       @id @default(cuid())
+  title         String
+  content       String
+  excerpt       String?
+  authorId      String
+  category      NewsCategory @default(GENERAL)
+  tags          String[]
+  featuredImage String?
+  readingTime   Int          @default(0)
+  viewsCount    Int          @default(0)
+  likesCount    Int          @default(0)
+  commentsCount Int          @default(0)
+  isPublished   Boolean      @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  author        User         @relation(fields: [authorId], references: [id])
+
+  @@map("news")
+}
+
+// ============================================
+// TRAINING
+// ============================================
+
+model Training {
+  id              String                 @id @default(cuid())
+  title           String
+  description     String?
+  scheduledAt     DateTime
+  duration        Int
+  location        String?
+  maxParticipants Int?
+  status          TrainingStatus         @default(SCHEDULED)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  registrations   TrainingRegistration[]
+  teams           TrainingTeam[]
+
+  @@map("trainings")
+}
+
+model TrainingRegistration {
+  id           String             @id @default(cuid())
+  trainingId   String
+  userId       String
+  status       RegistrationStatus @default(PENDING)
+  registeredAt DateTime           @default(now())
+  cancelledAt  DateTime?
+  training     Training           @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([trainingId, userId])
+  @@map("training_registrations")
+}
+
+model TrainingTeam {
+  id           String   @id @default(cuid())
+  trainingId   String
+  name         String
+  memberIds    String[]
+  averageLevel Float    @db.DoublePrecision
+  createdAt    DateTime @default(now())
+  training     Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+
+  @@map("training_teams")
+}
+
+// ============================================
+// CLUB MANAGEMENT
+// ============================================
+
+model Club {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  description  String?
+  logo         String?
+  location     String?
+  ownerId      String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  users        User[]
+  teams        Team[]
+  members      Member[]
+  invitations  Invitation[]
+  subscription Subscription?
+
+  @@map("clubs")
+}
+
+model Subscription {
+  id                    String             @id @default(cuid())
+  clubId                String             @unique
+  planId                SubscriptionPlanId
+  maxTeams              Int?
+  price                 Int
+  status                SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean            @default(false)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  club                  Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Member {
+  id        String    @id @default(cuid())
+  userId    String
+  clubId    String
+  role      ClubRole
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+  invitedBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  club      Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clubId])
+  @@index([clubId])
+  @@index([userId])
+  @@map("members")
+}
+
+model Invitation {
+  id        String         @id @default(cuid())
+  token     String         @unique
+  clubId    String
+  type      InvitationType
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  usedBy    String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  club      Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([clubId])
+  @@map("invitations")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum PlayerPosition {
+  SETTER
+  OUTSIDE_HITTER
+  MIDDLE_BLOCKER
+  OPPOSITE
+  LIBERO
+  DEFENSIVE_SPECIALIST
+}
+
+enum PreferredHand {
+  LEFT
+  RIGHT
+  AMBIDEXTROUS
+}
+
+enum TeamRole {
+  CAPTAIN
+  COACH
+  PLAYER
+  SUBSTITUTE
+}
+
+enum MatchStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum NewsCategory {
+  MATCH_RESULTS
+  TOURNAMENT
+  TEAM_NEWS
+  PLAYER_SPOTLIGHT
+  GENERAL
+  ANNOUNCEMENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum VolleyballSkill {
+  ATTACK
+  DEFENSE
+  SERVING
+  RECEPTION
+  SETTING
+  BLOCKING
+}
+
+enum AttributeType {
+  FITNESS
+  LEADERSHIP
+}
+
+enum TrainingStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  WAITLIST
+}
+
+enum ClubRole {
+  OWNER
+  COACH
+  PLAYER
+}
+
+enum SubscriptionPlanId {
+  BETA
+  STARTER
+  PRO
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  CANCELED
+  PAYMENT_FAILED
+}
+
+enum InvitationType {
+  PLAYER
+  COACH
+}

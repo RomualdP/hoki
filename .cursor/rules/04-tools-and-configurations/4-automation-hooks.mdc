@@ -1,0 +1,28 @@
+---
+description: Align AI workflow with project automation hooks for formatting, linting, and validations
+globs: volley-app-backend/**/*.ts, volley-app-frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+Title: Automation Hooks Alignment
+
+Scope: Align AI workflow with project automation (formatting, lint fixes, validations).
+
+Expectations:
+- After each TS/TSX edit: run Prettier and ESLint --fix (already configured in `.claude/settings.json`).
+- Batch validations by feature before summarizing.
+- Prefer non-interactive commands and deterministic outputs.
+
+Frontend Commands:
+- yarn --cwd volley-app-frontend lint --max-warnings 0
+- yarn --cwd volley-app-frontend build
+
+Backend Commands:
+- yarn --cwd volley-app-backend lint --max-warnings 0
+- yarn --cwd volley-app-backend test
+- yarn --cwd volley-app-backend test:cov (when scope sizable)
+
+Notes:
+- Do not modify secrets, CI, or environment without explicit user request.
+- Keep output concise; include only relevant fenced snippets.
+

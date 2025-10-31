@@ -1,0 +1,38 @@
+---
+description: Apply strict TypeScript standards for backend and frontend code (NestJS, Next.js)
+globs: volley-app-backend/**/*.ts, volley-app-frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+Strict Types:
+- Enable strict compiler options
+- No `any` or `unknown`
+- No non-null assertions `!`
+- Prefer type guards, not casts
+- Prefer generics over `as`
+
+Interfaces and Types:
+- Use `interface` for extensible objects
+- Use `type` for unions and primitives
+
+Nullability:
+- Avoid nullable returns; use Result types
+
+Enumerations:
+- Prefer string literal unions to enums
+- Use const enums if needed
+- Define enum values explicitly
+
+Lint & Error:
+- Catch errors as `unknown`; narrow safely
+
+Generics:
+- Use descriptive type parameter names
+
+Prohibitions:
+- No `eslint-disable` comments
+- No `@ts-ignore` or `@ts-expect-error`
+- No implicit any; no loose casts
+
+Quality Gates:
+- Lint with zero warnings
+- Type-check with `--noEmit`

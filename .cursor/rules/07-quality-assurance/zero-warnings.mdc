@@ -1,0 +1,47 @@
+---
+description: Enforce zero warnings policy for ESLint, TypeScript, and builds across frontend and backend
+globs: volley-app-backend/**/*.ts, volley-app-frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+Title: Zero Warnings Standard
+
+Scope: Frontend (Next.js 15, React 19) and Backend (NestJS) code.
+
+Principles:
+- No ESLint warnings, no TypeScript warnings, no build warnings.
+- Never disable lint rules; never use @ts-ignore; never introduce any/unknown.
+- Use a single project logger; no console.log in committed code.
+
+Commands:
+- Frontend
+  - yarn --cwd volley-app-frontend lint --max-warnings 0
+  - yarn --cwd volley-app-frontend build
+- Backend
+  - yarn --cwd volley-app-backend lint --max-warnings 0
+  - yarn --cwd volley-app-backend test
+  - yarn --cwd volley-app-backend test:cov (when relevant)
+- TypeScript (when needed)
+  - yarn --cwd volley-app-frontend tsc --noEmit
+  - yarn --cwd volley-app-backend tsc --noEmit
+
+Enforcement:
+- Block merges/PRs on any warning or error.
+- Prefer fixing root causes to silencing rules.
+- Ensure strict TS config (strict true) and ESLint rules for:
+  - @typescript-eslint/no-explicit-any: error
+  - @typescript-eslint/no-unused-vars: error
+  - @typescript-eslint/no-floating-promises: error
+  - @typescript-eslint/no-non-null-assertion: error
+  - no-console: error
+
+Checklist (pre-commit/PR):
+- Lint passes with 0 warnings (front/back)
+- Type check passes with no errors
+- Tests pass (backend); build passes (frontend)
+- No eslint-disable or @ts-ignore added
+- No console.log left; logger used instead
+
+Exceptions (rare, documented):
+- Only for tool bugs or generated code; must include reason, ticket, deadline, reviewer approval; scope minimal (next-line only).
+

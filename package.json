@@ -1,0 +1,26 @@
+{
+  "name": "hoki",
+  "version": "1.0.0",
+  "description": "Hoki - Volleyball team management application (mono-repo)",
+  "private": true,
+  "scripts": {
+    "dev:front": "cd volley-app-frontend && yarn dev",
+    "dev:back": "cd volley-app-backend && yarn start:dev",
+    "build:front": "cd volley-app-frontend && yarn build",
+    "build:back": "cd volley-app-backend && yarn build",
+    "lint:front": "cd volley-app-frontend && yarn lint",
+    "lint:back": "cd volley-app-backend && yarn lint",
+    "test:back": "cd volley-app-backend && yarn test",
+    "sync-labels": "node .github/scripts/sync-labels.js",
+    "show-planning": "node .github/scripts/show-planning.js",
+    "link-issues": "node .github/scripts/link-issues.js",
+    "sync-project": "node .github/scripts/sync-project.js"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

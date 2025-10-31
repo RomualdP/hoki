@@ -1,0 +1,1189 @@
+# ISSUES PLANNING - Volleyball App
+# Ce fichier sert de source unique de vérité pour planifier les issues
+# Utilisez la commande `/create-issues` pour synchroniser avec GitHub
+
+metadata:
+  backend_repo: RomualdP/volley_app_back
+  frontend_repo: RomualdP/volley_app_front
+  last_sync: null
+  version: "1.0"
+
+# ============================================================================
+# BACKEND ISSUES (DDD + CQRS)
+# ============================================================================
+backend:
+  # Exemple d'issue bounded context
+  - id: BACK-001
+    title: "[Club Management] Implement Club Invitation Flow"
+    bounded_context: club-management
+    type: feature
+    priority: high
+    labels:
+      - ddd
+      - cqrs
+      - bounded-context:club-management
+      - layer:application
+    description: |
+      ## Context
+      Implement the complete invitation flow for club members following DDD/CQRS patterns.
+
+      ## Technical Requirements
+      - Domain: Invitation entity with business rules (expiration, acceptance logic)
+      - Application: InviteUserCommand, AcceptInvitationCommand, GetPendingInvitationsQuery
+      - Infrastructure: InvitationMapper (Domain ↔ Prisma)
+      - Presentation: InvitationsController with Swagger documentation
+
+      ## Acceptance Criteria
+      - [ ] Invitation domain entity with expiration validation
+      - [ ] Command handlers with proper error handling
+      - [ ] Repository implementation with mapper
+      - [ ] Unit tests (Domain 100%, Application 95%)
+      - [ ] Integration tests for full flow
+      - [ ] API documentation (Swagger)
+
+      ## Skills to Use
+      - `.claude/skills/ddd-bounded-context/`
+      - `.claude/skills/cqrs-command-query/`
+      - `.claude/skills/prisma-mapper/`
+      - `.claude/skills/ddd-testing/`
+      - `.claude/skills/api-contracts/`
+
+      ## Dependencies
+      - Prisma schema already includes Invitation model
+
+      ## Estimated Effort
+      Medium (4-6 hours)
+    assignee: null
+    milestone: "MVP v1.0"
+    github_issue_number: null
+    github_url: null
+    status: planned
+    created_at: null
+    updated_at: null
+
+  # Exemple d'issue technique
+  - id: BACK-002
+    title: "[Infrastructure] Add Redis Caching Layer"
+    bounded_context: shared
+    type: enhancement
+    priority: medium
+    labels:
+      - infrastructure
+      - performance
+      - caching
+    description: |
+      ## Context
+      Add Redis caching for frequently accessed data (clubs, teams, user profiles).
+
+      ## Technical Requirements
+      - Install and configure @nestjs/cache-manager with Redis adapter
+      - Create CacheService in shared infrastructure
+      - Implement cache invalidation strategy
+      - Add caching decorators to query handlers
+
+      ## Acceptance Criteria
+      - [ ] Redis configured with proper TTL
+      - [ ] CacheService with get/set/invalidate methods
+      - [ ] Cache applied to top 5 most called queries
+      - [ ] Cache hit rate monitoring
+      - [ ] Documentation in CLAUDE.md
+
+      ## Skills to Use
+      - `.claude/skills/ddd-bounded-context/` (Infrastructure layer)
+
+      ## Estimated Effort
+      Small (2-3 hours)
+    assignee: null
+    milestone: "Performance Optimization"
+    github_issue_number: null
+    github_url: null
+    status: planned
+    created_at: null
+    updated_at: null
+
+  # Exemple d'issue bug
+  - id: BACK-003
+    title: "[Bug] ClubNotFoundException not properly caught in controllers"
+    bounded_context: club-management
+    type: bug
+    priority: high
+    labels:
+      - bug
+      - error-handling
+      - bounded-context:club-management
+    description: |
+      ## Bug Description
+      ClubNotFoundException thrown from domain layer is not properly transformed to HTTP 404 in controllers.
+
+      ## Current Behavior
+      Returns HTTP 500 Internal Server Error with raw exception
+
+      ## Expected Behavior
+      Returns HTTP 404 Not Found with proper error DTO
+
+      ## Steps to Reproduce
+      1. Call GET /clubs/non-existent-id
+      2. Observe 500 error instead of 404
+
+      ## Root Cause Analysis
+      Missing exception filter for domain exceptions
+
+      ## Proposed Solution
+      - Create DomainExceptionFilter in shared/filters
+      - Map domain exceptions to HTTP status codes
+      - Apply filter globally in main.ts
+
+      ## Skills to Use
+      - `.claude/skills/bug-finder/`
+      - `.claude/skills/debugger/`
+      - `.claude/skills/api-contracts/` (Error DTOs)
+
+      ## Acceptance Criteria
+      - [ ] DomainExceptionFilter created and registered
+      - [ ] All domain exceptions properly mapped
+      - [ ] Tests for exception filter
+      - [ ] Documentation updated
+    assignee: null
+    milestone: "Bug Fixes Sprint"
+    github_issue_number: null
+    github_url: null
+    status: planned
+    created_at: null
+    updated_at: null
+
+# ============================================================================
+# FRONTEND ISSUES (Feature-Based + Next.js 16)
+# ============================================================================
+frontend:
+  # Exemple d'issue feature
+  - id: FRONT-001
+    title: "[Club Management] Create Club Invitation Accept Page"
+    feature: club-management
+    type: feature
+    priority: high
+    labels:
+      - feature:club-management
+      - server-components
+      - view-transitions
+      - mobile-first
+    description: |
+      ## Context
+      Create the page to accept club invitations with modern Next.js 16 patterns.
+
+      ## Technical Requirements
+      - Route: `app/clubs/invitations/[token]/accept/page.tsx`
+      - Feature: `features/club-management/`
+      - Server Component for data fetching
+      - Server Action for accepting invitation
+      - View Transitions for smooth UX
+      - Mobile-first responsive design
+
+      ## Acceptance Criteria
+      - [ ] Server Component fetches invitation details
+      - [ ] Suspense boundary with loading skeleton
+      - [ ] acceptInvitationAction Server Action
+      - [ ] Atomic components (InvitationCard, AcceptButton)
+      - [ ] View Transitions on accept
+      - [ ] Error handling with error.tsx
+      - [ ] Mobile-first responsive (Tailwind breakpoints)
+      - [ ] TypeScript types synced with backend DTOs
+
+      ## Skills to Use
+      - `.claude/skills/server-components/` (MANDATORY - read first!)
+      - `.claude/skills/atomic-component/`
+      - `.claude/skills/server-actions/`
+      - `.claude/skills/view-transitions/`
+      - `.claude/skills/suspense-streaming/`
+      - `.claude/skills/mobile-first/`
+      - `.claude/skills/api-contracts/` (Types sync)
+
+      ## Architecture Compliance
+      ⚠️ CRITICAL: Components go in `features/club-management/`, NOT in `app/`!
+
+      ```
+      ✅ features/club-management/components/InvitationAcceptCard.tsx
+      ✅ features/club-management/actions/acceptInvitation.ts
+      ❌ app/clubs/invitations/[token]/accept/components/
+      ```
+
+      ## Dependencies
+      - Requires BACK-001 (backend invitation API)
+
+      ## Estimated Effort
+      Medium (3-4 hours)
+    assignee: null
+    milestone: "MVP v1.0"
+    github_issue_number: null
+    github_url: null
+    status: blocked
+    blocked_by:
+      - BACK-001
+    created_at: null
+    updated_at: null
+
+  # Exemple d'issue UI
+  - id: FRONT-002
+    title: "[UI] Implement Global Loading States with Suspense"
+    feature: shared
+    type: enhancement
+    priority: medium
+    labels:
+      - ui
+      - suspense
+      - loading-states
+      - ux
+    description: |
+      ## Context
+      Standardize loading states across the app using Suspense boundaries.
+
+      ## Technical Requirements
+      - Create reusable Skeleton components in `components/ui/`
+      - Update all async Server Components to use Suspense
+      - Implement streaming for slow queries
+      - Add loading.tsx files for route-level loading
+
+      ## Acceptance Criteria
+      - [ ] Skeleton components for common UI elements
+      - [ ] All async pages wrapped in Suspense
+      - [ ] loading.tsx for main routes
+      - [ ] Streaming enabled for data-heavy pages
+      - [ ] Smooth transitions with no layout shifts
+
+      ## Skills to Use
+      - `.claude/skills/suspense-streaming/`
+      - `.claude/skills/atomic-component/` (Skeleton components)
+
+      ## Estimated Effort
+      Small (2-3 hours)
+    assignee: null
+    milestone: "UX Improvements"
+    github_issue_number: null
+    github_url: null
+    status: planned
+    created_at: null
+    updated_at: null
+
+  # Exemple d'issue refactoring
+  - id: FRONT-003
+    title: "[Refactor] Migrate Players Page to Server Components Pattern"
+    feature: players
+    type: refactoring
+    priority: low
+    labels:
+      - refactoring
+      - server-components
+      - technical-debt
+    description: |
+      ## Context
+      Current players page uses client-side data fetching (useEffect). Migrate to Server Components pattern.
+
+      ## Current Implementation
+      - Client Component with useState + useEffect
+      - API call in browser
+      - Loading state manually managed
+
+      ## Target Implementation
+      - Server Component with direct API call
+      - Suspense for loading state
+      - Streaming for progressive rendering
+
+      ## Acceptance Criteria
+      - [ ] Remove 'use client' from page.tsx
+      - [ ] Move data fetching to Server Component
+      - [ ] Add Suspense boundary
+      - [ ] Update tests for Server Component pattern
+      - [ ] Verify performance improvement (Lighthouse)
+
+      ## Skills to Use
+      - `.claude/skills/refactoring/` (TDD approach)
+      - `.claude/skills/server-components/`
+
+      ## Estimated Effort
+      Small (1-2 hours)
+    assignee: null
+    milestone: "Technical Debt Sprint"
+    github_issue_number: null
+    github_url: null
+    status: planned
+    created_at: null
+    updated_at: null
+
+  # Phase 5.1 - View Transitions API Implementation
+  - id: FRONT-010
+    title: "[View Transitions] Implement View Transitions API across the app"
+    feature: shared
+    type: feature
+    priority: high
+    effort: large
+    labels:
+      - feature
+      - nextjs
+      - view-transitions
+      - feature:shared
+      - ux
+      - priority:high
+      - effort:large
+    description: |
+      ## Context
+      Implement the View Transitions API consistently across the entire Next.js 16 application to provide fluid, native-like transitions between pages and UI elements. This improves user experience significantly with minimal performance impact.
+
+      **Origin**: Phase 5.1 from NEW_FUNNEL_TASKS.md
+
+      ## Technical Requirements
+
+      ### 1. Helper Centralisé (`lib/view-transitions.ts`)
+      - Create `startViewTransition()` helper function with TypeScript types
+      - Implement feature detection for browser support
+      - Provide graceful fallback for unsupported browsers (progressive enhancement)
+      - Export utility functions: `isViewTransitionSupported()`, `withViewTransition()`
+
+      ### 2. CSS Animations (`app/globals.css`)
+      - Define View Transitions CSS rules
+      - Custom animations: fade, slide, scale, morphing
+      - CSS variables for timing (duration, easing)
+      - Responsive animations (different timing for mobile vs desktop)
+
+      ### 3. Navigation Principale
+      - Create `TransitionLink` wrapper component (atomic) around Next.js `<Link>`
+      - Apply View Transitions to all navigation links
+      - Implement page-to-page transitions
+      - Handle route changes with smooth animations
+      - Support for navigation between: dashboard ↔ teams ↔ clubs ↔ profile
+
+      ### 4. Auth Flows
+      - Integrate View Transitions in signup/login flows
+      - Multi-step form transitions (coach signup: step 1 → step 2 → step 3)
+      - Transition from login → dashboard
+      - Role selector → specific signup page transitions
+      - Success page transitions with celebration animations
+
+      ### 5. Cards & Lists
+      - Add unique `view-transition-name` to cards (members, teams, clubs, plans)
+      - Implement list → detail view morphing animations
+      - Card hover state with smooth transitions
+      - Integration with `useOptimistic` for delete animations (smooth removal)
+      - Shared element transitions (card image → detail page header)
+
+      ## Architecture Structure
+      ```
+      src/
+      ├── lib/
+      │   └── view-transitions.ts           # Helper centralisé
+      ├── components/
+      │   └── ui/
+      │       └── TransitionLink.tsx        # Wrapper atomic
+      ├── app/
+      │   └── globals.css                   # CSS animations
+      └── features/
+          └── [feature]/
+              └── components/               # Usage dans composants
+      ```
+
+      ## Acceptance Criteria
+      - [ ] `lib/view-transitions.ts` created with feature detection
+      - [ ] Helper `startViewTransition()` function working with fallback
+      - [ ] CSS animations defined in `app/globals.css`
+      - [ ] `TransitionLink` atomic component created
+      - [ ] All main navigation uses `TransitionLink`
+      - [ ] Auth flows (signup/login) have smooth transitions
+      - [ ] Multi-step forms have step transitions
+      - [ ] Cards have unique `view-transition-name` attributes
+      - [ ] List → detail transitions work smoothly
+      - [ ] Fallback for non-supporting browsers tested (graceful degradation)
+      - [ ] Mobile-first: animations tested on mobile devices
+      - [ ] Performance: no jank, smooth 60fps transitions
+      - [ ] Browser testing: Chrome (supported), Safari (iOS 18+), Firefox (fallback)
+      - [ ] TypeScript: 0 errors (tsc --noEmit)
+      - [ ] ESLint: 0 warnings
+      - [ ] Documentation: comments in code explaining View Transitions usage
+
+      ## Skills to Use
+      - `.claude/skills/view-transitions/` (MANDATORY - read first!)
+      - `.claude/skills/atomic-component/` (for TransitionLink wrapper)
+      - `.claude/skills/server-components/` (integration with Server Components)
+      - `.claude/skills/mobile-first/` (responsive animations)
+      - `.claude/skills/zero-warnings/` (code quality)
+
+      ## Technical Details
+
+      ### Progressive Enhancement Pattern
+      ```typescript
+      // lib/view-transitions.ts
+      export function startViewTransition(callback: () => void) {
+        if ('startViewTransition' in document) {
+          document.startViewTransition(callback);
+        } else {
+          // Fallback: execute directly without transition
+          callback();
+        }
+      }
+      ```
+
+      ### CSS Example
+      ```css
+      /* app/globals.css */
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: 0.3s;
+      }
+
+      ::view-transition-old(card) {
+        animation: fade-out 0.3s ease-out;
+      }
+
+      ::view-transition-new(card) {
+        animation: fade-in 0.3s ease-in;
+      }
+      ```
+
+      ### Usage Example
+      ```tsx
+      // components/ui/TransitionLink.tsx
+      'use client';
+
+      import Link from 'next/link';
+      import { startViewTransition } from '@/lib/view-transitions';
+
+      export function TransitionLink({ href, children, ...props }) {
+        const router = useRouter();
+
+        const handleClick = (e) => {
+          e.preventDefault();
+          startViewTransition(() => {
+            router.push(href);
+          });
+        };
+
+        return <Link href={href} onClick={handleClick} {...props}>{children}</Link>;
+      }
+      ```
+
+      ## Testing Checklist
+      - [ ] Test on Chrome (native support)
+      - [ ] Test on Safari iOS 18+ (native support)
+      - [ ] Test on Firefox (fallback mode)
+      - [ ] Test on mobile devices (iOS, Android)
+      - [ ] Test all navigation paths
+      - [ ] Test multi-step forms
+      - [ ] Test card transitions
+      - [ ] Verify no performance regression (Lighthouse)
+
+      ## Dependencies
+      None (standalone feature)
+
+      ## Browser Support
+      - ✅ Chrome 111+ (native)
+      - ✅ Safari iOS 18+ (native)
+      - ✅ Firefox (fallback - graceful degradation)
+      - ✅ All browsers (fallback mode works everywhere)
+
+      ## Resources
+      - [View Transitions API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API)
+      - [View Transitions - Chrome Developers](https://developer.chrome.com/docs/web-platform/view-transitions/)
+      - [Next.js View Transitions](https://nextjs.org/docs/app/building-your-application/routing/linking-and-navigating#view-transitions)
+
+      ## Estimated Effort
+      Large (1-2 days)
+    assignee: null
+    milestone: "UX Improvements"
+    github_issue_number: 19
+    github_url: https://github.com/RomualdP/volley_app_front/issues/19
+    status: ready
+    created_at: "2025-10-27T14:41:13Z"
+    updated_at: "2025-10-27T14:41:13Z"
+
+# ============================================================================
+# SHARED/CROSS-REPO ISSUES
+# ============================================================================
+# Issues qui concernent à la fois backend ET frontend
+# Une entrée shared créera automatiquement 2 issues liées (une dans chaque repo)
+shared:
+  - id: SHARED-001
+    title: "[API Contract] Add Match Statistics DTOs"
+    type: documentation
+    priority: medium
+    repos:
+      - backend
+      - frontend
+    # Issue backend (créée automatiquement avec suffixe "(Backend)")
+    backend_issue:
+      title: "[API Contract] Add Match Statistics DTOs (Backend)"
+      labels:
+        - api-contracts
+        - types
+        - documentation
+        - bounded-context:club-management
+        - layer:presentation
+      github_issue_number: null
+      github_url: null
+    # Issue frontend (créée automatiquement avec suffixe "(Frontend)")
+    frontend_issue:
+      title: "[API Contract] Add Match Statistics DTOs (Frontend)"
+      labels:
+        - api-contracts
+        - types
+        - documentation
+        - feature:shared
+      github_issue_number: null
+      github_url: null
+    description: |
+      ## Context
+      Synchronize match statistics DTOs between backend and frontend to ensure type safety and validation consistency.
+
+      ## Backend Tasks
+      - [ ] Create `MatchStatisticsDto` in `club-management/presentation/dtos/`
+      - [ ] Add Swagger decorators (@ApiProperty) for documentation
+      - [ ] Add class-validator decorators for runtime validation
+      - [ ] Export DTO in barrel file
+
+      ## Frontend Tasks
+      - [ ] Generate TypeScript types from backend DTOs
+      - [ ] Create types in `features/matches/types/match-statistics.types.ts`
+      - [ ] Create Zod validation schemas matching backend
+      - [ ] Export types in barrel file
+
+      ## Acceptance Criteria
+      - [ ] Backend: MatchStatisticsDto created with Swagger + validation
+      - [ ] Frontend: TypeScript types generated and exported
+      - [ ] Validation schemas match on both sides (class-validator ↔ Zod)
+      - [ ] Documentation added in `.claude/skills/api-contracts/`
+      - [ ] Both issues linked with cross-references
+
+      ## Skills to Use
+      - `.claude/skills/api-contracts/` (MANDATORY)
+      - Backend: `.claude/skills/ddd-bounded-context/` (Presentation layer)
+      - Frontend: `.claude/skills/atomic-component/` (Types organization)
+
+      ## Dependencies
+      Backend must be completed before frontend can generate types
+
+      ## Estimated Effort
+      - Backend: Small (1-2 hours)
+      - Frontend: Small (1-2 hours)
+    assignee: null
+    milestone: "API Stabilization"
+    status: planned
+    created_at: null
+    updated_at: null
+    linked_at: null
+
+  # ============================================================================
+  # PHASE 6 : EMAILS & NOTIFICATIONS
+  # ============================================================================
+
+  - id: SHARED-002
+    title: "[Emails] Setup Email Infrastructure & Service"
+    type: feature
+    priority: high
+    repos:
+      - backend
+      - frontend
+    backend_issue:
+      title: "[Emails] Setup Email Infrastructure & Service (Backend)"
+      labels:
+        - emails
+        - infrastructure
+        - feature
+        - layer:infrastructure
+        - priority:high
+      github_issue_number: 25
+      github_url: https://github.com/RomualdP/volley_app_back/issues/25
+    frontend_issue:
+      title: "[Emails] Setup Email Infrastructure & Service (Frontend)"
+      labels:
+        - emails
+        - admin
+        - feature
+        - feature:shared
+        - priority:high
+      github_issue_number: 20
+      github_url: https://github.com/RomualdP/volley_app_front/issues/20
+    description: |
+      ## Context
+      Setup the complete email infrastructure for transactional emails (signup, invitations, payments, etc.)
+
+      **Origin**: Phase 6.1 & 6.2 (Tasks T176, T177, T178) from NEW_FUNNEL_TASKS.md
+
+      ## Backend Tasks
+      - [ ] **Choose email service** (SendGrid / Resend / AWS SES / Mailgun)
+        - Compare pricing and features
+        - Test API integration
+        - Document decision in CLAUDE.md
+      - [ ] **Create emails module** in infrastructure layer
+        - Create `src/shared/infrastructure/emails/` folder
+        - Create `EmailsModule` with NestJS
+        - Configure module with environment variables
+      - [ ] **Implement EmailsService**
+        - Method `sendEmail(to, subject, template, data)`
+        - Method `sendTemplatedEmail(templateId, to, data)`
+        - Email queueing for reliability (optional: Bull queue)
+        - Error handling and retry logic
+        - Logging for sent emails
+      - [ ] **Configure environment variables**
+        - `EMAIL_SERVICE_API_KEY`
+        - `EMAIL_FROM_ADDRESS`
+        - `EMAIL_FROM_NAME`
+        - `EMAIL_REPLY_TO`
+      - [ ] **Create email base template** (HTML layout)
+        - Responsive design
+        - Brand colors and logo
+        - Footer with unsubscribe link
+
+      ## Frontend Tasks
+      - [ ] **Create admin dashboard** for email management
+        - Page: `app/(dashboard)/admin/emails/page.tsx`
+        - Feature: `features/admin/emails/`
+      - [ ] **Display sent emails list**
+        - Table with filters (date, type, recipient, status)
+        - Server Component with pagination
+        - Search by email/user
+      - [ ] **Email configuration page**
+        - Form to configure FROM address, name
+        - Test email sending
+        - Preview templates
+      - [ ] **Email statistics**
+        - Total sent, delivered, opened, clicked
+        - Charts with delivery rate
+        - Error monitoring
+
+      ## Acceptance Criteria
+      - [ ] Backend: Email service chosen and documented
+      - [ ] Backend: EmailsModule created and configured
+      - [ ] Backend: EmailsService with send methods implemented
+      - [ ] Backend: Environment variables configured
+      - [ ] Backend: Base HTML template created
+      - [ ] Backend: Unit tests for EmailsService (95%+ coverage)
+      - [ ] Frontend: Admin dashboard page created
+      - [ ] Frontend: Sent emails list with filters working
+      - [ ] Frontend: Email configuration form functional
+      - [ ] Frontend: Test email can be sent from admin panel
+      - [ ] Integration: Test email sent successfully from backend to real inbox
+      - [ ] Documentation: Email setup guide in CLAUDE.md
+
+      ## Skills to Use
+      - Backend: `.claude/skills/ddd-bounded-context/` (Infrastructure layer)
+      - Backend: `.claude/skills/ddd-testing/` (Service tests)
+      - Frontend: `.claude/skills/server-components/`
+      - Frontend: `.claude/skills/atomic-component/`
+      - Frontend: `.claude/skills/mobile-first/`
+      - `.claude/skills/api-contracts/` (Admin API DTOs)
+
+      ## Dependencies
+      None (foundational feature)
+
+      ## Estimated Effort
+      - Backend: Medium (4-6 hours)
+      - Frontend: Medium (3-4 hours)
+      - **Total**: Large (7-10 hours)
+
+      ## Recommended Services
+      - **Resend** (modern, good DX, free tier 100 emails/day)
+      - **SendGrid** (reliable, 100 emails/day free)
+      - **AWS SES** (cheap, requires AWS setup)
+
+    assignee: null
+    milestone: "Email System"
+    status: ready
+    created_at: "2025-10-27T15:10:29Z"
+    updated_at: "2025-10-27T15:10:29Z"
+    linked_at: "2025-10-27T15:27:43Z"
+
+  - id: SHARED-003
+    title: "[Emails] Create Signup Email Templates"
+    type: feature
+    priority: high
+    repos:
+      - backend
+      - frontend
+    backend_issue:
+      title: "[Emails] Create Signup Email Templates (Backend)"
+      labels:
+        - emails
+        - templates
+        - feature
+        - layer:infrastructure
+        - priority:high
+      github_issue_number: 26
+      github_url: https://github.com/RomualdP/volley_app_back/issues/26
+    frontend_issue:
+      title: "[Emails] Create Signup Email Templates (Frontend)"
+      labels:
+        - emails
+        - templates
+        - feature
+        - feature:auth
+        - priority:high
+      github_issue_number: 21
+      github_url: https://github.com/RomualdP/volley_app_front/issues/21
+    description: |
+      ## Context
+      Create and integrate email templates for all signup flows (coach, assistant, player)
+
+      **Origin**: Phase 6.1 (Tasks T169, T170, T171) from NEW_FUNNEL_TASKS.md
+
+      ## Backend Tasks
+      - [ ] **Template: Coach Signup Confirmation**
+        - Subject: "Bienvenue sur Hoki App ! 🏐"
+        - Content: Welcome message, club creation confirmation, next steps
+        - Include: Club name, subscription plan, first action (invite players)
+        - CTA button: "Inviter des joueurs"
+      - [ ] **Template: Assistant Invitation**
+        - Subject: "Invitation à rejoindre [Club Name] en tant qu'assistant"
+        - Content: Invitation from coach, club details, role explanation
+        - Include: Coach name, club name, invitation link (with token)
+        - CTA button: "Accepter l'invitation"
+        - Expiration notice: "Ce lien expire dans 7 jours"
+      - [ ] **Template: Player Invitation**
+        - Subject: "Invitation à rejoindre [Club Name] 🏐"
+        - Content: Invitation from coach, club details, team info
+        - Include: Coach name, club name, team names (if applicable), invitation link
+        - CTA button: "Rejoindre le club"
+        - Expiration notice: "Ce lien expire dans 7 jours"
+      - [ ] **Integrate with AuthService**
+        - Send coach confirmation email in `signupCoach()`
+        - Send invitation emails in `GenerateInvitationHandler`
+        - Add email sending to existing flows
+      - [ ] **Error handling**
+        - Log email failures without blocking signup
+        - Retry logic for failed emails (queue)
+        - Alert admin on repeated failures
+
+      ## Frontend Tasks
+      - [ ] **Email preview page** (admin)
+        - Page: `app/(dashboard)/admin/emails/templates/page.tsx`
+        - Preview all templates with sample data
+        - Interactive template selector
+      - [ ] **Test email sending**
+        - Button "Send test email" for each template
+        - Input field for test recipient email
+        - Success/error toast notifications
+      - [ ] **Trigger email resend** (user dashboard)
+        - In invitation flow: "Resend invitation" button
+        - In profile: "Resend welcome email" option
+        - Rate limiting (max 3 resends per hour)
+
+      ## Acceptance Criteria
+      - [ ] Backend: 3 email templates created (coach, assistant, player)
+      - [ ] Backend: All templates are responsive (mobile-friendly)
+      - [ ] Backend: Templates tested with real email service
+      - [ ] Backend: Integration with AuthService completed
+      - [ ] Backend: Error handling and logging implemented
+      - [ ] Backend: Unit tests for email sending flows (95%+ coverage)
+      - [ ] Frontend: Email preview page functional
+      - [ ] Frontend: Test email sending works from admin panel
+      - [ ] Frontend: Resend buttons implemented where applicable
+      - [ ] Integration: All 3 signup flows send emails successfully
+      - [ ] Testing: Emails received in real inbox with correct formatting
+      - [ ] Testing: Links in emails work correctly (invitation tokens valid)
+
+      ## Skills to Use
+      - Backend: `.claude/skills/ddd-bounded-context/` (Infrastructure layer)
+      - Backend: `.claude/skills/ddd-testing/` (Integration tests)
+      - Frontend: `.claude/skills/server-components/`
+      - Frontend: `.claude/skills/server-actions/` (Resend email action)
+      - Frontend: `.claude/skills/atomic-component/`
+
+      ## Dependencies
+      - **SHARED-002** (Email infrastructure must be setup first)
+
+      ## Estimated Effort
+      - Backend: Medium (3-4 hours)
+      - Frontend: Small (2-3 hours)
+      - **Total**: Medium (5-7 hours)
+
+    assignee: null
+    milestone: "Email System"
+    status: ready
+    blocked_by:
+      - SHARED-002
+    created_at: "2025-10-27T15:12:27Z"
+    updated_at: "2025-10-27T15:12:27Z"
+    linked_at: "2025-10-27T15:27:43Z"
+
+  - id: SHARED-004
+    title: "[Emails] Create Club Transfer Email Template"
+    type: feature
+    priority: medium
+    repos:
+      - backend
+      - frontend
+    backend_issue:
+      title: "[Emails] Create Club Transfer Email Template (Backend)"
+      labels:
+        - emails
+        - templates
+        - feature
+        - bounded-context:club-management
+        - layer:infrastructure
+        - priority:medium
+      github_issue_number: 27
+      github_url: https://github.com/RomualdP/volley_app_back/issues/27
+    frontend_issue:
+      title: "[Emails] Create Club Transfer Email Template (Frontend)"
+      labels:
+        - emails
+        - notifications
+        - feature
+        - feature:club-management
+        - priority:medium
+      github_issue_number: 22
+      github_url: https://github.com/RomualdP/volley_app_front/issues/22
+    description: |
+      ## Context
+      Create email notification sent to the old coach when a player changes club
+
+      **Origin**: Phase 6.1 (Task T172) from NEW_FUNNEL_TASKS.md
+
+      ## Backend Tasks
+      - [ ] **Template: Club Transfer Alert**
+        - Subject: "⚠️ [Player Name] a quitté votre club"
+        - Content: Player name, date of departure, new club name (optional)
+        - Include: Player profile link, team they were in
+        - Tone: Professional, informative, not accusatory
+        - CTA: "Voir l'historique du club" (optional)
+      - [ ] **Integrate with ClubTransferService**
+        - Send email in `transferPlayer()` method
+        - Extract old coach email from club ownership
+        - Include context: which team(s) the player was in
+      - [ ] **Privacy considerations**
+        - Don't reveal new club name by default (optional config)
+        - Only notify coach, not all members
+        - Log transfer in club activity history
+
+      ## Frontend Tasks
+      - [ ] **Club activity notifications** (coach dashboard)
+        - Widget: Recent club changes (players joined/left)
+        - List of departures with dates
+        - Filter by date range
+      - [ ] **Email preferences**
+        - User settings: "Notify me when players leave"
+        - Toggle on/off club transfer emails
+        - Save preferences in user profile
+      - [ ] **Transfer history page**
+        - Page: `app/(dashboard)/clubs/[id]/history/page.tsx`
+        - Timeline of joins/departures
+        - Export to CSV option
+
+      ## Acceptance Criteria
+      - [ ] Backend: Club transfer email template created
+      - [ ] Backend: Email responsive and mobile-friendly
+      - [ ] Backend: Integration with ClubTransferService completed
+      - [ ] Backend: Privacy rules implemented (no new club name leak)
+      - [ ] Backend: Unit tests for transfer email flow (95%+ coverage)
+      - [ ] Frontend: Club activity widget on coach dashboard
+      - [ ] Frontend: Email preferences toggle functional
+      - [ ] Frontend: Transfer history page created
+      - [ ] Integration: Email sent when player transfers successfully
+      - [ ] Testing: Email received with correct player info
+      - [ ] Testing: Email preferences respected (no email if disabled)
+
+      ## Skills to Use
+      - Backend: `.claude/skills/ddd-bounded-context/` (club-management context)
+      - Backend: `.claude/skills/ddd-testing/` (Domain service tests)
+      - Frontend: `.claude/skills/server-components/`
+      - Frontend: `.claude/skills/atomic-component/`
+      - Frontend: `.claude/skills/mobile-first/`
+
+      ## Dependencies
+      - **SHARED-002** (Email infrastructure)
+      - Backend: `ClubTransferService` must exist (already implemented in Phase 0)
+
+      ## Estimated Effort
+      - Backend: Small (2-3 hours)
+      - Frontend: Small (2-3 hours)
+      - **Total**: Small (4-6 hours)
+
+    assignee: null
+    milestone: "Email System"
+    status: ready
+    blocked_by:
+      - SHARED-002
+    created_at: "2025-10-27T15:12:29Z"
+    updated_at: "2025-10-27T15:12:29Z"
+    linked_at: "2025-10-27T15:27:44Z"
+
+  - id: SHARED-005
+    title: "[Emails] Create Stripe Payment Email Templates"
+    type: feature
+    priority: high
+    repos:
+      - backend
+      - frontend
+    backend_issue:
+      title: "[Emails] Create Stripe Payment Email Templates (Backend)"
+      labels:
+        - emails
+        - templates
+        - stripe
+        - payments
+        - feature
+        - layer:infrastructure
+        - priority:high
+      github_issue_number: 28
+      github_url: https://github.com/RomualdP/volley_app_back/issues/28
+    frontend_issue:
+      title: "[Emails] Create Stripe Payment Email Templates (Frontend)"
+      labels:
+        - emails
+        - stripe
+        - payments
+        - feature
+        - feature:club-management
+        - priority:high
+      github_issue_number: 23
+      github_url: https://github.com/RomualdP/volley_app_front/issues/23
+    description: |
+      ## Context
+      Create email templates for all Stripe payment events (successful payment, failed payment, subscription canceled)
+
+      **Origin**: Phase 6.1 (Tasks T173, T174, T175) from NEW_FUNNEL_TASKS.md
+
+      ## Backend Tasks
+      - [ ] **Template: Payment Successful**
+        - Subject: "✅ Paiement confirmé - [Plan Name]"
+        - Content: Payment confirmation, amount, plan details, next billing date
+        - Include: Invoice link, plan features, customer portal link
+        - CTA: "Voir mon abonnement"
+      - [ ] **Template: Payment Failed**
+        - Subject: "⚠️ Échec du paiement - Action requise"
+        - Content: Payment failure notice, reason (card expired, insufficient funds, etc.)
+        - Include: Update payment method link, grace period info
+        - Urgent tone with clear action needed
+        - CTA: "Mettre à jour ma carte"
+      - [ ] **Template: Subscription Canceled**
+        - Subject: "Abonnement annulé - Accès jusqu'au [End Date]"
+        - Content: Cancellation confirmation, access end date, data retention policy
+        - Include: Reactivation link, export data option
+        - Tone: Professional, helpful (not guilt-tripping)
+        - CTA: "Réactiver mon abonnement" or "Exporter mes données"
+      - [ ] **Integrate with Stripe webhooks**
+        - Send payment success email in `checkout.session.completed` webhook
+        - Send payment failed email in `invoice.payment_failed` webhook
+        - Send cancellation email in `customer.subscription.deleted` webhook
+        - Add email sending to existing webhook handlers
+      - [ ] **Include invoice data**
+        - Fetch invoice details from Stripe API
+        - Include amount, currency, date, invoice PDF link
+        - Store invoice history in database for frontend display
+
+      ## Frontend Tasks
+      - [ ] **Payment history page**
+        - Page: `app/(dashboard)/clubs/[id]/billing/page.tsx`
+        - Table: Date, Amount, Status, Invoice link
+        - Filters: Date range, status (paid/failed/pending)
+        - Export to CSV
+      - [ ] **Payment method management**
+        - Display current card (last 4 digits, expiry)
+        - Button: "Update payment method" → Stripe Customer Portal
+        - Show payment failures prominently (banner/alert)
+      - [ ] **Subscription status banner**
+        - If payment failed: Red banner "Action requise - Paiement échoué"
+        - If canceled: Yellow banner "Abonnement annulé - Accès jusqu'au [date]"
+        - Dismissible but persists until resolved
+      - [ ] **Email history for payments**
+        - In admin panel: List all payment emails sent
+        - Filter by user, date, type
+        - Resend email option
+
+      ## Acceptance Criteria
+      - [ ] Backend: 3 Stripe email templates created (success, failed, canceled)
+      - [ ] Backend: All templates responsive and mobile-friendly
+      - [ ] Backend: Integration with Stripe webhooks completed
+      - [ ] Backend: Invoice data fetched and included in emails
+      - [ ] Backend: Email sending logged and monitored
+      - [ ] Backend: Unit tests for webhook → email flows (95%+ coverage)
+      - [ ] Frontend: Payment history page functional
+      - [ ] Frontend: Payment method display and update working
+      - [ ] Frontend: Status banners showing when applicable
+      - [ ] Frontend: Admin email history for payments
+      - [ ] Integration: All 3 webhook events trigger correct emails
+      - [ ] Testing: Emails received with correct payment/invoice data
+      - [ ] Testing: Links in emails work (Customer Portal, Invoice PDF)
+
+      ## Skills to Use
+      - Backend: `.claude/skills/ddd-bounded-context/` (club-management context)
+      - Backend: `.claude/skills/ddd-testing/` (Webhook tests)
+      - Frontend: `.claude/skills/server-components/`
+      - Frontend: `.claude/skills/atomic-component/`
+      - Frontend: `.claude/skills/mobile-first/`
+      - `.claude/skills/api-contracts/` (Payment/Invoice DTOs)
+
+      ## Dependencies
+      - **SHARED-002** (Email infrastructure)
+      - Backend: Stripe webhooks already implemented (Phase 3)
+
+      ## Estimated Effort
+      - Backend: Medium (4-5 hours)
+      - Frontend: Medium (3-4 hours)
+      - **Total**: Medium (7-9 hours)
+
+    assignee: null
+    milestone: "Email System"
+    status: ready
+    blocked_by:
+      - SHARED-002
+    created_at: "2025-10-27T15:13:30Z"
+    updated_at: "2025-10-27T15:13:30Z"
+    linked_at: "2025-10-27T15:27:46Z"
+
+  - id: SHARED-006
+    title: "[Emails] Integrate Event-Driven Email Sending"
+    type: feature
+    priority: high
+    repos:
+      - backend
+      - frontend
+    backend_issue:
+      title: "[Emails] Integrate Event-Driven Email Sending (Backend)"
+      labels:
+        - emails
+        - events
+        - feature
+        - layer:application
+        - layer:infrastructure
+        - priority:high
+      github_issue_number: 29
+      github_url: https://github.com/RomualdP/volley_app_back/issues/29
+    frontend_issue:
+      title: "[Emails] Integrate Event-Driven Email Sending (Frontend)"
+      labels:
+        - emails
+        - notifications
+        - feature
+        - feature:shared
+        - priority:high
+      github_issue_number: 24
+      github_url: https://github.com/RomualdP/volley_app_front/issues/24
+    description: |
+      ## Context
+      Connect all application events to email sending (signups, invitations, webhooks, transfers)
+
+      **Origin**: Phase 6.2 (Tasks T179, T180) from NEW_FUNNEL_TASKS.md
+
+      ## Backend Tasks
+      - [ ] **Create EventEmitter integration**
+        - Use NestJS EventEmitter2 module
+        - Define domain events: `UserSignedUpEvent`, `InvitationCreatedEvent`, `ClubTransferredEvent`, etc.
+        - Create event handlers in emails module
+      - [ ] **Connect signup events → emails**
+        - Emit `CoachSignedUpEvent` in `signupCoach()` → send welcome email
+        - Emit `InvitationCreatedEvent` in `GenerateInvitationHandler` → send invitation email
+        - Decouple email sending from core business logic
+      - [ ] **Connect Stripe webhooks → emails**
+        - Emit `PaymentSucceededEvent` in webhook handler → send payment success email
+        - Emit `PaymentFailedEvent` → send payment failed email
+        - Emit `SubscriptionCanceledEvent` → send cancellation email
+      - [ ] **Email queue for reliability**
+        - Install Bull queue (or AWS SQS)
+        - Queue email jobs instead of sending synchronously
+        - Retry failed emails (3 retries with exponential backoff)
+        - Dead letter queue for permanently failed emails
+      - [ ] **Monitoring and alerting**
+        - Log all email events (sent, failed, retried)
+        - Create admin endpoint `GET /admin/emails/stats` (sent/delivered/failed counts)
+        - Alert on high failure rate (> 5%)
+
+      ## Frontend Tasks
+      - [ ] **User notification preferences**
+        - Page: `app/(dashboard)/profile/notifications/page.tsx`
+        - Toggles: Email on invitation, Email on payment, Email on club changes
+        - Save preferences in User model (new fields: `emailPreferences`)
+      - [ ] **Email delivery status** (admin)
+        - Dashboard widget: "Email Delivery Health"
+        - Metrics: Sent (24h), Delivered (%), Failed (last hour)
+        - Chart: Email volume over time
+        - Alert badge if failure rate > 5%
+      - [ ] **Failed emails management** (admin)
+        - Page: `app/(dashboard)/admin/emails/failed/page.tsx`
+        - List failed emails with error messages
+        - Retry button (manual retry)
+        - Mark as resolved / ignore
+
+      ## Acceptance Criteria
+      - [ ] Backend: EventEmitter2 configured and events defined
+      - [ ] Backend: All signup events emit and trigger emails
+      - [ ] Backend: All Stripe webhook events emit and trigger emails
+      - [ ] Backend: Email queue implemented with retry logic
+      - [ ] Backend: Monitoring endpoint created and functional
+      - [ ] Backend: Unit tests for event handlers (95%+ coverage)
+      - [ ] Backend: Integration tests for event → email flow
+      - [ ] Frontend: User notification preferences page functional
+      - [ ] Frontend: Email delivery dashboard widget created
+      - [ ] Frontend: Failed emails management page functional
+      - [ ] Integration: All events trigger emails correctly
+      - [ ] Integration: Failed emails automatically retry
+      - [ ] Testing: Preferences respected (no email if disabled)
+      - [ ] Testing: Admin can view and retry failed emails
+
+      ## Skills to Use
+      - Backend: `.claude/skills/ddd-bounded-context/` (Application layer - events)
+      - Backend: `.claude/skills/cqrs-command-query/` (Command handlers emit events)
+      - Backend: `.claude/skills/ddd-testing/` (Event handler tests)
+      - Frontend: `.claude/skills/server-components/`
+      - Frontend: `.claude/skills/server-actions/` (Retry failed email action)
+      - Frontend: `.claude/skills/atomic-component/`
+      - `.claude/skills/api-contracts/` (Email stats DTOs)
+
+      ## Dependencies
+      - **SHARED-002** (Email infrastructure)
+      - **SHARED-003** (Signup templates must exist)
+      - **SHARED-005** (Stripe templates must exist)
+
+      ## Estimated Effort
+      - Backend: Large (6-8 hours)
+      - Frontend: Medium (4-5 hours)
+      - **Total**: Large (10-13 hours)
+
+      ## Technical Notes
+      - Use NestJS `@nestjs/event-emitter` for in-process events
+      - Consider Bull queue with Redis for production reliability
+      - Email preferences stored in User model: `emailPreferences: { invitations: boolean, payments: boolean, clubChanges: boolean }`
+
+    assignee: null
+    milestone: "Email System"
+    status: ready
+    blocked_by:
+      - SHARED-002
+      - SHARED-003
+      - SHARED-005
+    created_at: "2025-10-27T15:13:31Z"
+    updated_at: "2025-10-27T15:13:31Z"
+    linked_at: "2025-10-27T15:27:47Z"
+
+# ============================================================================
+# ISSUE TEMPLATES METADATA
+# ============================================================================
+templates:
+  backend_feature:
+    required_fields:
+      - bounded_context
+      - description
+      - acceptance_criteria
+      - skills_to_use
+    recommended_labels:
+      - ddd
+      - cqrs
+      - bounded-context:*
+      - layer:*
+
+  frontend_feature:
+    required_fields:
+      - feature
+      - description
+      - acceptance_criteria
+      - skills_to_use
+      - architecture_compliance
+    recommended_labels:
+      - feature:*
+      - server-components
+      - mobile-first
+
+  bug:
+    required_fields:
+      - current_behavior
+      - expected_behavior
+      - steps_to_reproduce
+      - proposed_solution
+    recommended_labels:
+      - bug
+      - priority:*
