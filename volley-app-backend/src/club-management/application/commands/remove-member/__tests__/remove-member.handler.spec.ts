@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { RemoveMemberHandler } from '../remove-member.handler';
 import { RemoveMemberCommand } from '../remove-member.command';
 import {

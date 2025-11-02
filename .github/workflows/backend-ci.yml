@@ -2,15 +2,9 @@ name: Backend CI
 
 on:
   push:
-    branches: [main, staging, develop]
-    paths:
-      - 'volley-app-backend/**'
-      - '.github/workflows/backend-ci.yml'
+    branches: [main, develop]
   pull_request:
-    branches: [main, staging, develop]
-    paths:
-      - 'volley-app-backend/**'
-      - '.github/workflows/backend-ci.yml'
+    branches: [main, develop]
 
 jobs:
   test:
@@ -78,9 +72,8 @@ jobs:
         uses: codecov/codecov-action@v4
         if: always()
         with:
-          files: volley-app-backend/coverage/lcov.info
+          files: ./volley-app-backend/coverage/lcov.info
           flags: backend
           name: backend-coverage
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
