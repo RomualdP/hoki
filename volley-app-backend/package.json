@@ -1,10 +1,19 @@
 {
   "name": "volley-app-backend",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Hoki Backend - NestJS API with DDD/CQRS architecture",
+  "author": "Romuald Piquet",
   "private": true,
   "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RomualdP/hoki.git",
+    "directory": "volley-app-backend"
+  },
+  "bugs": {
+    "url": "https://github.com/RomualdP/hoki/issues"
+  },
+  "homepage": "https://github.com/RomualdP/hoki#readme",
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
   },

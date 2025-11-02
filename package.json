@@ -3,6 +3,14 @@
   "version": "1.0.0",
   "description": "Hoki - Volleyball team management application (mono-repo)",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RomualdP/hoki.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RomualdP/hoki/issues"
+  },
+  "homepage": "https://github.com/RomualdP/hoki#readme",
   "scripts": {
     "dev:front": "cd volley-app-frontend && yarn dev",
     "dev:back": "cd volley-app-backend && yarn start:dev",

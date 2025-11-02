@@ -3,8 +3,7 @@
 # Utilisez la commande `/create-issues` pour synchroniser avec GitHub
 
 metadata:
-  backend_repo: RomualdP/volley_app_back
-  frontend_repo: RomualdP/volley_app_front
+  repo: RomualdP/hoki
   last_sync: null
   version: "1.0"
 

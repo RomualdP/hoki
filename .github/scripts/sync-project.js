@@ -181,13 +181,14 @@ function addIssueToProject(projectId, issueNodeId, issueTitle, repo, number) {
 
 function getAllIssues(planning) {
   const allIssues = [];
+  const repo = planning.metadata.repo;
 
   // Backend issues
   if (planning.backend) {
     planning.backend.forEach((issue) => {
       if (issue.github_issue_number) {
         allIssues.push({
-          repo: planning.metadata.backend_repo,
+          repo: repo,
           number: issue.github_issue_number,
           id: issue.id,
           title: issue.title,
@@ -201,7 +202,7 @@ function getAllIssues(planning) {
     planning.frontend.forEach((issue) => {
       if (issue.github_issue_number) {
         allIssues.push({
-          repo: planning.metadata.frontend_repo,
+          repo: repo,
           number: issue.github_issue_number,
           id: issue.id,
           title: issue.title,
@@ -215,7 +216,7 @@ function getAllIssues(planning) {
     planning.shared.forEach((issue) => {
       if (issue.backend_issue && issue.backend_issue.github_issue_number) {
         allIssues.push({
-          repo: planning.metadata.backend_repo,
+          repo: repo,
           number: issue.backend_issue.github_issue_number,
           id: `${issue.id}-backend`,
           title: issue.backend_issue.title,
@@ -223,7 +224,7 @@ function getAllIssues(planning) {
       }
       if (issue.frontend_issue && issue.frontend_issue.github_issue_number) {
         allIssues.push({
-          repo: planning.metadata.frontend_repo,
+          repo: repo,
           number: issue.frontend_issue.github_issue_number,
           id: `${issue.id}-frontend`,
           title: issue.frontend_issue.title,
