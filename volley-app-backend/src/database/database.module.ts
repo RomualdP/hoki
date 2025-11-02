@@ -16,3 +16,5 @@ export const UNIT_OF_WORK = 'IUnitOfWork';
   exports: [DatabaseService, UNIT_OF_WORK],
 })
 export class DatabaseModule {}
+
+export { DatabaseService };

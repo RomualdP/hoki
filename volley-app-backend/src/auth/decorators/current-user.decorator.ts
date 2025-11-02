@@ -28,3 +28,15 @@ export const CurrentUserId = createParamDecorator(
     return request.user.id;
   },
 );
+
+/**
+ * Decorator to get the current user's clubId from the request
+ * Requires JwtAuthGuard to be applied on the route
+ * @returns The club ID (string | null)
+ */
+export const CurrentClubId = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): string | null => {
+    const request = ctx.switchToHttp().getRequest<RequestWithUser>();
+    return request.user.clubId ?? null;
+  },
+);

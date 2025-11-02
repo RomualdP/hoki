@@ -132,3 +132,4 @@ export * from "./match";
 export * from "./skill";
 export * from "./news";
 export * from "./profile";
+export * from "./training-template.types";

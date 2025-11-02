@@ -1,38 +1,58 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule, UNIT_OF_WORK } from '../database/database.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import {
+  DatabaseModule,
+  DatabaseService,
+  UNIT_OF_WORK,
+} from '../database/database.module';
 
 import { TrainingController } from './presentation/training.controller';
 import { TrainingRegistrationController } from './presentation/training-registration.controller';
+import { TrainingTemplateController } from './presentation/training-template.controller';
 
 import { CreateTrainingHandler } from './application/commands/create-training/create-training.handler';
 import { RegisterToTrainingHandler } from './application/commands/register-to-training/register-to-training.handler';
 import { CancelRegistrationHandler } from './application/commands/cancel-registration/cancel-registration.handler';
 import { GenerateTrainingTeamsHandler } from './application/commands/generate-training-teams/generate-training-teams.handler';
 import { DeleteTrainingHandler } from './application/commands/delete-training/delete-training.handler';
+import { CreateTrainingTemplateHandler } from './application/commands/create-training-template/create-training-template.handler';
+import { UpdateTrainingTemplateHandler } from './application/commands/update-training-template/update-training-template.handler';
+import { DeleteTrainingTemplateHandler } from './application/commands/delete-training-template/delete-training-template.handler';
+import { ToggleTrainingTemplateHandler } from './application/commands/toggle-training-template/toggle-training-template.handler';
 import { ListTrainingsHandler } from './application/queries/list-trainings/list-trainings.handler';
 import { GetTrainingHandler } from './application/queries/get-training/get-training.handler';
 import { GetTrainingTeamsHandler } from './application/queries/get-training-teams/get-training-teams.handler';
 import { GetTrainingRegistrationsHandler } from './application/queries/get-training-registrations/get-training-registrations.handler';
+import { ListTrainingTemplatesHandler } from './application/queries/list-training-templates/list-training-templates.handler';
 
 import { TrainingRepository } from './infrastructure/persistence/repositories/training.repository';
 import { TrainingRegistrationRepository } from './infrastructure/persistence/repositories/training-registration.repository';
 import { TrainingTeamRepository } from './infrastructure/persistence/repositories/training-team.repository';
+import { TrainingTemplateRepository } from './infrastructure/persistence/repositories/training-template.repository';
 import { UserRepository } from './infrastructure/persistence/repositories/user.repository';
+
+import { CreateWeeklyTrainingsJob } from './infrastructure/scheduled/create-weekly-trainings.job';
 
 import { ITrainingRepository } from './domain/repositories/training.repository.interface';
 import { ITrainingRegistrationRepository } from './domain/repositories/training-registration.repository.interface';
 import { ITrainingTeamRepository } from './domain/repositories/training-team.repository.interface';
+import { ITrainingTemplateRepository } from './domain/repositories/training-template.repository.interface';
 import { IUserRepository } from './domain/repositories/user.repository.interface';
 import { IUnitOfWork } from '../database/unit-of-work.interface';
 
 const TRAINING_REPOSITORY = 'ITrainingRepository';
 const TRAINING_REGISTRATION_REPOSITORY = 'ITrainingRegistrationRepository';
 const TRAINING_TEAM_REPOSITORY = 'ITrainingTeamRepository';
+const TRAINING_TEMPLATE_REPOSITORY = 'ITrainingTemplateRepository';
 const USER_REPOSITORY = 'IUserRepository';
 
 @Module({
-  imports: [DatabaseModule],
-  controllers: [TrainingController, TrainingRegistrationController],
+  imports: [DatabaseModule, ScheduleModule.forRoot()],
+  controllers: [
+    TrainingController,
+    TrainingRegistrationController,
+    TrainingTemplateController,
+  ],
   providers: [
     {
       provide: TRAINING_REPOSITORY,
@@ -145,6 +165,74 @@ const USER_REPOSITORY = 'IUserRepository';
         );
       },
       inject: [TRAINING_REGISTRATION_REPOSITORY, USER_REPOSITORY],
+    },
+    {
+      provide: TRAINING_TEMPLATE_REPOSITORY,
+      useClass: TrainingTemplateRepository,
+    },
+    {
+      provide: CreateTrainingTemplateHandler,
+      useFactory: (
+        trainingTemplateRepository: ITrainingTemplateRepository,
+      ) => {
+        return new CreateTrainingTemplateHandler(trainingTemplateRepository);
+      },
+      inject: [TRAINING_TEMPLATE_REPOSITORY],
+    },
+    {
+      provide: UpdateTrainingTemplateHandler,
+      useFactory: (
+        trainingTemplateRepository: ITrainingTemplateRepository,
+      ) => {
+        return new UpdateTrainingTemplateHandler(trainingTemplateRepository);
+      },
+      inject: [TRAINING_TEMPLATE_REPOSITORY],
+    },
+    {
+      provide: DeleteTrainingTemplateHandler,
+      useFactory: (
+        trainingTemplateRepository: ITrainingTemplateRepository,
+      ) => {
+        return new DeleteTrainingTemplateHandler(trainingTemplateRepository);
+      },
+      inject: [TRAINING_TEMPLATE_REPOSITORY],
+    },
+    {
+      provide: ToggleTrainingTemplateHandler,
+      useFactory: (
+        trainingTemplateRepository: ITrainingTemplateRepository,
+      ) => {
+        return new ToggleTrainingTemplateHandler(trainingTemplateRepository);
+      },
+      inject: [TRAINING_TEMPLATE_REPOSITORY],
+    },
+    {
+      provide: ListTrainingTemplatesHandler,
+      useFactory: (
+        trainingTemplateRepository: ITrainingTemplateRepository,
+      ) => {
+        return new ListTrainingTemplatesHandler(trainingTemplateRepository);
+      },
+      inject: [TRAINING_TEMPLATE_REPOSITORY],
+    },
+    {
+      provide: CreateWeeklyTrainingsJob,
+      useFactory: (
+        database: DatabaseService,
+        trainingTemplateRepository: ITrainingTemplateRepository,
+        trainingRepository: ITrainingRepository,
+      ) => {
+        return new CreateWeeklyTrainingsJob(
+          database,
+          trainingTemplateRepository,
+          trainingRepository,
+        );
+      },
+      inject: [
+        DatabaseService,
+        TRAINING_TEMPLATE_REPOSITORY,
+        TRAINING_REPOSITORY,
+      ],
     },
   ],
 })

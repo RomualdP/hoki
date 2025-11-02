@@ -10,6 +10,8 @@ interface AuthState {
   readonly role: UserRole | null;
   readonly clubId: string | null;
   readonly clubRole: ClubRole;
+  _hasHydrated: boolean;
+  _hasCheckedAuth: boolean;
 }
 
 interface AuthActions {
@@ -37,6 +39,8 @@ const initialState: AuthState = {
   role: null,
   clubId: null,
   clubRole: null,
+  _hasHydrated: false,
+  _hasCheckedAuth: false,
 };
 
 export const useAuthStore = create<AuthStore>()(
@@ -62,6 +66,7 @@ export const useAuthStore = create<AuthStore>()(
               // Extract clubId and clubRole from user object if not provided
               clubId: clubId ?? user.clubId ?? null,
               clubRole: clubRole ?? user.clubRole ?? null,
+              _hasCheckedAuth: true,
             }),
             false,
             "auth/loginUser",
@@ -79,6 +84,7 @@ export const useAuthStore = create<AuthStore>()(
               role: null,
               clubId: null,
               clubRole: null,
+              _hasCheckedAuth: true,
             }),
             false,
             "auth/logoutUser",
@@ -90,6 +96,8 @@ export const useAuthStore = create<AuthStore>()(
             (state) => ({
               ...state,
               isLoading,
+              // Mark as checked when loading finishes
+              _hasCheckedAuth: !isLoading ? true : state._hasCheckedAuth,
             }),
             false,
             "auth/setLoading",
@@ -150,7 +158,12 @@ export const useAuthStore = create<AuthStore>()(
           role: state.role,
           clubId: state.clubId,
           clubRole: state.clubRole,
+          // Don't persist _hasHydrated and _hasCheckedAuth - they should be reset on each page load
         }),
+        onRehydrateStorage: () => {
+          // Store will be hydrated after this callback runs
+          // We'll use a useEffect in the component to check hydration
+        },
       },
     ),
     {

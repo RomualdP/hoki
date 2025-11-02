@@ -83,4 +83,6 @@ certificates/
 .claude/
 .mcp/
 
+CLAUDE.md
+
 .mcp.json

@@ -1,10 +1,6 @@
 -- Migration: Rename COACH to OWNER and ASSISTANT_COACH to COACH
--- This migration updates enum values and existing data
-
--- Step 1: Add new enum values
-ALTER TYPE "ClubRole" ADD VALUE IF NOT EXISTS 'OWNER';
-ALTER TYPE "ClubRole" ADD VALUE IF NOT EXISTS 'COACH';
-ALTER TYPE "InvitationType" ADD VALUE IF NOT EXISTS 'COACH';
+-- This migration updates existing data to use the new enum values
+-- Note: Enum values were added in the previous migration
 
 -- Step 2: Update existing Member records
 -- COACH -> OWNER
@@ -37,4 +33,3 @@ WHERE type = 'ASSISTANT_COACH'::"InvitationType";
 -- Step 5: Remove old enum values (PostgreSQL doesn't support removing enum values directly)
 -- We'll keep the old values for backward compatibility but they won't be used
 -- The Prisma schema will only define the new values
-

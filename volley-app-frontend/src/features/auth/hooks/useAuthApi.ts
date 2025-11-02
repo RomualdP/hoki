@@ -97,8 +97,13 @@ export const useAuthApi = () => {
   }, []);
 
   const checkAuthStatus = useCallback(async () => {
-    // If already authenticated with user data, skip check
+    // If already authenticated with user data, mark as checked and skip
     if (store.isAuthenticated && store.user) {
+      // Ensure _hasCheckedAuth is true if we already have user data
+      // (loginUser already sets it, but just in case)
+      if (!store._hasCheckedAuth) {
+        store.setLoading(false); // This will set _hasCheckedAuth to true via setLoading
+      }
       return;
     }
 

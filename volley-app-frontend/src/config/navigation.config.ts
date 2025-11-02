@@ -5,6 +5,7 @@ import {
   IconUsers,
   IconBallVolleyball,
   IconCalendar,
+  IconClipboardList,
 } from "@tabler/icons-react";
 import { ROUTES } from "../constants";
 
@@ -61,6 +62,12 @@ export function getNavLinks(clubRole: ClubRole | null): NavLink[] {
       label: "Matchs",
       icon: IconCalendar,
       roles: ["OWNER", "COACH", "PLAYER"],
+    },
+    {
+      href: ROUTES.TRAININGS.TEMPLATES,
+      label: "Templates d'entraînement",
+      icon: IconClipboardList,
+      roles: ["OWNER", "COACH"],
     },
   ];
 }

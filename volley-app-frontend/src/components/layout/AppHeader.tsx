@@ -7,6 +7,7 @@ import Image from "next/image";
 import { IconLogout, IconMenu2, IconX } from "@tabler/icons-react";
 import { useAuthStore } from "../../store";
 import { useAuthApi } from "../../features/auth/hooks";
+import { useStoreHydration } from "../../hooks/useStoreHydration";
 import { ROUTES } from "../../constants";
 import {
   getNavLinks,
@@ -20,11 +21,13 @@ import {
  * Mobile: Navbar horizontale en haut avec hamburger menu
  */
 export function AppHeader() {
-  const { clubRole, user, isAuthenticated } = useAuthStore();
-  const { logout, isLoading } = useAuthApi();
+  const { clubRole, user, isAuthenticated, isLoading: isStoreLoading, _hasCheckedAuth } = useAuthStore();
+  const { logout, isLoading: isApiLoading } = useAuthApi();
   const router = useRouter();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const hasHydrated = useStoreHydration();
+  const isLoading = isStoreLoading || isApiLoading;
 
   // Don't show sidebar on auth pages
   if (
@@ -32,6 +35,18 @@ export function AppHeader() {
     pathname?.startsWith("/signup") ||
     pathname?.startsWith("/register")
   ) {
+    return null;
+  }
+
+  // Wait for store hydration before checking authentication
+  // This prevents the navbar from not showing after login
+  if (!hasHydrated) {
+    return null;
+  }
+
+  // Wait for initial auth check to complete before checking authentication
+  // This ensures the store is updated after login redirect
+  if (!_hasCheckedAuth || isLoading) {
     return null;
   }
 

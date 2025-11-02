@@ -57,6 +57,7 @@ export async function apiRequest<T>(
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include', // Include httpOnly cookies for authentication
   });
 
   // Handle non-JSON responses (like 204 No Content)

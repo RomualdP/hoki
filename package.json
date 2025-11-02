@@ -6,6 +6,7 @@
   "scripts": {
     "dev:front": "cd volley-app-frontend && yarn dev",
     "dev:back": "cd volley-app-backend && yarn start:dev",
+    "dev": "concurrently \"yarn dev:front\" \"yarn dev:back\"",
     "build:front": "cd volley-app-frontend && yarn build",
     "build:back": "cd volley-app-backend && yarn build",
     "lint:front": "cd volley-app-frontend && yarn lint",
