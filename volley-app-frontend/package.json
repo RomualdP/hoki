@@ -1,7 +1,18 @@
 {
-  "name": "front",
+  "name": "volley-app-frontend",
   "version": "0.1.0",
+  "description": "Hoki Frontend - Next.js 16 with feature-based architecture",
+  "author": "Romuald Piquet",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RomualdP/hoki.git",
+    "directory": "volley-app-frontend"
+  },
+  "bugs": {
+    "url": "https://github.com/RomualdP/hoki/issues"
+  },
+  "homepage": "https://github.com/RomualdP/hoki#readme",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

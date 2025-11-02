@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * Script pour lier des issues backend ↔ frontend
+ * Script pour lier des issues backend ↔ frontend dans le monorepo
  *
  * Usage:
  *   node .github/scripts/link-issues.js --backend=45 --frontend=19
- *   node .github/scripts/link-issues.js --backend-repo=RomualdP/volley_app_back --backend=45 --frontend-repo=RomualdP/volley_app_front --frontend=19
+ *   node .github/scripts/link-issues.js --repo=RomualdP/hoki --backend=45 --frontend=19
  *
  * Prérequis:
  *   - GitHub CLI installé (gh)
@@ -14,8 +14,7 @@
 
 const { execSync } = require("child_process");
 
-const DEFAULT_BACKEND_REPO = "RomualdP/volley_app_back";
-const DEFAULT_FRONTEND_REPO = "RomualdP/volley_app_front";
+const DEFAULT_REPO = "RomualdP/hoki";
 
 // ANSI colors
 const colors = {
@@ -34,17 +33,14 @@ function color(text, colorCode) {
 
 function parseArgs(args) {
   const parsed = {
-    backendRepo: DEFAULT_BACKEND_REPO,
-    frontendRepo: DEFAULT_FRONTEND_REPO,
+    repo: DEFAULT_REPO,
     backendIssue: null,
     frontendIssue: null,
   };
 
   args.forEach((arg) => {
-    if (arg.startsWith("--backend-repo=")) {
-      parsed.backendRepo = arg.substring(15);
-    } else if (arg.startsWith("--frontend-repo=")) {
-      parsed.frontendRepo = arg.substring(16);
+    if (arg.startsWith("--repo=")) {
+      parsed.repo = arg.substring(7);
     } else if (arg.startsWith("--backend=")) {
       parsed.backendIssue = parseInt(arg.substring(10));
     } else if (arg.startsWith("--frontend=")) {
@@ -111,7 +107,7 @@ function addComment(repo, issueNumber, comment) {
   }
 }
 
-function linkIssues(backendRepo, backendIssue, frontendRepo, frontendIssue) {
+function linkIssues(repo, backendIssue, frontendIssue) {
   console.log("\n" + color("🔗 Linking Issues", colors.bright + colors.cyan));
   console.log(color("═══════════════════", colors.cyan));
   console.log("");
@@ -119,10 +115,10 @@ function linkIssues(backendRepo, backendIssue, frontendRepo, frontendIssue) {
   // Get issue details
   console.log(color("📝 Fetching issue details...", colors.blue));
 
-  const backendUrl = getIssueUrl(backendRepo, backendIssue);
-  const backendTitle = getIssueTitle(backendRepo, backendIssue);
-  const frontendUrl = getIssueUrl(frontendRepo, frontendIssue);
-  const frontendTitle = getIssueTitle(frontendRepo, frontendIssue);
+  const backendUrl = getIssueUrl(repo, backendIssue);
+  const backendTitle = getIssueTitle(repo, backendIssue);
+  const frontendUrl = getIssueUrl(repo, frontendIssue);
+  const frontendTitle = getIssueTitle(repo, frontendIssue);
 
   if (!backendUrl || !backendTitle || !frontendUrl || !frontendTitle) {
     console.error(
@@ -139,7 +135,7 @@ function linkIssues(backendRepo, backendIssue, frontendRepo, frontendIssue) {
   const backendComment = `🔗 **Related Frontend Issue**
 
 This backend issue is linked to the following frontend issue:
-- **Frontend**: ${frontendRepo}#${frontendIssue}
+- **Frontend**: #${frontendIssue}
 - **URL**: ${frontendUrl}
 - **Title**: ${frontendTitle}
 
@@ -148,7 +144,7 @@ Both issues should be implemented together to maintain consistency between backe
   const frontendComment = `🔗 **Related Backend Issue**
 
 This frontend issue is linked to the following backend issue:
-- **Backend**: ${backendRepo}#${backendIssue}
+- **Backend**: #${backendIssue}
 - **URL**: ${backendUrl}
 - **Title**: ${backendTitle}
 
@@ -157,12 +153,8 @@ Both issues should be implemented together to maintain consistency between backe
   // Add comments
   console.log(color("💬 Adding link comments...", colors.blue));
 
-  const backendSuccess = addComment(backendRepo, backendIssue, backendComment);
-  const frontendSuccess = addComment(
-    frontendRepo,
-    frontendIssue,
-    frontendComment,
-  );
+  const backendSuccess = addComment(repo, backendIssue, backendComment);
+  const frontendSuccess = addComment(repo, frontendIssue, frontendComment);
 
   console.log("");
 
@@ -170,11 +162,9 @@ Both issues should be implemented together to maintain consistency between backe
     console.log(color("✅ Issues successfully linked!", colors.green));
     console.log("");
     console.log(color("📋 Summary:", colors.bright));
+    console.log(`  Backend:  ${color(`${repo}#${backendIssue}`, colors.blue)}`);
     console.log(
-      `  Backend:  ${color(`${backendRepo}#${backendIssue}`, colors.blue)}`,
-    );
-    console.log(
-      `  Frontend: ${color(`${frontendRepo}#${frontendIssue}`, colors.blue)}`,
+      `  Frontend: ${color(`${repo}#${frontendIssue}`, colors.blue)}`,
     );
     console.log("");
     console.log(color("🌐 URLs:", colors.bright));
@@ -230,21 +220,13 @@ function main() {
     );
     console.error("");
     console.error(color("Optional arguments:", colors.bright));
-    console.error(`  --backend-repo=REPO   (default: ${DEFAULT_BACKEND_REPO})`);
-    console.error(
-      `  --frontend-repo=REPO  (default: ${DEFAULT_FRONTEND_REPO})`,
-    );
+    console.error(`  --repo=REPO   (default: ${DEFAULT_REPO})`);
     console.error("");
     process.exit(1);
   }
 
   // Link issues
-  linkIssues(
-    parsed.backendRepo,
-    parsed.backendIssue,
-    parsed.frontendRepo,
-    parsed.frontendIssue,
-  );
+  linkIssues(parsed.repo, parsed.backendIssue, parsed.frontendIssue);
 }
 
 if (require.main === module) {

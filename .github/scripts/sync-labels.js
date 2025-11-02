@@ -14,8 +14,7 @@
 const { execSync } = require("child_process");
 
 const repos = {
-  backend: "RomualdP/volley_app_back",
-  frontend: "RomualdP/volley_app_front",
+  monorepo: "RomualdP/hoki",
 };
 
 // Labels communs aux deux repos
@@ -347,21 +346,16 @@ function main() {
 
   // Sync labels
   try {
-    // Backend
-    console.log("🔙 BACKEND REPO");
-    createLabels(repos.backend, commonLabels, "common");
-    createLabels(repos.backend, backendLabels, "backend-specific");
-
-    // Frontend
-    console.log("\n\n🎨 FRONTEND REPO");
-    createLabels(repos.frontend, commonLabels, "common");
-    createLabels(repos.frontend, frontendLabels, "frontend-specific");
+    // Monorepo (all labels)
+    console.log("📦 MONOREPO (Backend + Frontend)");
+    createLabels(repos.monorepo, commonLabels, "common");
+    createLabels(repos.monorepo, backendLabels, "backend-specific");
+    createLabels(repos.monorepo, frontendLabels, "frontend-specific");
 
     console.log("\n\n✅ Labels synchronization completed!");
     console.log("\n📋 Next steps:");
     console.log("   1. Verify labels at:");
-    console.log(`      - https://github.com/${repos.backend}/labels`);
-    console.log(`      - https://github.com/${repos.frontend}/labels`);
+    console.log(`      - https://github.com/${repos.monorepo}/labels`);
     console.log("   2. Start using them in your issues!");
   } catch (error) {
     console.error("\n❌ Error during synchronization:", error.message);
