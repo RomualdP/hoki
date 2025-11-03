@@ -223,24 +223,46 @@ model TrainingTeam {
   @@map("training_teams")
 }
 
+model TrainingTemplate {
+  id              String   @id @default(cuid())
+  clubId          String
+  title           String
+  description     String?
+  duration        Int
+  location        String?
+  maxParticipants Int?
+  dayOfWeek       Int
+  time            String
+  isActive        Boolean  @default(true)
+  teamIds         String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  club            Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId])
+  @@index([isActive])
+  @@map("training_templates")
+}
+
 // ============================================
 // CLUB MANAGEMENT
 // ============================================
 
 model Club {
-  id           String        @id @default(cuid())
-  name         String        @unique
-  description  String?
-  logo         String?
-  location     String?
-  ownerId      String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  users        User[]
-  teams        Team[]
-  members      Member[]
-  invitations  Invitation[]
-  subscription Subscription?
+  id                String              @id @default(cuid())
+  name              String              @unique
+  description       String?
+  logo              String?
+  location          String?
+  ownerId           String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  users             User[]
+  teams             Team[]
+  members           Member[]
+  invitations       Invitation[]
+  subscription      Subscription?
+  trainingTemplates TrainingTemplate[]
 
   @@map("clubs")
 }

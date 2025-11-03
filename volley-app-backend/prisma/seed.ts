@@ -25,11 +25,23 @@ async function main(): Promise<void> {
 
   console.log('👥 Creating 30 users...');
 
+  // Fixed emails for dev environment
+  const devEmails = [
+    'admin@test.com', // users[0] - ADMIN
+    'owner.paris@test.com', // users[1] - OWNER Paris Volley
+    'owner.lyon@test.com', // users[2] - OWNER Lyon Volleyball
+    'owner.marseille@test.com', // users[3] - OWNER Marseille Beach Volley
+    'coach.paris@test.com', // users[4] - COACH Paris Volley
+  ];
+
   // Create 30 users with complete profiles
   for (let i = 0; i < 30; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
-    const email = faker.internet.email({ firstName, lastName }).toLowerCase();
+    const email =
+      i < devEmails.length
+        ? devEmails[i]
+        : faker.internet.email({ firstName, lastName }).toLowerCase();
     const gender = faker.helpers.arrayElement(['MALE', 'FEMALE'] as const);
     const birthDate = faker.date.birthdate({ min: 18, max: 45, mode: 'age' });
 

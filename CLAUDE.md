@@ -210,6 +210,13 @@ The frontend uses **feature-based architecture** with **Next.js 16 modern patter
 - **debugger**: 10-step systematic debugging process (Define → Reproduce → Formulate → Prioritize → Log → Binary Search → Test → Fix → Verify → Protect)
 - **refactoring**: TDD/BDD refactoring best practices (RED → GREEN → REFACTOR, Given-When-Then pattern for frontend tests)
 
+## Git Commit Guidelines
+
+- **DO NOT** add Claude Code signature to commits
+- **DO NOT** add "Co-Authored-By: Claude" to commit messages
+- Keep commit messages clean and professional
+- Use conventional commits format: `type(scope): description`
+
 ## Important Notes
 
 - Backend uses French documentation but English code

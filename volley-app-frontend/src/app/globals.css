@@ -92,6 +92,10 @@
   --color-error: var(--color-error);
   --color-warning: var(--color-warning);
 
+  /* Orange palette - Custom brand color */
+  --color-orange-500: #fd8150;
+  --color-orange-600: #fc6a2e;
+
   /* Neutrals */
   --color-neutral-50: var(--color-neutral-50);
   --color-neutral-100: var(--color-neutral-100);

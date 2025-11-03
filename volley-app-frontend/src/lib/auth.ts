@@ -47,3 +47,27 @@ export async function requireAuth(): Promise<User> {
 
   return user;
 }
+
+/**
+ * Require specific club role for a page
+ *
+ * Returns the user or throws an error if user doesn't have required role
+ *
+ * Usage in Server Component:
+ * ```ts
+ * const user = await requireRole(['OWNER', 'COACH']);
+ * ```
+ */
+export async function requireRole(
+  allowedRoles: Array<"OWNER" | "COACH" | "PLAYER">,
+): Promise<User> {
+  const user = await requireAuth();
+
+  if (!user.clubRole || !allowedRoles.includes(user.clubRole)) {
+    throw new Error(
+      "Forbidden - You don't have permission to access this resource",
+    );
+  }
+
+  return user;
+}
