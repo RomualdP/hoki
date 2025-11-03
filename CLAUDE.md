@@ -79,6 +79,55 @@ yarn build              # Build for production
 yarn lint               # Run Next.js linting
 ```
 
+## ⚠️ CRITICAL: Development Workflow
+
+**MANDATORY checks at each phase to ensure quality and avoid common mistakes.**
+
+### 📋 Pre-Development (BEFORE writing code)
+- [ ] **Read relevant Skills** from `.claude/skills/` based on task type
+  - Frontend: `server-components`, `atomic-component`, `react-state-management`, `server-actions`
+  - Backend: `ddd-bounded-context`, `cqrs-command-query`, `prisma-mapper`
+  - Always: `zero-warnings`
+- [ ] **Identify patterns** to apply (Server-First, CQRS, DDD layers, etc.)
+- [ ] **Verify API contract**: Check backend response structure (envelope vs direct data)
+- [ ] **Plan decomposition**: Estimate file sizes and plan sub-components if needed
+  - Pages: ≤ 50 lines
+  - Smart Components: ≤ 100 lines
+  - Dumb Components: ≤ 80 lines
+
+### 🔄 During Development (AFTER each file created/modified)
+```bash
+# Run checks immediately after writing code
+cd volley-app-frontend && yarn lint  # or volley-app-backend
+```
+
+**Critical Rules (Common Mistakes)**:
+- [ ] **File size**: Verify with `wc -l filename` (respect limits above)
+- [ ] **NEVER** use `useEffect` to initialize state → Use props directly in `useState()`
+- [ ] **NEVER** place `redirect()` inside try-catch → Place after try-catch
+- [ ] **ALWAYS** extract `response.data` if API uses envelope structure `{success, data, message}`
+- [ ] **ALWAYS** handle 204 No Content responses (check `serverFetch` implementation)
+
+### ✅ Pre-Commit (BEFORE `git commit`)
+```bash
+# Frontend
+cd volley-app-frontend
+yarn lint    # Must pass: 0 errors, 0 warnings
+yarn build   # Must pass: No TypeScript errors
+
+# Backend
+cd volley-app-backend
+yarn lint    # Must pass: 0 errors, 0 warnings
+yarn build   # Must pass: No TypeScript errors
+```
+
+**Final Checks**:
+- [ ] Review changes: `git diff --stat` and `git diff`
+- [ ] Verify Skills compliance (architecture, patterns, clean code)
+- [ ] Check commit message follows conventional commits
+
+**📖 Full methodology with examples: See `.claude/skills/development-workflow/`**
+
 ## Architecture Overview
 
 ### Backend: DDD + CQRS
