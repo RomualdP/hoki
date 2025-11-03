@@ -51,6 +51,20 @@ export async function serverFetch<T>(
       );
     }
 
+    // Handle responses with no content (204 No Content)
+    if (
+      response.status === 204 ||
+      response.headers.get("content-length") === "0"
+    ) {
+      return null;
+    }
+
+    // Check if response has JSON content
+    const contentType = response.headers.get("content-type");
+    if (!contentType?.includes("application/json")) {
+      return null;
+    }
+
     const result = await response.json();
 
     // Return the full response object so consumers can access success, data, meta, etc.
